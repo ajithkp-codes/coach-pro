@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { Modal } from "@/components/ui/modal";
 import { EmptyState } from "@/components/ui/empty-state";
 import { BodyMetricForm } from "./body-metric-form";
@@ -30,7 +31,11 @@ export function MetricsPanel({
           wide
           title="Add measurement"
           description="Record body metrics for a date. Fill in whatever you measured."
-          trigger={(open) => <Button onClick={open}>Add measurement</Button>}
+          trigger={(open) => (
+            <Button onClick={open}>
+              <Icon name="plus" size={16} /> Add measurement
+            </Button>
+          )}
         >
           {(close) => (
             <BodyMetricForm
@@ -64,7 +69,10 @@ export function MetricsPanel({
             </thead>
             <tbody>
               {metrics.map((m) => (
-                <tr key={m.id} className="border-b border-border last:border-0">
+                <tr
+                  key={m.id}
+                  className="border-b border-border transition-colors last:border-0 hover:bg-muted/40"
+                >
                   <td className="px-3 py-2 font-medium whitespace-nowrap">
                     {formatDate(m.measured_on)}
                   </td>

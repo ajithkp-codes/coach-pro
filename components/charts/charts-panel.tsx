@@ -4,7 +4,50 @@ import { useState } from "react";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Icon, type IconName } from "@/components/ui/icon";
+import { Delta } from "@/components/ui/stat-tile";
+import { formatNumber } from "@/lib/format";
+import { METRIC_BY_KEY } from "@/lib/catalog/metrics";
 import { TrendChart, type TrendPoint } from "./trend-chart";
+
+function TitleWithIcon({ icon, children }: { icon: IconName; children: React.ReactNode }) {
+  return (
+    <CardTitle className="flex items-center gap-2">
+      <span className="text-muted-foreground">
+        <Icon name={icon} size={16} />
+      </span>
+      {children}
+    </CardTitle>
+  );
+}
+
+function SeriesSummary({
+  data,
+  unit,
+  lowerIsBetter,
+}: {
+  data: TrendPoint[];
+  unit?: string | null;
+  lowerIsBetter?: boolean;
+}) {
+  if (data.length === 0) return null;
+  const latest = data[data.length - 1].value;
+  const change =
+    data.length >= 2 ? +(latest - data[0].value).toFixed(2) : null;
+  return (
+    <div className="mb-2 flex items-baseline gap-2">
+      <span className="text-2xl font-semibold tracking-tight">
+        {formatNumber(latest, unit)}
+      </span>
+      {change !== null && change !== 0 && (
+        <Delta value={change} unit={unit ?? undefined} good={lowerIsBetter ? change < 0 : undefined} />
+      )}
+      <span className="text-xs text-muted-foreground">
+        over {data.length} readings
+      </span>
+    </div>
+  );
+}
 
 export interface SeriesOption {
   key: string;
@@ -48,7 +91,7 @@ export function ChartsPanel({
     <div className="grid gap-5 lg:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle>Body metric trend</CardTitle>
+          <TitleWithIcon icon="scale">Body metric trend</TitleWithIcon>
           {metricOptions.length > 0 && (
             <Select
               className="h-8 w-auto text-sm"
@@ -66,11 +109,18 @@ export function ChartsPanel({
         </CardHeader>
         <CardBody>
           {metric ? (
-            <TrendChart
-              data={metricSeries[metric.key] ?? []}
-              unit={metric.unit}
-              label={metric.label}
-            />
+            <>
+              <SeriesSummary
+                data={metricSeries[metric.key] ?? []}
+                unit={metric.unit}
+                lowerIsBetter={METRIC_BY_KEY[metric.key]?.lowerIsBetter}
+              />
+              <TrendChart
+                data={metricSeries[metric.key] ?? []}
+                unit={metric.unit}
+                label={metric.label}
+              />
+            </>
           ) : (
             <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
               No body metrics recorded yet.
@@ -81,7 +131,7 @@ export function ChartsPanel({
 
       <Card>
         <CardHeader>
-          <CardTitle>Health marker trend</CardTitle>
+          <TitleWithIcon icon="pulse">Health marker trend</TitleWithIcon>
           {markerOptions.length > 0 && (
             <Select
               className="h-8 w-auto text-sm"
@@ -99,11 +149,14 @@ export function ChartsPanel({
         </CardHeader>
         <CardBody>
           {marker ? (
-            <TrendChart
-              data={markerSeries[marker.key] ?? []}
-              unit={marker.unit}
-              label={marker.label}
-            />
+            <>
+              <SeriesSummary data={markerSeries[marker.key] ?? []} unit={marker.unit} />
+              <TrendChart
+                data={markerSeries[marker.key] ?? []}
+                unit={marker.unit}
+                label={marker.label}
+              />
+            </>
           ) : (
             <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
               No health markers recorded yet.
@@ -115,9 +168,10 @@ export function ChartsPanel({
       {volumeSeries.length > 0 && (
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Training volume</CardTitle>
+            <TitleWithIcon icon="dumbbell">Training volume</TitleWithIcon>
           </CardHeader>
           <CardBody>
+            <SeriesSummary data={volumeSeries} unit="kg" lowerIsBetter={false} />
             <TrendChart data={volumeSeries} unit="kg" label="Volume (reps × weight)" />
           </CardBody>
         </Card>

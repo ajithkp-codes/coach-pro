@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { Modal } from "@/components/ui/modal";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardBody } from "@/components/ui/card";
@@ -42,7 +43,11 @@ export function GoalsPanel({
           wide
           title="Set a goal"
           description="Define a target. Link it to a metric to track progress automatically."
-          trigger={(open) => <Button onClick={open}>Add goal</Button>}
+          trigger={(open) => (
+            <Button onClick={open}>
+              <Icon name="plus" size={16} /> Add goal
+            </Button>
+          )}
         >
           {(close) => (
             <GoalForm
@@ -65,12 +70,17 @@ export function GoalsPanel({
             <Card key={g.id}>
               <CardBody className="flex flex-col gap-3">
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-medium">{g.title}</p>
-                    <p className="mt-0.5 text-xs capitalize text-muted-foreground">
-                      {g.category}
-                      {g.target_date && <> · by {formatDate(g.target_date)}</>}
-                    </p>
+                  <div className="flex items-start gap-2.5">
+                    <span className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-lg bg-info-bg text-primary">
+                      <Icon name={g.category === "workout" ? "dumbbell" : "target"} size={15} />
+                    </span>
+                    <div>
+                      <p className="font-medium">{g.title}</p>
+                      <p className="mt-0.5 text-xs capitalize text-muted-foreground">
+                        {g.category}
+                        {g.target_date && <> · by {formatDate(g.target_date)}</>}
+                      </p>
+                    </div>
                   </div>
                   <Badge tone={STATUS_TONE[g.status]} className="capitalize">
                     {g.status}

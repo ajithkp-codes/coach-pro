@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
@@ -158,7 +159,11 @@ export function PhotosPanel({
         <Modal
           title="Add progress photo"
           description="Uploaded privately. Only you can see it."
-          trigger={(open) => <Button onClick={open}>Add photo</Button>}
+          trigger={(open) => (
+            <Button onClick={open}>
+              <Icon name="plus" size={16} /> Add photo
+            </Button>
+          )}
         >
           {(close) => (
             <Uploader

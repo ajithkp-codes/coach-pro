@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { Modal } from "@/components/ui/modal";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -41,7 +42,11 @@ export function MarkersPanel({
           wide
           title="Add health marker"
           description="Record a clinical reading for a date."
-          trigger={(open) => <Button onClick={open}>Add reading</Button>}
+          trigger={(open) => (
+            <Button onClick={open}>
+              <Icon name="plus" size={16} /> Add reading
+            </Button>
+          )}
         >
           {(close) => (
             <HealthMarkerForm
@@ -74,7 +79,10 @@ export function MarkersPanel({
               {markers.map((m) => {
                 const tone = rangeTone(m);
                 return (
-                  <tr key={m.id} className="border-b border-border last:border-0">
+                  <tr
+                    key={m.id}
+                    className="border-b border-border transition-colors last:border-0 hover:bg-muted/40"
+                  >
                     <td className="px-3 py-2 font-medium whitespace-nowrap">
                       {formatDate(m.measured_on)}
                     </td>

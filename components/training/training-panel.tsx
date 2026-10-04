@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { Modal } from "@/components/ui/modal";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -60,7 +61,11 @@ export function TrainingPanel({
           wide
           title="Log training session"
           description="Record what the client did — exercises, sets, reps, weight, effort."
-          trigger={(open) => <Button onClick={open}>Log session</Button>}
+          trigger={(open) => (
+            <Button onClick={open}>
+              <Icon name="plus" size={16} /> Log session
+            </Button>
+          )}
         >
           {(close) => (
             <SessionForm
