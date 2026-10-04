@@ -1,17 +1,13 @@
-// Seed a demo trainer with sample clients and data.
+// Seed a demo trainer with rich, realistic sample data across the whole app.
 // Usage: npm run seed   (reads keys from .env.local)
-// Requires NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
-// and migration 0001 applied.
+// Requires migrations 0001–0004 applied.
 
 import { createClient } from "@supabase/supabase-js";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const service = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
 if (!url || !service) {
-  console.error(
-    "Missing env. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local",
-  );
+  console.error("Missing env. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local");
   process.exit(1);
 }
 
@@ -21,177 +17,229 @@ const admin = createClient(url, service, {
 
 const DEMO_EMAIL = "demo@coachpro.app";
 const DEMO_PASSWORD = "coachpro-demo-123";
+const BUCKET = "client-photos";
 
-function daysAgo(n) {
+const daysAgo = (n) => {
   const d = new Date();
   d.setDate(d.getDate() - n);
   return d.toISOString().slice(0, 10);
+};
+const round = (n, p = 1) => Math.round(n * 10 ** p) / 10 ** p;
+// Evenly spaced dates over `spanDays`, oldest first.
+const dates = (count, spanDays = 90) =>
+  Array.from({ length: count }, (_, i) =>
+    daysAgo(Math.round(spanDays - (spanDays * i) / (count - 1))),
+  );
+const lerp = (a, b, i, n) => round(a + (b - a) * (i / (n - 1)));
+
+// ---- Client blueprints -----------------------------------------------------
+const CLIENTS = [
+  {
+    full_name: "Aarav Sharma", sex: "male", date_of_birth: "1990-05-12",
+    phone: "+91 98765 43210", notes: "Training for a half marathon. Watching cholesterol.",
+    height: 178, weight: [84, 79.3], fat: [22, 18.5], waist: [94, 87],
+    markers: { total_cholesterol: [210, 198, 188], hdl: [38, 42, 46] },
+    goals: [
+      { title: "Reach 77 kg", category: "health", metric_key: "weight_kg", start_value: 84, target_value: 77, target_unit: "kg", target_date: daysAgo(-45), status: "active" },
+      { title: "Total cholesterol under 180", category: "health", metric_key: "total_cholesterol", start_value: 210, target_value: 180, target_unit: "mg/dL", status: "active" },
+    ],
+    training: "push", photos: true,
+  },
+  {
+    full_name: "Priya Nair", sex: "female", date_of_birth: "1995-11-03",
+    notes: "Strength + fat loss. Pre-diabetic range — monitoring glucose.",
+    height: 162, weight: [68, 63.8], fat: [31, 26], waist: [82, 74],
+    markers: { fasting_glucose: [118, 108, 99], hba1c: [6.1, 5.8, 5.6] },
+    goals: [
+      { title: "Fasting glucose under 95", category: "health", metric_key: "fasting_glucose", start_value: 118, target_value: 95, target_unit: "mg/dL", status: "active" },
+      { title: "Lose 5 kg", category: "health", metric_key: "weight_kg", start_value: 68, target_value: 63, target_unit: "kg", target_date: daysAgo(-20), status: "active" },
+    ],
+    training: "full",
+  },
+  {
+    full_name: "Rohan Mehta", sex: "male", date_of_birth: "1988-02-20",
+    phone: "+91 90000 11111", notes: "Lean bulk. Focus on compound strength.",
+    height: 182, weight: [76, 80.5], fat: [15, 16], waist: [80, 82],
+    markers: { vitamin_d: [28, 34, 41] },
+    goals: [
+      { title: "Bulk to 82 kg", category: "workout", metric_key: "weight_kg", start_value: 76, target_value: 82, target_unit: "kg", target_date: daysAgo(-30), status: "active" },
+    ],
+    training: "push",
+  },
+  {
+    full_name: "Sneha Reddy", sex: "female", date_of_birth: "1992-07-09",
+    notes: "General fitness. Low vitamin D, supplementing.",
+    height: 165, weight: [61, 59.5], fat: [27, 25], waist: [74, 71],
+    markers: { vitamin_d: [18, 24], total_cholesterol: [185, 178] },
+    goals: [
+      { title: "Vitamin D above 30", category: "health", metric_key: "vitamin_d", start_value: 18, target_value: 30, target_unit: "ng/mL", status: "active" },
+    ],
+    training: null,
+  },
+  {
+    full_name: "Vikram Singh", sex: "male", date_of_birth: "1983-09-15",
+    phone: "+91 99888 77665", notes: "Hypertension — GP-supervised. Gentle progression.",
+    height: 175, weight: [92, 88], fat: [28, 26], waist: [102, 98],
+    markers: { bp_systolic: [148, 142, 138], bp_diastolic: [96, 92, 88] },
+    goals: [
+      { title: "Systolic under 130", category: "health", metric_key: "bp_systolic", start_value: 148, target_value: 130, target_unit: "mmHg", target_date: daysAgo(-60), status: "active" },
+    ],
+    training: "full",
+  },
+  {
+    full_name: "Ananya Iyer", sex: "female", date_of_birth: "1998-01-25",
+    notes: "Marathon prep. Hit her weight goal — now maintaining.",
+    height: 168, weight: [64, 58], fat: [24, 19], waist: [76, 68],
+    markers: { hdl: [52, 58], triglycerides: [120, 95] },
+    goals: [
+      { title: "Reach 58 kg", category: "health", metric_key: "weight_kg", start_value: 64, target_value: 58, target_unit: "kg", status: "achieved" },
+      { title: "Run a sub-2:00 half", category: "workout", status: "active" },
+    ],
+    training: "full",
+  },
+];
+
+function photoSVG(label, hue) {
+  return Buffer.from(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="hsl(${hue},70%,82%)"/>
+    <stop offset="100%" stop-color="hsl(${hue + 20},65%,62%)"/>
+  </linearGradient></defs>
+  <rect width="600" height="800" fill="url(#g)"/>
+  <g fill="hsla(${hue},40%,30%,0.35)">
+    <circle cx="300" cy="250" r="70"/>
+    <rect x="215" y="330" width="170" height="260" rx="60"/>
+    <rect x="250" y="560" width="45" height="170" rx="22"/>
+    <rect x="305" y="560" width="45" height="170" rx="22"/>
+  </g>
+  <rect x="0" y="710" width="600" height="90" fill="rgba(15,23,42,0.55)"/>
+  <text x="40" y="765" font-family="Arial, sans-serif" font-size="34" fill="#fff" font-weight="bold">${label}</text>
+</svg>`,
+    "utf8",
+  );
 }
 
-async function getOrCreateTrainer() {
+async function getTrainerId() {
   const { data, error } = await admin.auth.admin.createUser({
-    email: DEMO_EMAIL,
-    password: DEMO_PASSWORD,
-    email_confirm: true,
-    user_metadata: { full_name: "Demo Trainer", business_name: "CoachPro Demo Studio" },
+    email: DEMO_EMAIL, password: DEMO_PASSWORD, email_confirm: true,
+    user_metadata: { full_name: "Jordan Fox", business_name: "Peak Form Coaching" },
   });
   if (!error) return data.user.id;
-
-  // Already exists — find the id by listing.
   const { data: list } = await admin.auth.admin.listUsers();
-  const existing = list.users.find((u) => u.email === DEMO_EMAIL);
-  if (!existing) throw error;
-  return existing.id;
+  const u = list.users.find((x) => x.email === DEMO_EMAIL);
+  if (!u) throw error;
+  return u.id;
 }
 
 async function main() {
-  const trainerId = await getOrCreateTrainer();
-  // Ensure the trainer profile row exists (the signup trigger only fires for new
-  // users; a demo user created before the trigger existed would be missing it).
+  const trainerId = await getTrainerId();
   await admin.from("trainers").upsert({
-    id: trainerId,
-    full_name: "Demo Trainer",
-    business_name: "CoachPro Demo Studio",
-    email: DEMO_EMAIL,
+    id: trainerId, email: DEMO_EMAIL, full_name: "Jordan Fox", business_name: "Peak Form Coaching",
   });
-  console.log(`Trainer ready: ${DEMO_EMAIL} (${trainerId})`);
-
-  // Clear any previous demo clients (cascades to their data).
   await admin.from("clients").delete().eq("trainer_id", trainerId);
+  console.log(`Trainer ready: ${DEMO_EMAIL}`);
 
-  const { data: clients, error: cErr } = await admin
-    .from("clients")
-    .insert([
-      {
-        trainer_id: trainerId,
-        full_name: "Aarav Sharma",
-        sex: "male",
-        date_of_birth: "1990-05-12",
-        phone: "+91 98765 43210",
-        notes: "Training for a half marathon. Watching cholesterol.",
-        consent_given: true,
-        consent_at: new Date().toISOString(),
-      },
-      {
-        trainer_id: trainerId,
-        full_name: "Priya Nair",
-        sex: "female",
-        date_of_birth: "1995-11-03",
-        notes: "Strength + fat loss. Pre-diabetic range, monitoring glucose.",
-        consent_given: true,
-        consent_at: new Date().toISOString(),
-      },
-    ])
-    .select("id, full_name");
-  if (cErr) throw cErr;
+  let photoCount = 0;
+  for (const cfg of CLIENTS) {
+    const { data: client } = await admin
+      .from("clients")
+      .insert({
+        trainer_id: trainerId, full_name: cfg.full_name, sex: cfg.sex,
+        date_of_birth: cfg.date_of_birth, phone: cfg.phone ?? null, notes: cfg.notes,
+        consent_given: true, consent_at: new Date().toISOString(),
+      })
+      .select("id").single();
+    const cid = client.id;
 
-  const aarav = clients.find((c) => c.full_name.startsWith("Aarav")).id;
-  const priya = clients.find((c) => c.full_name.startsWith("Priya")).id;
+    // Body metrics (6 points over 90 days)
+    const mDates = dates(6);
+    const metrics = mDates.map((d, i) => ({
+      trainer_id: trainerId, client_id: cid, measured_on: d,
+      weight_kg: lerp(cfg.weight[0], cfg.weight[1], i, 6),
+      height_cm: cfg.height,
+      body_fat_pct: lerp(cfg.fat[0], cfg.fat[1], i, 6),
+      waist_cm: lerp(cfg.waist[0], cfg.waist[1], i, 6),
+    }));
+    await admin.from("body_metrics").insert(metrics);
 
-  // Body metrics — a downward weight trend over ~3 months.
-  const metrics = [];
-  const weights = [84, 83.1, 82.4, 81.2, 80.5, 79.3];
-  weights.forEach((w, i) => {
-    metrics.push({
-      trainer_id: trainerId,
-      client_id: aarav,
-      measured_on: daysAgo((weights.length - 1 - i) * 15),
-      weight_kg: w,
-      height_cm: 178,
-      body_fat_pct: 22 - i * 0.6,
-      waist_cm: 92 - i,
-    });
-  });
-  const priyaWeights = [68, 67.4, 67.1, 66.3, 65.8];
-  priyaWeights.forEach((w, i) => {
-    metrics.push({
-      trainer_id: trainerId,
-      client_id: priya,
-      measured_on: daysAgo((priyaWeights.length - 1 - i) * 18),
-      weight_kg: w,
-      height_cm: 162,
-      body_fat_pct: 30 - i * 0.5,
-      waist_cm: 78 - i * 0.8,
-    });
-  });
-  await admin.from("body_metrics").insert(metrics);
+    // Health markers
+    const markerRows = [];
+    for (const [key, vals] of Object.entries(cfg.markers)) {
+      const d = dates(vals.length);
+      vals.forEach((v, i) =>
+        markerRows.push({ trainer_id: trainerId, client_id: cid, measured_on: d[i], marker_key: key, value: v }),
+      );
+    }
+    if (markerRows.length) await admin.from("health_markers").insert(markerRows);
 
-  // Health markers.
-  const markers = [];
-  [210, 205, 198, 192].forEach((v, i) =>
-    markers.push({
-      trainer_id: trainerId,
-      client_id: aarav,
-      measured_on: daysAgo((3 - i) * 20),
-      marker_key: "total_cholesterol",
-      value: v,
-      unit: "mg/dL",
-    }),
-  );
-  [118, 112, 106, 99].forEach((v, i) =>
-    markers.push({
-      trainer_id: trainerId,
-      client_id: priya,
-      measured_on: daysAgo((3 - i) * 20),
-      marker_key: "fasting_glucose",
-      value: v,
-      unit: "mg/dL",
-    }),
-  );
-  await admin.from("health_markers").insert(markers);
+    // Goals
+    if (cfg.goals?.length) {
+      await admin.from("goals").insert(
+        cfg.goals.map((g) => ({
+          trainer_id: trainerId, client_id: cid, ...g,
+          achieved_at: g.status === "achieved" ? new Date().toISOString() : null,
+        })),
+      );
+    }
 
-  // Goals.
-  await admin.from("goals").insert([
-    {
-      trainer_id: trainerId,
-      client_id: aarav,
-      title: "Reach 77 kg",
-      category: "health",
-      metric_key: "weight_kg",
-      start_value: 84,
-      target_value: 77,
-      target_unit: "kg",
-      target_date: daysAgo(-45),
-      status: "active",
-    },
-    {
-      trainer_id: trainerId,
-      client_id: priya,
-      title: "Fasting glucose under 95",
-      category: "health",
-      metric_key: "fasting_glucose",
-      start_value: 118,
-      target_value: 95,
-      target_unit: "mg/dL",
-      status: "active",
-    },
-  ]);
+    // Training
+    if (cfg.training) {
+      const tDates = dates(3, 42);
+      const { data: sess } = await admin
+        .from("workout_sessions")
+        .insert(tDates.map((d, i) => ({
+          trainer_id: trainerId, client_id: cid, performed_on: d,
+          title: cfg.training === "push" ? "Upper body" : "Full body", duration_min: 55 + i * 3,
+        })))
+        .select("id, performed_on");
+      const ordered = [...sess].sort((a, b) => (a.performed_on < b.performed_on ? -1 : 1));
+      const prog = [50, 55, 60];
+      const setRows = [];
+      ordered.forEach((s, i) => {
+        const w = prog[i];
+        const lifts = cfg.training === "push"
+          ? [["Bench press", w + 10], ["Overhead press", w - 15], ["Barbell row", w]]
+          : [["Back squat", w + 20], ["Deadlift", w + 35], ["Pull-up", 0]];
+        lifts.forEach(([name, base], li) => {
+          for (let p = 0; p < 3; p++)
+            setRows.push({
+              trainer_id: trainerId, client_id: cid, session_id: s.id, position: li * 3 + p,
+              exercise_name: name, reps: name === "Pull-up" ? 8 : 8, weight_kg: base || null, rpe: 7 + p * 0.5,
+            });
+        });
+      });
+      await admin.from("workout_sets").insert(setRows);
+    }
 
-  // Training sessions for Aarav — bench press progressing over time.
-  const { data: sess, error: sErr } = await admin
-    .from("workout_sessions")
-    .insert([
-      { trainer_id: trainerId, client_id: aarav, performed_on: daysAgo(40), title: "Upper body", duration_min: 55 },
-      { trainer_id: trainerId, client_id: aarav, performed_on: daysAgo(26), title: "Upper body", duration_min: 60 },
-      { trainer_id: trainerId, client_id: aarav, performed_on: daysAgo(12), title: "Upper body", duration_min: 58 },
-    ])
-    .select("id, performed_on");
-  if (sErr) throw sErr;
+    // Photos
+    if (cfg.photos) {
+      const shots = [
+        { label: `Front · ${daysAgo(84)}`, taken_on: daysAgo(84), hue: 210 },
+        { label: `Side · ${daysAgo(84)}`, taken_on: daysAgo(84), hue: 265 },
+        { label: `Front · ${daysAgo(7)}`, taken_on: daysAgo(7), hue: 160 },
+        { label: `Side · ${daysAgo(7)}`, taken_on: daysAgo(7), hue: 25 },
+      ];
+      for (const s of shots) {
+        const path = `${trainerId}/${cid}/${crypto.randomUUID()}.svg`;
+        const up = await admin.storage.from(BUCKET).upload(path, photoSVG(s.label, s.hue), {
+          contentType: "image/svg+xml", upsert: true,
+        });
+        if (!up.error) {
+          await admin.from("client_photos").insert({
+            trainer_id: trainerId, client_id: cid, storage_path: path,
+            taken_on: s.taken_on, caption: s.label,
+          });
+          photoCount++;
+        }
+      }
+    }
 
-  const ordered = [...sess].sort((a, b) => (a.performed_on < b.performed_on ? -1 : 1));
-  const benchWeights = [60, 65, 70];
-  const setRows = [];
-  ordered.forEach((s, i) => {
-    const w = benchWeights[i];
-    for (let p = 0; p < 3; p++)
-      setRows.push({ trainer_id: trainerId, client_id: aarav, session_id: s.id, position: p, exercise_name: "Bench press", reps: 8, weight_kg: w, rpe: 7 + p * 0.5 });
-    for (let p = 0; p < 3; p++)
-      setRows.push({ trainer_id: trainerId, client_id: aarav, session_id: s.id, position: 3 + p, exercise_name: "Barbell row", reps: 10, weight_kg: w - 10, rpe: 7 });
-  });
-  await admin.from("workout_sets").insert(setRows);
+    console.log(`  ✓ ${cfg.full_name}`);
+  }
 
-  console.log("Seeded 2 clients with metrics, markers, goals, and training.");
-  console.log(`\nSign in with:\n  email:    ${DEMO_EMAIL}\n  password: ${DEMO_PASSWORD}\n`);
+  console.log(`\nSeeded ${CLIENTS.length} clients, ${photoCount} photos.`);
+  console.log(`\nSign in:\n  email:    ${DEMO_EMAIL}\n  password: ${DEMO_PASSWORD}\n`);
 }
 
 main().catch((e) => {

@@ -7,7 +7,7 @@ import {
 import { NavLink } from "@/components/nav-link";
 import { logoutAction } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
-import { initials } from "@/lib/format";
+import { Avatar } from "@/components/ui/avatar";
 
 export default async function DashboardLayout({
   children,
@@ -45,9 +45,7 @@ export default async function DashboardLayout({
                 </p>
               )}
             </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
-              {initials(name)}
-            </div>
+            <Avatar name={name} size="sm" />
             <form action={logoutAction}>
               <Button type="submit" variant="outline" size="sm">
                 Sign out

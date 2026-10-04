@@ -4,8 +4,10 @@ import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Avatar } from "@/components/ui/avatar";
+import { Icon } from "@/components/ui/icon";
 import { listClients } from "@/lib/data/clients";
-import { formatDate, ageFromDob, initials } from "@/lib/format";
+import { formatDate, ageFromDob } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { ClientStatus } from "@/lib/types";
 
@@ -33,7 +35,11 @@ export default async function ClientsPage({
       <PageHeader
         title="Clients"
         description="Everyone you're monitoring. Open a client to record metrics, markers, and goals."
-        action={<ButtonLink href="/clients/new">Add client</ButtonLink>}
+        action={
+          <ButtonLink href="/clients/new">
+            <Icon name="plus" size={16} /> Add client
+          </ButtonLink>
+        }
       />
 
       <div className="mb-4 flex gap-1">
@@ -77,9 +83,7 @@ export default async function ClientsPage({
                 href={`/clients/${c.id}`}
                 className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/60"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
-                  {initials(c.full_name)}
-                </div>
+                <Avatar name={c.full_name} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{c.full_name}</p>
                   <p className="text-xs text-muted-foreground">

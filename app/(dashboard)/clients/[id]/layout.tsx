@@ -4,7 +4,8 @@ import { getClient } from "@/lib/data/clients";
 import { ClientTabs } from "@/components/clients/client-tabs";
 import { ClientActions } from "@/components/clients/client-actions";
 import { Badge } from "@/components/ui/badge";
-import { ageFromDob, formatDate, initials } from "@/lib/format";
+import { Avatar } from "@/components/ui/avatar";
+import { ageFromDob, formatDate } from "@/lib/format";
 import { archiveClientAction, deleteClientAction } from "../actions";
 
 export default async function ClientLayout({
@@ -32,9 +33,7 @@ export default async function ClientLayout({
 
       <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-lg font-semibold text-muted-foreground">
-            {initials(client.full_name)}
-          </div>
+          <Avatar name={client.full_name} size="lg" />
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-semibold tracking-tight">
