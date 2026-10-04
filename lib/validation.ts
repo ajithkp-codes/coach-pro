@@ -123,6 +123,15 @@ export const workoutSessionSchema = z.object({
 export type WorkoutSetInput = z.infer<typeof workoutSetSchema>;
 export type WorkoutSessionInput = z.infer<typeof workoutSessionSchema>;
 
+// ---- Progress photos (metadata; the file is uploaded browser-direct to Storage) ----
+export const photoMetaSchema = z.object({
+  storage_path: z.string().trim().min(1).max(400),
+  taken_on: z.string().min(1, "Date is required"),
+  caption: z.string().trim().max(200).optional().transform((v) => (v ? v : null)),
+});
+
+export type PhotoMetaInput = z.infer<typeof photoMetaSchema>;
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ClientInput = z.infer<typeof clientSchema>;

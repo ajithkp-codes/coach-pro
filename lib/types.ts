@@ -80,6 +80,21 @@ export interface Goal {
   updated_at: string;
 }
 
+export interface ClientPhoto {
+  id: string;
+  trainer_id: string;
+  client_id: string;
+  storage_path: string;
+  taken_on: string;
+  caption: string | null;
+  created_at: string;
+}
+
+/** A photo row with a short-lived signed URL for display. */
+export interface ClientPhotoWithUrl extends ClientPhoto {
+  url: string | null;
+}
+
 export interface WorkoutSet {
   id: string;
   trainer_id: string;

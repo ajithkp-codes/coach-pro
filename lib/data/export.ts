@@ -10,7 +10,7 @@ export async function exportClientData(clientId: string) {
   const client = await getClient(clientId);
   if (!client) throw new Error("Client not found");
 
-  const [metrics, markers, goals, sessions] = await Promise.all([
+  const [metrics, markers, goals, sessions, photos] = await Promise.all([
     supabase.from("body_metrics").select("*").eq("client_id", clientId).order("measured_on"),
     supabase.from("health_markers").select("*").eq("client_id", clientId).order("measured_on"),
     supabase.from("goals").select("*").eq("client_id", clientId).order("created_at"),
@@ -19,6 +19,7 @@ export async function exportClientData(clientId: string) {
       .select("*, sets:workout_sets(*)")
       .eq("client_id", clientId)
       .order("performed_on"),
+    supabase.from("client_photos").select("*").eq("client_id", clientId).order("taken_on"),
   ]);
 
   return {
@@ -28,5 +29,7 @@ export async function exportClientData(clientId: string) {
     health_markers: markers.data ?? [],
     goals: goals.data ?? [],
     workout_sessions: sessions.data ?? [],
+    // Photo metadata only (the files live in private Storage).
+    photos: photos.data ?? [],
   };
 }

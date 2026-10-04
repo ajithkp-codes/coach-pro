@@ -13,6 +13,7 @@ export function ClientTabs({ clientId }: { clientId: string }) {
     { href: `${base}/markers`, label: "Health markers" },
     { href: `${base}/goals`, label: "Goals" },
     { href: `${base}/training`, label: "Training" },
+    { href: `${base}/photos`, label: "Photos" },
     { href: `${base}/charts`, label: "Charts" },
   ];
 
