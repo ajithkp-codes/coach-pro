@@ -34,7 +34,13 @@ export async function createClientAction(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid details" };
   }
-  const client = await createClientRecord(parsed.data);
+  let client;
+  try {
+    client = await createClientRecord(parsed.data);
+  } catch (e) {
+    console.error("createClient failed", e);
+    return { error: "Couldn't save the client. Please try again." };
+  }
   revalidatePath("/clients");
   revalidatePath("/dashboard");
   redirect(`/clients/${client.id}`);
@@ -49,7 +55,12 @@ export async function updateClientAction(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid details" };
   }
-  await updateClientRecord(clientId, parsed.data);
+  try {
+    await updateClientRecord(clientId, parsed.data);
+  } catch (e) {
+    console.error("updateClient failed", e);
+    return { error: "Couldn't save changes. Please try again." };
+  }
   revalidatePath(`/clients/${clientId}`);
   revalidatePath("/clients");
   redirect(`/clients/${clientId}`);

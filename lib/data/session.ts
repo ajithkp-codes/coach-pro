@@ -49,3 +49,31 @@ export async function getTrainerProfile(): Promise<Trainer | null> {
     .maybeSingle();
   return data as Trainer | null;
 }
+
+/**
+ * Ensure the signed-in trainer has a profile row. The signup trigger normally
+ * creates it; this self-heals accounts where it didn't (e.g. created before the
+ * trigger existed), preventing foreign-key failures when they add data.
+ * Requires the trainers_insert RLS policy (migration 0003).
+ */
+export async function ensureTrainerProfile(): Promise<void> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data: existing } = await supabase
+    .from("trainers")
+    .select("id")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (existing) return;
+
+  await supabase.from("trainers").insert({
+    id: user.id,
+    email: user.email,
+    full_name: (user.user_metadata?.full_name as string) ?? null,
+    business_name: (user.user_metadata?.business_name as string) ?? null,
+  });
+}

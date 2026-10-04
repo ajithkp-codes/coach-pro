@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { requireTrainer, getTrainerProfile } from "@/lib/data/session";
+import {
+  requireTrainer,
+  getTrainerProfile,
+  ensureTrainerProfile,
+} from "@/lib/data/session";
 import { NavLink } from "@/components/nav-link";
 import { logoutAction } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
@@ -11,6 +15,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { email } = await requireTrainer();
+  await ensureTrainerProfile();
   const trainer = await getTrainerProfile();
   const name = trainer?.full_name || email || "Trainer";
 
