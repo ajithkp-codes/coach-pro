@@ -79,3 +79,35 @@ export interface Goal {
   created_at: string;
   updated_at: string;
 }
+
+export interface WorkoutSet {
+  id: string;
+  trainer_id: string;
+  client_id: string;
+  session_id: string;
+  position: number;
+  exercise_name: string;
+  reps: number | null;
+  weight_kg: number | null;
+  rpe: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkoutSession {
+  id: string;
+  trainer_id: string;
+  client_id: string;
+  performed_on: string;
+  title: string | null;
+  duration_min: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** A session with its sets attached, for display. */
+export interface WorkoutSessionWithSets extends WorkoutSession {
+  sets: WorkoutSet[];
+}

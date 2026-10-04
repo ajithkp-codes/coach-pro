@@ -4,7 +4,7 @@ import { MARKER_KEYS } from "@/lib/catalog/markers";
 
 /** Coerce an optional number field from a form: "" → undefined, else number. */
 const optionalNumber = z
-  .union([z.string(), z.number()])
+  .union([z.string(), z.number(), z.null()])
   .optional()
   .transform((v) => (v === "" || v === undefined || v === null ? null : Number(v)))
   .refine((v) => v === null || !Number.isNaN(v), { message: "Must be a number" });
@@ -100,6 +100,28 @@ export const goalSchema = z.object({
   target_date: z.string().optional().transform((v) => (v ? v : null)),
   status: z.enum(["active", "achieved", "paused", "dropped"]).default("active"),
 });
+
+// ---- Training logs ----
+export const workoutSetSchema = z.object({
+  exercise_name: z.string().trim().min(1, "Exercise name is required").max(120),
+  reps: optionalNumber,
+  weight_kg: optionalNumber,
+  rpe: optionalNumber.refine((v) => v === null || (v >= 0 && v <= 10), {
+    message: "RPE must be between 0 and 10",
+  }),
+  notes: optionalText,
+});
+
+export const workoutSessionSchema = z.object({
+  performed_on: z.string().min(1, "Date is required"),
+  title: z.string().trim().max(120).optional().transform((v) => (v ? v : null)),
+  duration_min: optionalNumber,
+  notes: optionalText,
+  sets: z.array(workoutSetSchema).max(200).default([]),
+});
+
+export type WorkoutSetInput = z.infer<typeof workoutSetSchema>;
+export type WorkoutSessionInput = z.infer<typeof workoutSessionSchema>;
 
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

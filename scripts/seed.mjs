@@ -167,7 +167,30 @@ async function main() {
     },
   ]);
 
-  console.log("Seeded 2 clients with metrics, markers, and goals.");
+  // Training sessions for Aarav — bench press progressing over time.
+  const { data: sess, error: sErr } = await admin
+    .from("workout_sessions")
+    .insert([
+      { trainer_id: trainerId, client_id: aarav, performed_on: daysAgo(40), title: "Upper body", duration_min: 55 },
+      { trainer_id: trainerId, client_id: aarav, performed_on: daysAgo(26), title: "Upper body", duration_min: 60 },
+      { trainer_id: trainerId, client_id: aarav, performed_on: daysAgo(12), title: "Upper body", duration_min: 58 },
+    ])
+    .select("id, performed_on");
+  if (sErr) throw sErr;
+
+  const ordered = [...sess].sort((a, b) => (a.performed_on < b.performed_on ? -1 : 1));
+  const benchWeights = [60, 65, 70];
+  const setRows = [];
+  ordered.forEach((s, i) => {
+    const w = benchWeights[i];
+    for (let p = 0; p < 3; p++)
+      setRows.push({ trainer_id: trainerId, client_id: aarav, session_id: s.id, position: p, exercise_name: "Bench press", reps: 8, weight_kg: w, rpe: 7 + p * 0.5 });
+    for (let p = 0; p < 3; p++)
+      setRows.push({ trainer_id: trainerId, client_id: aarav, session_id: s.id, position: 3 + p, exercise_name: "Barbell row", reps: 10, weight_kg: w - 10, rpe: 7 });
+  });
+  await admin.from("workout_sets").insert(setRows);
+
+  console.log("Seeded 2 clients with metrics, markers, goals, and training.");
   console.log(`\nSign in with:\n  email:    ${DEMO_EMAIL}\n  password: ${DEMO_PASSWORD}\n`);
 }
 

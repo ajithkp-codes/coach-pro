@@ -12,6 +12,7 @@ export function ClientTabs({ clientId }: { clientId: string }) {
     { href: `${base}/metrics`, label: "Body metrics" },
     { href: `${base}/markers`, label: "Health markers" },
     { href: `${base}/goals`, label: "Goals" },
+    { href: `${base}/training`, label: "Training" },
     { href: `${base}/charts`, label: "Charts" },
   ];
 

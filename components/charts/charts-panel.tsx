@@ -17,11 +17,13 @@ export function ChartsPanel({
   metricOptions,
   markerSeries,
   markerOptions,
+  volumeSeries = [],
 }: {
   metricSeries: Record<string, TrendPoint[]>;
   metricOptions: SeriesOption[];
   markerSeries: Record<string, TrendPoint[]>;
   markerOptions: SeriesOption[];
+  volumeSeries?: TrendPoint[];
 }) {
   const [metricKey, setMetricKey] = useState(metricOptions[0]?.key ?? "");
   const [markerKey, setMarkerKey] = useState(markerOptions[0]?.key ?? "");
@@ -29,11 +31,15 @@ export function ChartsPanel({
   const metric = metricOptions.find((o) => o.key === metricKey);
   const marker = markerOptions.find((o) => o.key === markerKey);
 
-  if (metricOptions.length === 0 && markerOptions.length === 0) {
+  if (
+    metricOptions.length === 0 &&
+    markerOptions.length === 0 &&
+    volumeSeries.length === 0
+  ) {
     return (
       <EmptyState
         title="Nothing to chart yet"
-        description="Record some body metrics or health markers and trends will appear here."
+        description="Record body metrics, health markers, or training sessions and trends will appear here."
       />
     );
   }
@@ -105,6 +111,17 @@ export function ChartsPanel({
           )}
         </CardBody>
       </Card>
+
+      {volumeSeries.length > 0 && (
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Training volume</CardTitle>
+          </CardHeader>
+          <CardBody>
+            <TrendChart data={volumeSeries} unit="kg" label="Volume (reps × weight)" />
+          </CardBody>
+        </Card>
+      )}
     </div>
   );
 }

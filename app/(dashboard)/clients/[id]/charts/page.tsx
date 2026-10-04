@@ -1,5 +1,6 @@
 import { listBodyMetrics } from "@/lib/data/bodyMetrics";
 import { listHealthMarkers } from "@/lib/data/healthMarkers";
+import { listSessions, sessionVolume } from "@/lib/data/training";
 import { BODY_METRIC_FIELDS } from "@/lib/catalog/metrics";
 import { markerLabel } from "@/lib/catalog/markers";
 import {
@@ -14,9 +15,10 @@ export default async function ChartsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [metrics, markers] = await Promise.all([
+  const [metrics, markers, sessions] = await Promise.all([
     listBodyMetrics(id),
     listHealthMarkers(id),
+    listSessions(id),
   ]);
 
   // Body-metric series (ascending by date), one per field that has data.
@@ -58,12 +60,23 @@ export default async function ChartsPage({
     markerSeries[key].push({ date: m.measured_on, value: Number(m.value) });
   }
 
+  // Training volume aggregated per day (Σ reps × weight), ascending.
+  const volMap = new Map<string, number>();
+  for (const s of sessions) {
+    const v = sessionVolume(s);
+    if (v > 0) volMap.set(s.performed_on, (volMap.get(s.performed_on) ?? 0) + v);
+  }
+  const volumeSeries: TrendPoint[] = Array.from(volMap.entries())
+    .map(([date, value]) => ({ date, value: Math.round(value) }))
+    .sort((a, b) => (a.date < b.date ? -1 : 1));
+
   return (
     <ChartsPanel
       metricSeries={metricSeries}
       metricOptions={metricOptions}
       markerSeries={markerSeries}
       markerOptions={markerOptions}
+      volumeSeries={volumeSeries}
     />
   );
 }
