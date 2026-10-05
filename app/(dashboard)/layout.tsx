@@ -34,6 +34,7 @@ export default async function DashboardLayout({
               <NavLink href="/dashboard">Dashboard</NavLink>
               <NavLink href="/clients">Clients</NavLink>
               <NavLink href="/account">Account</NavLink>
+              {trainer?.is_admin && <NavLink href="/admin">Admin</NavLink>}
             </nav>
           </div>
           <div className="flex items-center gap-3">
@@ -57,6 +58,7 @@ export default async function DashboardLayout({
           <NavLink href="/dashboard">Dashboard</NavLink>
           <NavLink href="/clients">Clients</NavLink>
           <NavLink href="/account">Account</NavLink>
+          {trainer?.is_admin && <NavLink href="/admin">Admin</NavLink>}
         </nav>
       </header>
 

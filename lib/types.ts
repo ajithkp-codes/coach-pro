@@ -10,6 +10,7 @@ export interface Trainer {
   full_name: string | null;
   business_name: string | null;
   email: string | null;
+  is_admin: boolean;
   created_at: string;
   updated_at: string;
 }

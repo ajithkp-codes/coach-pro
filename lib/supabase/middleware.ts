@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /** Routes that require an authenticated trainer. */
-const PROTECTED_PREFIXES = ["/dashboard", "/clients", "/account", "/api/v1"];
+const PROTECTED_PREFIXES = ["/dashboard", "/clients", "/account", "/admin", "/api/v1"];
 /** Auth routes a signed-in trainer should be bounced away from. */
 const AUTH_ROUTES = ["/login", "/signup"];
 
