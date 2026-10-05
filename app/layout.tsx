@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CoachPro — client monitoring for personal trainers",
+  title: "CoachPro: client tracking for personal trainers",
   description:
     "A private workspace for personal trainers to track each client's body metrics, health markers, and goals over time.",
 };

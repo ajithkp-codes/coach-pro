@@ -1,7 +1,7 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 /**
- * Service-role client — BYPASSES Row-Level Security.
+ * Service-role client, BYPASSES Row-Level Security.
  * SERVER ONLY. Use strictly for seeding, migrations, and trusted admin tasks,
  * never in response to untrusted input without manual trainer_id scoping.
  */

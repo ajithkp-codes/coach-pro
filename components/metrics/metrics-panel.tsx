@@ -80,7 +80,7 @@ export function MetricsPanel({
                     const v = m[f.key as keyof BodyMetric];
                     return (
                       <td key={f.key} className="px-3 py-2 whitespace-nowrap">
-                        {v != null ? formatNumber(Number(v)) : "—"}
+                        {v != null ? formatNumber(Number(v)) : "-"}
                       </td>
                     );
                   })}

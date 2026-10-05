@@ -67,7 +67,7 @@ export async function verifyPaymentAction(payload: {
       currentEnd = toISO(sub.current_end);
       customerId = sub.customer_id ?? null;
     } catch {
-      /* non-fatal — activation can proceed without the extra detail */
+      /* non-fatal, activation can proceed without the extra detail */
     }
 
     await upsertSubscription(trainerId, {
@@ -94,7 +94,7 @@ export async function cancelSubscriptionAction(): Promise<VerifyResult> {
       try {
         await cancelSubscription(sub.razorpay_subscription_id);
       } catch {
-        /* already cancelled or not found — proceed to downgrade locally */
+        /* already cancelled or not found, proceed to downgrade locally */
       }
     }
     await upsertSubscription(trainerId, { plan: "free", status: "cancelled" });

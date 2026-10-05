@@ -101,7 +101,7 @@ export async function requestPasswordResetAction(
     redirectTo: `${origin}/auth/callback?next=/reset-password`,
   });
 
-  // Always report success — don't reveal whether an account exists.
+  // Always report success, don't reveal whether an account exists.
   return {
     notice:
       "If an account exists for that email, a password reset link is on its way. Check your inbox.",

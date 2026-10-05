@@ -43,8 +43,8 @@ export default async function BillingPage() {
           <div className="text-sm text-muted-foreground">
             {plan === "pro" ? (
               <>
-                You&apos;re on <span className="font-medium text-foreground">Pro</span> —
-                unlimited clients.
+                You&apos;re on <span className="font-medium text-foreground">Pro</span>.
+                Unlimited clients.
                 {sub?.current_end && <> Renews {formatDate(sub.current_end)}.</>}
               </>
             ) : (
@@ -90,7 +90,7 @@ export default async function BillingPage() {
                   <UpgradeButton disabled={!configured} />
                   {!configured && (
                     <p className="mt-2 text-xs text-muted-foreground">
-                      Payments aren&apos;t configured yet — add your Razorpay keys to
+                      Payments aren&apos;t configured yet. Add your Razorpay keys to
                       enable upgrades.
                     </p>
                   )}

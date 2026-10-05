@@ -39,7 +39,7 @@ function setLabel(s: WorkoutSet): string {
   const parts: string[] = [];
   if (s.reps != null) parts.push(formatNumber(s.reps));
   if (s.weight_kg != null) parts.push(`${formatNumber(s.weight_kg)}kg`);
-  let label = parts.join(" × ") || "—";
+  let label = parts.join(" × ") || "-";
   if (s.rpe != null) label += ` @${formatNumber(s.rpe)}`;
   return label;
 }
@@ -60,7 +60,7 @@ export function TrainingPanel({
         <Modal
           wide
           title="Log training session"
-          description="Record what the client did — exercises, sets, reps, weight, effort."
+          description="Record what the client did: exercises, sets, reps, weight, and effort."
           trigger={(open) => (
             <Button onClick={open}>
               <Icon name="plus" size={16} /> Log session

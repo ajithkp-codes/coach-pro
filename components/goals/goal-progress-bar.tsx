@@ -36,7 +36,7 @@ export function GoalProgressBar({
           {progress.measuredOn && <> · {formatDate(progress.measuredOn)}</>}
         </span>
         <span className="font-medium text-foreground">
-          {hasBar ? `${pct}%` : "—"}
+          {hasBar ? `${pct}%` : "-"}
         </span>
       </div>
     </div>

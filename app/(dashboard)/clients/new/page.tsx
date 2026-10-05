@@ -10,7 +10,7 @@ export default function NewClientPage() {
     <div className="mx-auto max-w-2xl">
       <PageHeader
         title="Add client"
-        description="Create a record for someone you're monitoring. They don't log in — this is your workspace."
+        description="Create a record for someone you're monitoring. They don't log in. This is your workspace."
       />
       <Card>
         <CardBody>

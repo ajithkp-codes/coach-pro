@@ -42,7 +42,7 @@ export function ClientCard({ c }: { c: ClientCardData }) {
             <div>
               <p className="text-xs text-muted-foreground">Weight</p>
               <p className="text-xl font-semibold tracking-tight">
-                {c.latestWeight != null ? formatNumber(c.latestWeight, "kg") : "—"}
+                {c.latestWeight != null ? formatNumber(c.latestWeight, "kg") : "-"}
               </p>
               {c.weightDelta != null && c.weightDelta !== 0 && (
                 <Delta value={c.weightDelta} unit="kg" good={c.weightDelta < 0} />

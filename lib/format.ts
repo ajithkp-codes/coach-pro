@@ -1,9 +1,9 @@
 /** Small display helpers (India locale defaults). */
 
 export function formatDate(value?: string | null): string {
-  if (!value) return "—";
+  if (!value) return "-";
   const d = new Date(value.length === 10 ? `${value}T00:00:00` : value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -12,9 +12,9 @@ export function formatDate(value?: string | null): string {
 }
 
 export function formatNumber(value?: number | null, unit?: string | null): string {
-  if (value === null || value === undefined) return "—";
+  if (value === null || value === undefined) return "-";
   const n = Number(value);
-  if (Number.isNaN(n)) return "—";
+  if (Number.isNaN(n)) return "-";
   const s = Number.isInteger(n) ? n.toString() : n.toFixed(2).replace(/\.?0+$/, "");
   return unit ? `${s} ${unit}` : s;
 }
@@ -44,7 +44,7 @@ export function todayISO(): string {
 }
 
 export function formatBytes(bytes?: number | null): string {
-  if (bytes == null || Number.isNaN(bytes)) return "—";
+  if (bytes == null || Number.isNaN(bytes)) return "-";
   if (bytes < 1024) return `${bytes} B`;
   const units = ["KB", "MB", "GB"];
   let v = bytes / 1024;
@@ -58,9 +58,9 @@ export function formatBytes(bytes?: number | null): string {
 
 /** Relative day label, e.g. "today", "yesterday", "5 days ago", "3 weeks ago". */
 export function timeAgo(value?: string | null): string {
-  if (!value) return "—";
+  if (!value) return "-";
   const d = new Date(value.length === 10 ? `${value}T00:00:00` : value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   const days = Math.floor((Date.now() - d.getTime()) / 86_400_000);
   if (days <= 0) return "today";
   if (days === 1) return "yesterday";

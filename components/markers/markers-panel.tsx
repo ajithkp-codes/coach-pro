@@ -100,7 +100,7 @@ export function MarkersPanel({
                       )}
                     </td>
                     <td className="max-w-[16rem] truncate px-3 py-2 text-muted-foreground">
-                      {m.notes || "—"}
+                      {m.notes || "-"}
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex justify-end gap-1">

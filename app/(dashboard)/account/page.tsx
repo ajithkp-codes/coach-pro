@@ -41,7 +41,7 @@ export default async function AccountPage() {
         <CardBody className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
             {plan === "pro"
-              ? "You're on Pro — unlimited clients."
+              ? "You're on Pro. Unlimited clients."
               : "You're on the Free plan."}
           </p>
           <ButtonLink href="/account/billing" variant="outline" size="sm">
@@ -56,7 +56,7 @@ export default async function AccountPage() {
         </CardHeader>
         <CardBody className="flex flex-col gap-2 text-sm text-muted-foreground">
           <p>
-            Your clients&apos; data is isolated to your account — no other trainer
+            Your clients&apos; data is isolated to your account. No other trainer
             can access it. Data is encrypted in transit and at rest.
           </p>
           <p>

@@ -40,7 +40,7 @@ export function ProfileForm({ trainer }: { trainer: Trainer | null }) {
           defaultValue={trainer?.business_name ?? ""}
         />
       </Field>
-      <Field label="Email" htmlFor="email" hint="Managed by your login — contact support to change.">
+      <Field label="Email" htmlFor="email" hint="Managed by your login. Contact support to change.">
         <Input id="email" value={trainer?.email ?? ""} disabled />
       </Field>
 
