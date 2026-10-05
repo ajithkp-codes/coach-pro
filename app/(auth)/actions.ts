@@ -34,10 +34,14 @@ export async function signupAction(
   }
 
   const supabase = await createClient();
+  const origin = await siteOrigin();
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
+      // The confirm link lands here: /auth/callback signs them in, then sends
+      // them to /dashboard (which routes to the awaiting-approval screen).
+      emailRedirectTo: `${origin}/auth/callback?next=/dashboard`,
       data: {
         full_name: parsed.data.fullName,
         business_name: parsed.data.businessName ?? null,
@@ -51,7 +55,7 @@ export async function signupAction(
   if (!data.session) {
     return {
       notice:
-        "Account created. Check your email to confirm, then sign in. (You can disable confirmation in Supabase for faster onboarding.)",
+        "Account created. Check your email for a confirmation link. Once you confirm, you'll be signed in and your account will be reviewed before access.",
     };
   }
 
