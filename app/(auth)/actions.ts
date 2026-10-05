@@ -49,7 +49,23 @@ export async function signupAction(
     },
   });
 
-  if (error) return { error: error.message };
+  if (error) {
+    // Supabase returns this when confirmation is OFF and the email exists.
+    const exists = /already registered|already been registered/i.test(error.message);
+    return {
+      error: exists
+        ? "An account with this email already exists. Try signing in, or reset your password."
+        : error.message,
+    };
+  }
+
+  // When confirmation is ON, Supabase hides duplicate emails for privacy: it
+  // returns a user with no identities and sends no email. Surface it clearly.
+  if (data.user && (data.user.identities?.length ?? 0) === 0) {
+    return {
+      error: "An account with this email already exists. Try signing in, or reset your password.",
+    };
+  }
 
   // If email confirmation is required, there is no session yet.
   if (!data.session) {
