@@ -113,6 +113,22 @@ export interface ReminderWithClient extends Reminder {
   client_name: string | null;
 }
 
+export type ReportPeriod = "3m" | "6m" | "12m" | "all";
+
+export interface ProgressReport {
+  id: string;
+  trainer_id: string;
+  client_id: string;
+  token: string;
+  title: string | null;
+  period: ReportPeriod;
+  include_photos: boolean;
+  expires_at: string | null;
+  revoked: boolean;
+  view_count: number;
+  created_at: string;
+}
+
 export type Plan = "free" | "pro";
 export type SubStatus = "active" | "inactive" | "past_due" | "cancelled";
 

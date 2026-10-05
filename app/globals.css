@@ -121,3 +121,11 @@ body {
   .reveal { opacity: 1; transform: none; transition: none; }
   .animate-float, .animate-float-slow, .animate-blob { animation: none; }
 }
+
+/* Print: clean report output for "Save as PDF" */
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; }
+  .report-page { box-shadow: none !important; }
+  .avoid-break { break-inside: avoid; }
+}

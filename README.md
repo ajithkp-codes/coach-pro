@@ -130,6 +130,24 @@ A short checklist to go from "works" to "safe to share":
   `not-found.tsx`, dashboard `loading.tsx`). Wire `console.error` in `error.tsx` to Sentry or
   your host's logs when you deploy.
 
+## Deploying to Vercel (when ready)
+
+The app is deploy-ready. When you want it live:
+
+1. Push the repo to GitHub and import it in Vercel (framework auto-detected as Next.js).
+2. Add the environment variables from `.env.local.example` in Vercel → Project → Settings →
+   Environment Variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+   `SUPABASE_SERVICE_ROLE_KEY`, and set `NEXT_PUBLIC_SITE_URL` to the deployed URL. Add the
+   Razorpay keys only if you are enabling payments.
+3. In Supabase → Authentication → URL Configuration, add `https://<your-domain>/auth/callback`
+   to Redirect URLs (needed for password reset and email confirmation links).
+4. If using Razorpay, set the webhook URL to `https://<your-domain>/api/webhooks/razorpay`.
+5. Deploy. Run each SQL migration in `supabase/migrations/` against the project once (in order).
+
+Pre-launch checklist: `npm run build` and `npm run lint` clean, migrations applied, service
+key never exposed to the browser, `npm run seed` never run against production, and rate
+limiting added (Upstash) before opening public sign-ups.
+
 ## Project structure
 
 ```

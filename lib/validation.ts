@@ -160,6 +160,19 @@ export const reminderSchema = z.object({
 
 export type ReminderInput = z.infer<typeof reminderSchema>;
 
+// ---- Progress reports ----
+export const reportSchema = z.object({
+  title: z.string().trim().max(160).optional().transform((v) => (v ? v : null)),
+  period: z.enum(["3m", "6m", "12m", "all"]).default("6m"),
+  include_photos: z
+    .union([z.boolean(), z.string()])
+    .optional()
+    .transform((v) => v === true || v === "true" || v === "on"),
+  expires_in_days: z.enum(["7", "30", "90", "never"]).default("30"),
+});
+
+export type ReportInput = z.infer<typeof reportSchema>;
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ClientInput = z.infer<typeof clientSchema>;

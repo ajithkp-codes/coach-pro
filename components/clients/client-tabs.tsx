@@ -17,6 +17,7 @@ export function ClientTabs({ clientId }: { clientId: string }) {
     { href: `${base}/files`, label: "Files" },
     { href: `${base}/reminders`, label: "Reminders" },
     { href: `${base}/charts`, label: "Charts" },
+    { href: `${base}/report`, label: "Report" },
   ];
 
   return (
