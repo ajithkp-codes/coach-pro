@@ -47,6 +47,7 @@ export default async function AdminTrainerDetailPage({
               </h2>
               <Badge tone={plan === "pro" ? "success" : "neutral"} className="capitalize">{plan}</Badge>
               {trainer.is_admin && <Badge tone="info">Admin</Badge>}
+              {!trainer.approved && <Badge tone="warning">Pending approval</Badge>}
             </div>
             <p className="mt-0.5 text-sm text-muted-foreground">
               {[trainer.business_name, trainer.email].filter(Boolean).join(" · ")}
@@ -54,7 +55,7 @@ export default async function AdminTrainerDetailPage({
             <p className="text-xs text-muted-foreground">Joined {formatDate(trainer.created_at)}</p>
           </div>
         </div>
-        <AdminActions trainerId={trainer.id} plan={plan} isAdmin={trainer.is_admin} />
+        <AdminActions trainerId={trainer.id} plan={plan} isAdmin={trainer.is_admin} approved={trainer.approved} />
       </div>
 
       <div className="mt-6 grid gap-5 sm:grid-cols-2">

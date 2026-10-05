@@ -52,6 +52,7 @@ export default async function AdminTrainersPage({
                 <span className="hidden text-xs text-muted-foreground sm:block">
                   {t.clientCount} client{t.clientCount === 1 ? "" : "s"}
                 </span>
+                {!t.approved && <Badge tone="warning">Pending</Badge>}
                 <Badge tone={t.plan === "pro" ? "success" : "neutral"} className="capitalize">
                   {t.plan}
                 </Badge>

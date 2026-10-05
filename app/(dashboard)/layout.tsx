@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   requireTrainer,
   getTrainerProfile,
@@ -17,6 +18,10 @@ export default async function DashboardLayout({
   const { email } = await requireTrainer();
   await ensureTrainerProfile();
   const trainer = await getTrainerProfile();
+
+  // Admin approval gate: unapproved trainers cannot use the app yet.
+  if (trainer && !trainer.approved) redirect("/pending");
+
   const name = trainer?.full_name || email || "Trainer";
 
   return (

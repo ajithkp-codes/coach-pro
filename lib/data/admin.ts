@@ -35,6 +35,7 @@ async function count(
 export interface PlatformStats {
   trainers: number;
   admins: number;
+  pending: number;
   clients: number;
   activeClients: number;
   proActive: number;
@@ -44,17 +45,18 @@ export interface PlatformStats {
 export async function getPlatformStats(): Promise<PlatformStats> {
   const { admin } = await requireAdmin();
   const [trainersRows, clients, activeClients, subs, reports] = await Promise.all([
-    admin.from("trainers").select("is_admin"),
+    admin.from("trainers").select("is_admin, approved"),
     count(admin, "clients"),
     count(admin, "clients", { status: "active" }),
     admin.from("subscriptions").select("plan, status"),
     count(admin, "progress_reports"),
   ]);
-  const trainers = (trainersRows.data ?? []) as { is_admin: boolean }[];
+  const trainers = (trainersRows.data ?? []) as { is_admin: boolean; approved: boolean }[];
   const subsRows = (subs.data ?? []) as { plan: Plan; status: SubStatus }[];
   return {
     trainers: trainers.length,
     admins: trainers.filter((t) => t.is_admin).length,
+    pending: trainers.filter((t) => !t.approved).length,
     clients,
     activeClients,
     proActive: subsRows.filter((s) => s.plan === "pro" && s.status === "active").length,
@@ -159,4 +161,9 @@ export async function adminSetPlan(trainerId: string, plan: Plan): Promise<void>
 export async function adminSetIsAdmin(trainerId: string, isAdmin: boolean): Promise<void> {
   const { admin } = await requireAdmin();
   await admin.from("trainers").update({ is_admin: isAdmin }).eq("id", trainerId);
+}
+
+export async function adminSetApproved(trainerId: string, approved: boolean): Promise<void> {
+  const { admin } = await requireAdmin();
+  await admin.from("trainers").update({ approved }).eq("id", trainerId);
 }
