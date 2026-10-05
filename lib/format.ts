@@ -43,6 +43,19 @@ export function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+export function formatBytes(bytes?: number | null): string {
+  if (bytes == null || Number.isNaN(bytes)) return "—";
+  if (bytes < 1024) return `${bytes} B`;
+  const units = ["KB", "MB", "GB"];
+  let v = bytes / 1024;
+  let i = 0;
+  while (v >= 1024 && i < units.length - 1) {
+    v /= 1024;
+    i++;
+  }
+  return `${v.toFixed(v < 10 ? 1 : 0)} ${units[i]}`;
+}
+
 /** Relative day label, e.g. "today", "yesterday", "5 days ago", "3 weeks ago". */
 export function timeAgo(value?: string | null): string {
   if (!value) return "—";

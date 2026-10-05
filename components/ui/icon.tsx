@@ -97,6 +97,26 @@ const PATHS: Record<string, React.ReactNode> = {
   sparkles: (
     <path d="M12 3l1.8 4.8L18.5 9l-4.7 1.3L12 15l-1.8-4.7L5.5 9l4.7-1.2zM18 14l.9 2.3 2.3.9-2.3.8L18 20l-.8-2-2.2-.8 2.2-.9z" />
   ),
+  file: (
+    <>
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+      <path d="M14 3v5h5" />
+    </>
+  ),
+  link: (
+    <>
+      <path d="M9.5 14.5l5-5" />
+      <path d="M11 6.5l1.6-1.6a3.5 3.5 0 0 1 5 5L16 11.5" />
+      <path d="M13 17.5l-1.6 1.6a3.5 3.5 0 0 1-5-5L8 12.5" />
+    </>
+  ),
+  download: (
+    <>
+      <path d="M12 3v12" />
+      <path d="M7 11l5 5 5-5" />
+      <path d="M5 20h14" />
+    </>
+  ),
 };
 
 export type IconName = keyof typeof PATHS;

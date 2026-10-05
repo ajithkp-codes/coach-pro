@@ -132,6 +132,21 @@ export const photoMetaSchema = z.object({
 
 export type PhotoMetaInput = z.infer<typeof photoMetaSchema>;
 
+// ---- Shared files (metadata; the file is uploaded browser-direct to Storage) ----
+export const sharedFileMetaSchema = z.object({
+  storage_path: z.string().trim().min(1).max(400),
+  original_name: z.string().trim().min(1).max(260),
+  content_type: z.string().trim().max(160).optional().transform((v) => (v ? v : null)),
+  size_bytes: z
+    .union([z.string(), z.number(), z.null()])
+    .optional()
+    .transform((v) => (v === "" || v == null ? null : Number(v))),
+  title: z.string().trim().max(160).optional().transform((v) => (v ? v : null)),
+  expires_in_days: z.enum(["7", "30", "90", "never"]).default("30"),
+});
+
+export type SharedFileMetaInput = z.infer<typeof sharedFileMetaSchema>;
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ClientInput = z.infer<typeof clientSchema>;

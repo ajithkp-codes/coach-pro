@@ -95,6 +95,22 @@ export interface ClientPhotoWithUrl extends ClientPhoto {
   url: string | null;
 }
 
+export interface SharedFile {
+  id: string;
+  trainer_id: string;
+  client_id: string;
+  storage_path: string;
+  original_name: string;
+  content_type: string | null;
+  size_bytes: number | null;
+  title: string | null;
+  token: string;
+  expires_at: string | null;
+  revoked: boolean;
+  download_count: number;
+  created_at: string;
+}
+
 export interface WorkoutSet {
   id: string;
   trainer_id: string;

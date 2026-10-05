@@ -3,6 +3,7 @@
 // Requires migrations 0001–0004 applied.
 
 import { createClient } from "@supabase/supabase-js";
+import { randomBytes } from "crypto";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const service = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -43,7 +44,7 @@ const CLIENTS = [
       { title: "Reach 77 kg", category: "health", metric_key: "weight_kg", start_value: 84, target_value: 77, target_unit: "kg", target_date: daysAgo(-45), status: "active" },
       { title: "Total cholesterol under 180", category: "health", metric_key: "total_cholesterol", start_value: 210, target_value: 180, target_unit: "mg/dL", status: "active" },
     ],
-    training: "push", photos: true,
+    training: "push", photos: true, share: true,
   },
   {
     full_name: "Priya Nair", sex: "female", date_of_birth: "1995-11-03",
@@ -54,7 +55,7 @@ const CLIENTS = [
       { title: "Fasting glucose under 95", category: "health", metric_key: "fasting_glucose", start_value: 118, target_value: 95, target_unit: "mg/dL", status: "active" },
       { title: "Lose 5 kg", category: "health", metric_key: "weight_kg", start_value: 68, target_value: 63, target_unit: "kg", target_date: daysAgo(-20), status: "active" },
     ],
-    training: "full",
+    training: "full", share: true,
   },
   {
     full_name: "Rohan Mehta", sex: "male", date_of_birth: "1988-02-20",
@@ -232,6 +233,24 @@ async function main() {
           });
           photoCount++;
         }
+      }
+    }
+
+    // Shared file (workout plan)
+    if (cfg.share) {
+      const plan = `TRAINING PLAN — ${cfg.full_name}\nPeak Form Coaching\n\nMon: Lower body\nWed: Upper body\nFri: Conditioning\n\nNotes: progress load by ~2.5kg when all sets hit target reps.\n`;
+      const fpath = `${trainerId}/${cid}/${crypto.randomUUID()}.txt`;
+      const up = await admin.storage.from("shared-files").upload(fpath, Buffer.from(plan, "utf8"), {
+        contentType: "text/plain", upsert: true,
+      });
+      if (!up.error) {
+        await admin.from("shared_files").insert({
+          trainer_id: trainerId, client_id: cid, storage_path: fpath,
+          original_name: "training-plan.txt", content_type: "text/plain",
+          size_bytes: plan.length, title: "Current training plan",
+          token: randomBytes(24).toString("base64url"),
+          expires_at: new Date(Date.now() + 30 * 86400000).toISOString(),
+        });
       }
     }
 
