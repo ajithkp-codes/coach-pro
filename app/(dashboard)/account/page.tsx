@@ -1,12 +1,19 @@
 import { PageHeader } from "@/components/page-header";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+import { ButtonLink } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { getTrainerProfile } from "@/lib/data/session";
+import { getSubscription, planOf } from "@/lib/data/billing";
 import { ProfileForm } from "./profile-form";
 
 export const metadata = { title: "Account · CoachPro" };
 
 export default async function AccountPage() {
-  const trainer = await getTrainerProfile();
+  const [trainer, sub] = await Promise.all([
+    getTrainerProfile(),
+    getSubscription(),
+  ]);
+  const plan = planOf(sub);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -21,6 +28,25 @@ export default async function AccountPage() {
         </CardHeader>
         <CardBody>
           <ProfileForm trainer={trainer} />
+        </CardBody>
+      </Card>
+
+      <Card className="mt-5">
+        <CardHeader>
+          <CardTitle>Subscription</CardTitle>
+          <Badge tone={plan === "pro" ? "success" : "neutral"} className="capitalize">
+            {plan}
+          </Badge>
+        </CardHeader>
+        <CardBody className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">
+            {plan === "pro"
+              ? "You're on Pro — unlimited clients."
+              : "You're on the Free plan."}
+          </p>
+          <ButtonLink href="/account/billing" variant="outline" size="sm">
+            Manage billing
+          </ButtonLink>
         </CardBody>
       </Card>
 

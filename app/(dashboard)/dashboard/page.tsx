@@ -7,17 +7,21 @@ import { Icon } from "@/components/ui/icon";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ClientCard } from "@/components/clients/client-card";
+import { DashboardReminders } from "@/components/reminders/dashboard-reminders";
 import { getTrainerDashboard } from "@/lib/data/dashboard";
+import { listOpenReminders } from "@/lib/data/reminders";
 import { getTrainerProfile } from "@/lib/data/session";
 import { timeAgo } from "@/lib/format";
 
 export const metadata = { title: "Dashboard · CoachPro" };
 
 export default async function DashboardPage() {
-  const [data, trainer] = await Promise.all([
+  const [data, trainer, openReminders] = await Promise.all([
     getTrainerDashboard(),
     getTrainerProfile(),
+    listOpenReminders(),
   ]);
+  const clientOptions = data.cards.map((c) => ({ id: c.id, full_name: c.full_name }));
 
   const firstName = (trainer?.full_name || "there").split(" ")[0];
   const today = new Date().toLocaleDateString("en-IN", {
@@ -94,6 +98,8 @@ export default async function DashboardPage() {
         </div>
 
         <div className="flex flex-col gap-6">
+          <DashboardReminders reminders={openReminders} clients={clientOptions} />
+
           <Card>
             <CardHeader>
               <CardTitle>Needs attention</CardTitle>

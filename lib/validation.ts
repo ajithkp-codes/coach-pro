@@ -147,6 +147,19 @@ export const sharedFileMetaSchema = z.object({
 
 export type SharedFileMetaInput = z.infer<typeof sharedFileMetaSchema>;
 
+// ---- Reminders ----
+export const reminderSchema = z.object({
+  title: z.string().trim().min(1, "What's the reminder?").max(160),
+  note: optionalText,
+  due_on: z.string().min(1, "Pick a due date"),
+  client_id: z
+    .string()
+    .optional()
+    .transform((v) => (v && v !== "none" ? v : null)),
+});
+
+export type ReminderInput = z.infer<typeof reminderSchema>;
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ClientInput = z.infer<typeof clientSchema>;

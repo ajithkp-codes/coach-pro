@@ -9,6 +9,7 @@ import {
   setClientStatus,
   deleteClientRecord,
 } from "@/lib/data/clients";
+import { canAddClient } from "@/lib/data/billing";
 
 export interface FormState {
   error?: string;
@@ -33,6 +34,12 @@ export async function createClientAction(
   const parsed = parseClient(formData);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid details" };
+  }
+  const gate = await canAddClient();
+  if (!gate.allowed) {
+    return {
+      error: `You've reached the Free plan limit of ${gate.limit} active clients. Upgrade to Pro (Account → Billing) for unlimited clients.`,
+    };
   }
   let client;
   try {

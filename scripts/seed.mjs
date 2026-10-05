@@ -142,6 +142,7 @@ async function main() {
   console.log(`Trainer ready: ${DEMO_EMAIL}`);
 
   let photoCount = 0;
+  const idByName = {};
   for (const cfg of CLIENTS) {
     const { data: client } = await admin
       .from("clients")
@@ -152,6 +153,7 @@ async function main() {
       })
       .select("id").single();
     const cid = client.id;
+    idByName[cfg.full_name] = cid;
 
     // Body metrics (6 points over 90 days)
     const mDates = dates(6);
@@ -257,7 +259,16 @@ async function main() {
     console.log(`  ✓ ${cfg.full_name}`);
   }
 
-  console.log(`\nSeeded ${CLIENTS.length} clients, ${photoCount} photos.`);
+  // Reminders (a mix of overdue / due today / upcoming / general)
+  await admin.from("reminders").insert([
+    { trainer_id: trainerId, client_id: idByName["Vikram Singh"], title: "Review blood pressure with GP", due_on: daysAgo(2), note: "Systolic still above target." },
+    { trainer_id: trainerId, client_id: idByName["Priya Nair"], title: "Update measurements", due_on: daysAgo(0) },
+    { trainer_id: trainerId, client_id: idByName["Aarav Sharma"], title: "Send new running plan", due_on: daysAgo(-3) },
+    { trainer_id: trainerId, client_id: idByName["Sneha Reddy"], title: "Follow up on vitamin D", due_on: daysAgo(-6) },
+    { trainer_id: trainerId, client_id: null, title: "Post this week's client check-ins", due_on: daysAgo(-1) },
+  ]);
+
+  console.log(`\nSeeded ${CLIENTS.length} clients, ${photoCount} photos, 5 reminders.`);
   console.log(`\nSign in:\n  email:    ${DEMO_EMAIL}\n  password: ${DEMO_PASSWORD}\n`);
 }
 

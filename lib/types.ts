@@ -95,6 +95,38 @@ export interface ClientPhotoWithUrl extends ClientPhoto {
   url: string | null;
 }
 
+export interface Reminder {
+  id: string;
+  trainer_id: string;
+  client_id: string | null;
+  title: string;
+  note: string | null;
+  due_on: string;
+  done: boolean;
+  done_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Reminder with the related client's name resolved (for cross-client views). */
+export interface ReminderWithClient extends Reminder {
+  client_name: string | null;
+}
+
+export type Plan = "free" | "pro";
+export type SubStatus = "active" | "inactive" | "past_due" | "cancelled";
+
+export interface Subscription {
+  trainer_id: string;
+  plan: Plan;
+  status: SubStatus;
+  razorpay_customer_id: string | null;
+  razorpay_subscription_id: string | null;
+  current_end: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SharedFile {
   id: string;
   trainer_id: string;
