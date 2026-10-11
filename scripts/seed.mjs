@@ -268,7 +268,29 @@ async function main() {
     { trainer_id: trainerId, client_id: null, title: "Post this week's client check-ins", due_on: daysAgo(-1) },
   ]);
 
-  console.log(`\nSeeded ${CLIENTS.length} clients, ${photoCount} photos, 5 reminders.`);
+  // Weekly workout plans
+  const item = (exercise_name, sets, reps, weight, notes = "") => ({ exercise_name, sets, reps, weight, notes });
+  await admin.from("workout_plans").insert([
+    {
+      trainer_id: trainerId, client_id: idByName["Aarav Sharma"], name: "Upper / Lower split", is_active: true,
+      notes: "Progress load by ~2.5kg when all sets hit the top of the rep range.",
+      days: [
+        { day: "Mon", title: "Upper", items: [item("Bench press", "4", "6-8", "70kg"), item("Barbell row", "4", "8-10", "60kg"), item("Overhead press", "3", "8-10", "40kg")] },
+        { day: "Wed", title: "Lower", items: [item("Back squat", "4", "5", "90kg"), item("Romanian deadlift", "3", "8", "80kg"), item("Calf raise", "4", "12-15", "40kg")] },
+        { day: "Fri", title: "Conditioning", items: [item("Intervals", "6", "400m", "", "90s rest")] },
+      ],
+    },
+    {
+      trainer_id: trainerId, client_id: idByName["Priya Nair"], name: "Full-body strength", is_active: true,
+      notes: "Two sessions a week to start. Focus on form.",
+      days: [
+        { day: "Mon", title: "Full body A", items: [item("Goblet squat", "3", "10", "16kg"), item("Push-up", "3", "8-12", "bodyweight"), item("Dumbbell row", "3", "10", "12kg")] },
+        { day: "Thu", title: "Full body B", items: [item("Deadlift", "3", "6", "50kg"), item("Lat pulldown", "3", "10", "35kg"), item("Plank", "3", "45s", "")] },
+      ],
+    },
+  ]);
+
+  console.log(`\nSeeded ${CLIENTS.length} clients, ${photoCount} photos, 5 reminders, 2 plans.`);
   console.log(`\nSign in:\n  email:    ${DEMO_EMAIL}\n  password: ${DEMO_PASSWORD}\n`);
 }
 

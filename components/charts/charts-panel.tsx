@@ -61,23 +61,30 @@ export function ChartsPanel({
   markerSeries,
   markerOptions,
   volumeSeries = [],
+  exerciseSeries = {},
+  exerciseOptions = [],
 }: {
   metricSeries: Record<string, TrendPoint[]>;
   metricOptions: SeriesOption[];
   markerSeries: Record<string, TrendPoint[]>;
   markerOptions: SeriesOption[];
   volumeSeries?: TrendPoint[];
+  exerciseSeries?: Record<string, TrendPoint[]>;
+  exerciseOptions?: SeriesOption[];
 }) {
   const [metricKey, setMetricKey] = useState(metricOptions[0]?.key ?? "");
   const [markerKey, setMarkerKey] = useState(markerOptions[0]?.key ?? "");
+  const [exerciseKey, setExerciseKey] = useState(exerciseOptions[0]?.key ?? "");
 
   const metric = metricOptions.find((o) => o.key === metricKey);
   const marker = markerOptions.find((o) => o.key === markerKey);
+  const exercise = exerciseOptions.find((o) => o.key === exerciseKey);
 
   if (
     metricOptions.length === 0 &&
     markerOptions.length === 0 &&
-    volumeSeries.length === 0
+    volumeSeries.length === 0 &&
+    exerciseOptions.length === 0
   ) {
     return (
       <EmptyState
@@ -164,6 +171,32 @@ export function ChartsPanel({
           )}
         </CardBody>
       </Card>
+
+      {exerciseOptions.length > 0 && (
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <TitleWithIcon icon="dumbbell">Exercise progress</TitleWithIcon>
+            <Select
+              className="h-8 w-auto text-sm"
+              value={exerciseKey}
+              onChange={(e) => setExerciseKey(e.target.value)}
+              aria-label="Choose exercise"
+            >
+              {exerciseOptions.map((o) => (
+                <option key={o.key} value={o.key}>{o.label}</option>
+              ))}
+            </Select>
+          </CardHeader>
+          <CardBody>
+            {exercise ? (
+              <>
+                <SeriesSummary data={exerciseSeries[exercise.key] ?? []} unit="kg" lowerIsBetter={false} />
+                <TrendChart data={exerciseSeries[exercise.key] ?? []} unit="kg" label={`${exercise.label} top weight`} />
+              </>
+            ) : null}
+          </CardBody>
+        </Card>
+      )}
 
       {volumeSeries.length > 0 && (
         <Card className="lg:col-span-2">

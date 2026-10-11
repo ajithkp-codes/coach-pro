@@ -1,5 +1,6 @@
 import { listSessions } from "@/lib/data/training";
-import { TrainingPanel } from "@/components/training/training-panel";
+import { listPlans } from "@/lib/data/plans";
+import { TrainingArea } from "@/components/training/training-area";
 
 export default async function TrainingPage({
   params,
@@ -7,6 +8,6 @@ export default async function TrainingPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const sessions = await listSessions(id);
-  return <TrainingPanel clientId={id} sessions={sessions} />;
+  const [sessions, plans] = await Promise.all([listSessions(id), listPlans(id)]);
+  return <TrainingArea clientId={id} plans={plans} sessions={sessions} />;
 }

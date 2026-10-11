@@ -176,6 +176,32 @@ export interface WorkoutSet {
   updated_at: string;
 }
 
+export interface PlanItem {
+  exercise_name: string;
+  sets: string;
+  reps: string;
+  weight: string;
+  notes: string;
+}
+
+export interface PlanDay {
+  day: string; // e.g. "Mon" or "Day 1"
+  title: string; // e.g. "Push"
+  items: PlanItem[];
+}
+
+export interface WorkoutPlan {
+  id: string;
+  trainer_id: string;
+  client_id: string;
+  name: string;
+  notes: string | null;
+  is_active: boolean;
+  days: PlanDay[];
+  created_at: string;
+  updated_at: string;
+}
+
 export interface WorkoutSession {
   id: string;
   trainer_id: string;

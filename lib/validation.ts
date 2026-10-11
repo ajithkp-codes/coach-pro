@@ -123,6 +123,36 @@ export const workoutSessionSchema = z.object({
 export type WorkoutSetInput = z.infer<typeof workoutSetSchema>;
 export type WorkoutSessionInput = z.infer<typeof workoutSessionSchema>;
 
+// ---- Weekly workout plan (targets are free text so ranges like "8-12" work) ----
+const planText = (max: number) =>
+  z.string().trim().max(max).optional().default("").transform((v) => v ?? "");
+
+export const planItemSchema = z.object({
+  exercise_name: z.string().trim().min(1, "Exercise name is required").max(120),
+  sets: planText(20),
+  reps: planText(20),
+  weight: planText(40),
+  notes: planText(200),
+});
+
+export const planDaySchema = z.object({
+  day: z.string().trim().min(1).max(24),
+  title: planText(120),
+  items: z.array(planItemSchema).max(40),
+});
+
+export const workoutPlanSchema = z.object({
+  name: z.string().trim().min(1, "Give the plan a name").max(120),
+  notes: optionalText,
+  is_active: z
+    .union([z.boolean(), z.string()])
+    .optional()
+    .transform((v) => v === true || v === "true" || v === "on"),
+  days: z.array(planDaySchema).max(14).default([]),
+});
+
+export type WorkoutPlanInput = z.infer<typeof workoutPlanSchema>;
+
 // ---- Progress photos (metadata; the file is uploaded browser-direct to Storage) ----
 export const photoMetaSchema = z.object({
   storage_path: z.string().trim().min(1).max(400),
