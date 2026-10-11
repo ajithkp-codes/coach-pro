@@ -3,11 +3,11 @@
 import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
-import { Input, Textarea } from "@/components/ui/input";
+import { Input, Textarea, Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { todayISO } from "@/lib/format";
 import type { EntryState } from "@/app/(dashboard)/clients/[id]/training/actions";
-import type { WorkoutSessionWithSets } from "@/lib/types";
+import type { WorkoutSessionWithSets, WorkoutPlan, PlanItem } from "@/lib/types";
 
 interface Row {
   exercise_name: string;
@@ -23,6 +23,27 @@ const emptyRow = (exercise = ""): Row => ({
   rpe: "",
 });
 
+const leadingNumber = (s: string): string => {
+  const m = (s ?? "").match(/-?\d+(\.\d+)?/);
+  return m ? m[0] : "";
+};
+const setCount = (s: string): number => {
+  const n = parseInt(leadingNumber(s || "1"), 10);
+  return Number.isFinite(n) && n > 0 ? Math.min(n, 12) : 1;
+};
+// Expand a plan item into one log row per prescribed set (actuals left blank
+// except a single-number rep target and a numeric weight target, as a starting point).
+const expandItem = (it: PlanItem): Row[] => {
+  const reps = /^\s*\d+\s*$/.test(it.reps ?? "") ? it.reps.trim() : "";
+  const weight = leadingNumber(it.weight ?? "");
+  return Array.from({ length: setCount(it.sets) }, () => ({
+    exercise_name: it.exercise_name,
+    reps,
+    weight_kg: weight,
+    rpe: "",
+  }));
+};
+
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
@@ -35,15 +56,18 @@ function SubmitButton() {
 export function SessionForm({
   action,
   session,
+  plans = [],
   onSuccess,
   onCancel,
 }: {
   action: (prev: EntryState, formData: FormData) => Promise<EntryState>;
   session?: WorkoutSessionWithSets;
+  plans?: WorkoutPlan[];
   onSuccess: () => void;
   onCancel: () => void;
 }) {
   const [state, formAction] = useActionState<EntryState, FormData>(action, {});
+  const [title, setTitle] = useState(session?.title ?? "");
   const [rows, setRows] = useState<Row[]>(
     session && session.sets.length
       ? session.sets.map((s) => ({
@@ -69,6 +93,30 @@ export function SessionForm({
     setRows((rs) => (rs.length === 1 ? [emptyRow()] : rs.filter((_, idx) => idx !== i)));
   }
 
+  // Prefill options: each plan day that has exercises.
+  const planOptions = plans.flatMap((p) =>
+    p.days
+      .filter((d) => d.items.length)
+      .map((d, di) => ({
+        key: `${p.id}:${di}`,
+        label: `${p.name}: ${d.day}${d.title ? ` · ${d.title}` : ""}`,
+        items: d.items,
+        title: d.title || p.name,
+      })),
+  );
+
+  function prefill(key: string) {
+    const opt = planOptions.find((o) => o.key === key);
+    if (!opt) return;
+    const newRows = opt.items.flatMap(expandItem);
+    if (!newRows.length) return;
+    setRows((prev) => {
+      const prevEmpty = prev.length === 1 && !prev[0].exercise_name.trim();
+      return prevEmpty ? newRows : [...prev, ...newRows];
+    });
+    if (!title.trim() && opt.title) setTitle(opt.title);
+  }
+
   const setsJson = JSON.stringify(rows.filter((r) => r.exercise_name.trim()));
 
   return (
@@ -90,7 +138,8 @@ export function SessionForm({
           <Input
             id="title"
             name="title"
-            defaultValue={session?.title ?? ""}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Upper body"
           />
         </Field>
@@ -104,6 +153,28 @@ export function SessionForm({
           />
         </Field>
       </div>
+
+      {planOptions.length > 0 && (
+        <Field
+          label="Prefill from plan"
+          htmlFor="prefill"
+          hint="Loads that day's exercises as sets to log. You then fill in actuals."
+        >
+          <Select
+            id="prefill"
+            defaultValue=""
+            onChange={(e) => {
+              if (e.target.value) prefill(e.target.value);
+              e.target.value = "";
+            }}
+          >
+            <option value="">Choose a plan day…</option>
+            {planOptions.map((o) => (
+              <option key={o.key} value={o.key}>{o.label}</option>
+            ))}
+          </Select>
+        </Field>
+      )}
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">

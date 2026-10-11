@@ -44,7 +44,7 @@ export function TrainingArea({
       {tab === "plan" ? (
         <PlanPanel clientId={clientId} plans={plans} />
       ) : (
-        <TrainingPanel clientId={clientId} sessions={sessions} />
+        <TrainingPanel clientId={clientId} sessions={sessions} plans={plans} />
       )}
     </div>
   );

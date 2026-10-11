@@ -13,7 +13,7 @@ import {
   updateSessionAction,
   deleteSessionAction,
 } from "@/app/(dashboard)/clients/[id]/training/actions";
-import type { WorkoutSessionWithSets, WorkoutSet } from "@/lib/types";
+import type { WorkoutSessionWithSets, WorkoutSet, WorkoutPlan } from "@/lib/types";
 
 function volume(sets: WorkoutSet[]): number {
   return sets.reduce(
@@ -47,9 +47,11 @@ function setLabel(s: WorkoutSet): string {
 export function TrainingPanel({
   clientId,
   sessions,
+  plans = [],
 }: {
   clientId: string;
   sessions: WorkoutSessionWithSets[];
+  plans?: WorkoutPlan[];
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -70,6 +72,7 @@ export function TrainingPanel({
           {(close) => (
             <SessionForm
               action={createSessionAction.bind(null, clientId)}
+              plans={plans}
               onSuccess={close}
               onCancel={close}
             />
@@ -124,6 +127,7 @@ export function TrainingPanel({
                           <SessionForm
                             action={updateSessionAction.bind(null, clientId, session.id)}
                             session={session}
+                            plans={plans}
                             onSuccess={close}
                             onCancel={close}
                           />
