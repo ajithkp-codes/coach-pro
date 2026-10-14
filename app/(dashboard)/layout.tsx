@@ -9,6 +9,8 @@ import { NavLink } from "@/components/nav-link";
 import { logoutAction } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { BottomNav } from "@/components/bottom-nav";
 
 export default async function DashboardLayout({
   children,
@@ -26,7 +28,10 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30 border-b border-border bg-card/80 backdrop-blur">
+      <header
+        className="glass sticky top-0 z-30 border-b border-border"
+        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+      >
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-6">
             <Link href="/dashboard" className="flex items-center gap-2">
@@ -42,7 +47,7 @@ export default async function DashboardLayout({
               {trainer?.is_admin && <NavLink href="/admin">Admin</NavLink>}
             </nav>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className="hidden text-right sm:block">
               <p className="text-sm font-medium leading-tight">{name}</p>
               {trainer?.business_name && (
@@ -51,25 +56,22 @@ export default async function DashboardLayout({
                 </p>
               )}
             </div>
+            <ThemeToggle />
             <Avatar name={name} size="sm" />
-            <form action={logoutAction}>
+            <form action={logoutAction} className="hidden sm:block">
               <Button type="submit" variant="outline" size="sm">
                 Sign out
               </Button>
             </form>
           </div>
         </div>
-        <nav className="flex items-center gap-1 border-t border-border px-4 py-2 sm:hidden">
-          <NavLink href="/dashboard">Dashboard</NavLink>
-          <NavLink href="/clients">Clients</NavLink>
-          <NavLink href="/account">Account</NavLink>
-          {trainer?.is_admin && <NavLink href="/admin">Admin</NavLink>}
-        </nav>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 pb-24 sm:px-6 sm:py-8 sm:pb-8">
         {children}
       </main>
+
+      <BottomNav isAdmin={trainer?.is_admin} />
     </div>
   );
 }

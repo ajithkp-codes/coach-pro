@@ -1,9 +1,11 @@
 import { PageHeader } from "@/components/page-header";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
-import { ButtonLink } from "@/components/ui/button";
+import { ButtonLink, Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ThemeSegmented } from "@/components/theme-toggle";
 import { getTrainerProfile } from "@/lib/data/session";
 import { getSubscription, planOf } from "@/lib/data/billing";
+import { logoutAction } from "@/app/(auth)/actions";
 import { ProfileForm } from "./profile-form";
 
 export const metadata = { title: "Account · CoachPro" };
@@ -28,6 +30,18 @@ export default async function AccountPage() {
         </CardHeader>
         <CardBody>
           <ProfileForm trainer={trainer} />
+        </CardBody>
+      </Card>
+
+      <Card className="mt-5">
+        <CardHeader>
+          <CardTitle>Appearance</CardTitle>
+        </CardHeader>
+        <CardBody className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">
+            Choose light, dark, or match your device.
+          </p>
+          <ThemeSegmented />
         </CardBody>
       </Card>
 
@@ -66,6 +80,12 @@ export default async function AccountPage() {
           </p>
         </CardBody>
       </Card>
+
+      <form action={logoutAction} className="mt-6 sm:hidden">
+        <Button type="submit" variant="outline" className="w-full">
+          Sign out
+        </Button>
+      </form>
     </div>
   );
 }

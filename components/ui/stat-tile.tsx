@@ -8,7 +8,7 @@ const accents: Record<string, string> = {
   green: "bg-success-bg text-success",
   amber: "bg-warning-bg text-warning",
   red: "bg-danger-bg text-danger",
-  sky: "bg-[#e0f2fe] text-[#0369a1]",
+  sky: "bg-sky-bg text-sky",
 };
 
 export function StatTile({
