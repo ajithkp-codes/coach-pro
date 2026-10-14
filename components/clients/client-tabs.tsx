@@ -9,15 +9,9 @@ export function ClientTabs({ clientId }: { clientId: string }) {
   const base = `/clients/${clientId}`;
   const tabs = [
     { href: base, label: "Overview" },
-    { href: `${base}/metrics`, label: "Body metrics" },
-    { href: `${base}/markers`, label: "Health markers" },
-    { href: `${base}/goals`, label: "Goals" },
+    { href: `${base}/progress`, label: "Progress" },
     { href: `${base}/training`, label: "Training" },
-    { href: `${base}/photos`, label: "Photos" },
-    { href: `${base}/files`, label: "Files" },
-    { href: `${base}/reminders`, label: "Reminders" },
-    { href: `${base}/charts`, label: "Charts" },
-    { href: `${base}/report`, label: "Report" },
+    { href: `${base}/share`, label: "Share" },
   ];
 
   return (
