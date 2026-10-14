@@ -1,19 +1,14 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Modal } from "@/components/ui/modal";
 import { Card, CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { SessionForm } from "./session-form";
 import { formatDate, formatNumber } from "@/lib/format";
-import {
-  createSessionAction,
-  updateSessionAction,
-  deleteSessionAction,
-} from "@/app/(dashboard)/clients/[id]/training/actions";
-import type { WorkoutSessionWithSets, WorkoutSet, WorkoutPlan } from "@/lib/types";
+import { deleteSessionAction } from "@/app/(dashboard)/clients/[id]/training/actions";
+import type { WorkoutSessionWithSets, WorkoutSet } from "@/lib/types";
 
 function volume(sets: WorkoutSet[]): number {
   return sets.reduce(
@@ -47,11 +42,9 @@ function setLabel(s: WorkoutSet): string {
 export function TrainingPanel({
   clientId,
   sessions,
-  plans = [],
 }: {
   clientId: string;
   sessions: WorkoutSessionWithSets[];
-  plans?: WorkoutPlan[];
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -59,31 +52,20 @@ export function TrainingPanel({
         <p className="text-sm text-muted-foreground">
           {sessions.length} session{sessions.length === 1 ? "" : "s"} logged
         </p>
-        <Modal
-          wide
-          title="Log training session"
-          description="Record what the client did: exercises, sets, reps, weight, and effort."
-          trigger={(open) => (
-            <Button onClick={open}>
-              <Icon name="plus" size={16} /> Log session
-            </Button>
-          )}
-        >
-          {(close) => (
-            <SessionForm
-              action={createSessionAction.bind(null, clientId)}
-              plans={plans}
-              onSuccess={close}
-              onCancel={close}
-            />
-          )}
-        </Modal>
+        <ButtonLink href={`/clients/${clientId}/training/log`}>
+          <Icon name="plus" size={16} /> Log workout
+        </ButtonLink>
       </div>
 
       {sessions.length === 0 ? (
         <EmptyState
           title="No sessions yet"
-          description="Log the first training session to start building this client's history."
+          description="Log the first workout to start building this client's history."
+          action={
+            <ButtonLink href={`/clients/${clientId}/training/log`}>
+              Log workout
+            </ButtonLink>
+          }
         />
       ) : (
         <div className="flex flex-col gap-3">
@@ -114,25 +96,13 @@ export function TrainingPanel({
                           {formatNumber(Math.round(vol))} kg volume
                         </Badge>
                       )}
-                      <Modal
-                        wide
-                        title="Edit session"
-                        trigger={(open) => (
-                          <Button variant="ghost" size="sm" onClick={open}>
-                            Edit
-                          </Button>
-                        )}
+                      <ButtonLink
+                        href={`/clients/${clientId}/training/log?session=${session.id}`}
+                        variant="ghost"
+                        size="sm"
                       >
-                        {(close) => (
-                          <SessionForm
-                            action={updateSessionAction.bind(null, clientId, session.id)}
-                            session={session}
-                            plans={plans}
-                            onSuccess={close}
-                            onCancel={close}
-                          />
-                        )}
-                      </Modal>
+                        Edit
+                      </ButtonLink>
                       <Modal
                         title="Delete session?"
                         description={`This removes the session from ${formatDate(session.performed_on)} and its sets.`}

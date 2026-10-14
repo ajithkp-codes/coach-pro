@@ -6,11 +6,15 @@ import {
   createSession,
   updateSession,
   deleteSession,
+  getExerciseBests,
+  detectPRs,
+  type PR,
 } from "@/lib/data/training";
 
 export interface EntryState {
   ok?: boolean;
   error?: string;
+  prs?: PR[];
 }
 
 function parse(formData: FormData) {
@@ -52,9 +56,18 @@ export async function createSessionAction(
 ): Promise<EntryState> {
   const parsed = parse(formData);
   if (!parsed.success) return { error: parsed.error };
+  const bests = await getExerciseBests(clientId);
   await createSession(clientId, parsed.data);
+  const prs = detectPRs(
+    parsed.data.sets.map((s) => ({
+      exercise_name: s.exercise_name,
+      reps: s.reps,
+      weight_kg: s.weight_kg,
+    })),
+    bests,
+  );
   revalidate(clientId);
-  return { ok: true };
+  return { ok: true, prs };
 }
 
 export async function updateSessionAction(
@@ -65,9 +78,18 @@ export async function updateSessionAction(
 ): Promise<EntryState> {
   const parsed = parse(formData);
   if (!parsed.success) return { error: parsed.error };
+  const bests = await getExerciseBests(clientId, sessionId);
   await updateSession(sessionId, clientId, parsed.data);
+  const prs = detectPRs(
+    parsed.data.sets.map((s) => ({
+      exercise_name: s.exercise_name,
+      reps: s.reps,
+      weight_kg: s.weight_kg,
+    })),
+    bests,
+  );
   revalidate(clientId);
-  return { ok: true };
+  return { ok: true, prs };
 }
 
 export async function deleteSessionAction(
