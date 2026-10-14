@@ -12,6 +12,8 @@ import { listHealthMarkers } from "@/lib/data/healthMarkers";
 import { listGoals, computeGoalProgress } from "@/lib/data/goals";
 import { listSessions, sessionVolume } from "@/lib/data/training";
 import { listPhotos } from "@/lib/data/photos";
+import { listClientReminders } from "@/lib/data/reminders";
+import { RemindersPanel } from "@/components/reminders/reminders-panel";
 import { MARKER_BY_KEY, markerLabel } from "@/lib/catalog/markers";
 import { formatDate, formatNumber, timeAgo } from "@/lib/format";
 import type { BodyMetric, HealthMarker } from "@/lib/types";
@@ -25,12 +27,13 @@ export default async function ClientOverviewPage({
   const client = await getClient(id);
   if (!client) notFound();
 
-  const [metrics, markers, goals, sessions, photos] = await Promise.all([
+  const [metrics, markers, goals, sessions, photos, reminders] = await Promise.all([
     listBodyMetrics(id),
     listHealthMarkers(id),
     listGoals(id),
     listSessions(id),
     listPhotos(id),
+    listClientReminders(id),
   ]);
 
   const asc = [...metrics].reverse(); // ascending by date
@@ -98,7 +101,7 @@ export default async function ClientOverviewPage({
       <Card>
         <CardHeader>
           <CardTitle>Active goals</CardTitle>
-          <Link href={`/clients/${id}/goals`} className="text-sm font-medium text-primary hover:underline">
+          <Link href={`/clients/${id}/progress`} className="text-sm font-medium text-primary hover:underline">
             Manage →
           </Link>
         </CardHeader>
@@ -120,7 +123,7 @@ export default async function ClientOverviewPage({
               ))}
             </ul>
           ) : (
-            <EmptyRow text="No active goals." href={`/clients/${id}/goals`} cta="Set a goal" />
+            <EmptyRow text="No active goals." href={`/clients/${id}/progress`} cta="Set a goal" />
           )}
         </CardBody>
       </Card>
@@ -130,7 +133,7 @@ export default async function ClientOverviewPage({
         <Card>
           <CardHeader>
             <CardTitle>Latest health markers</CardTitle>
-            <Link href={`/clients/${id}/markers`} className="text-sm font-medium text-primary hover:underline">
+            <Link href={`/clients/${id}/progress`} className="text-sm font-medium text-primary hover:underline">
               View →
             </Link>
           </CardHeader>
@@ -153,7 +156,7 @@ export default async function ClientOverviewPage({
                 })}
               </ul>
             ) : (
-              <EmptyRow text="No markers recorded." href={`/clients/${id}/markers`} cta="Add markers" />
+              <EmptyRow text="No markers recorded." href={`/clients/${id}/progress`} cta="Add markers" />
             )}
           </CardBody>
         </Card>
@@ -191,12 +194,18 @@ export default async function ClientOverviewPage({
         </Card>
       </div>
 
+      {/* Reminders / follow-ups */}
+      <div>
+        <h2 className="mb-3 text-sm font-semibold">Follow-ups</h2>
+        <RemindersPanel clientId={id} reminders={reminders} />
+      </div>
+
       {/* Progress photos */}
       {photos.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Progress photos</CardTitle>
-            <Link href={`/clients/${id}/photos`} className="text-sm font-medium text-primary hover:underline">
+            <Link href={`/clients/${id}/share`} className="text-sm font-medium text-primary hover:underline">
               View all →
             </Link>
           </CardHeader>
@@ -206,7 +215,7 @@ export default async function ClientOverviewPage({
                 p.url ? (
                   <Link
                     key={p.id}
-                    href={`/clients/${id}/photos`}
+                    href={`/clients/${id}/share`}
                     className="aspect-square overflow-hidden rounded-lg border border-border bg-muted"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}

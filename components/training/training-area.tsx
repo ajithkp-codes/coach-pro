@@ -15,7 +15,7 @@ export function TrainingArea({
   plans: WorkoutPlan[];
   sessions: WorkoutSessionWithSets[];
 }) {
-  const [tab, setTab] = useState<"plan" | "log">("plan");
+  const [tab, setTab] = useState<"plan" | "log">("log");
 
   const tabs: { key: "plan" | "log"; label: string }[] = [
     { key: "plan", label: "Weekly plan" },
@@ -44,7 +44,7 @@ export function TrainingArea({
       {tab === "plan" ? (
         <PlanPanel clientId={clientId} plans={plans} />
       ) : (
-        <TrainingPanel clientId={clientId} sessions={sessions} plans={plans} />
+        <TrainingPanel clientId={clientId} sessions={sessions} />
       )}
     </div>
   );
