@@ -147,6 +147,16 @@ export async function getTrainerDetail(id: string): Promise<TrainerDetail | null
   };
 }
 
+/** Fast count of trainers awaiting approval - used for the nav badge. */
+export async function getPendingCount(): Promise<number> {
+  const { admin } = await requireAdmin();
+  const { count: c } = await admin
+    .from("trainers")
+    .select("id", { count: "exact", head: true })
+    .eq("approved", false);
+  return c ?? 0;
+}
+
 // ---- admin mutations (service role) ----
 export async function adminSetPlan(trainerId: string, plan: Plan): Promise<void> {
   const { admin } = await requireAdmin();

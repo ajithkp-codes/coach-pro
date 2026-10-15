@@ -5,6 +5,7 @@ import {
   getTrainerProfile,
   ensureTrainerProfile,
 } from "@/lib/data/session";
+import { getPendingCount } from "@/lib/data/admin";
 import { NavLink } from "@/components/nav-link";
 import { logoutAction } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ export default async function DashboardLayout({
   if (trainer && !trainer.approved) redirect("/pending");
 
   const name = trainer?.full_name || email || "Trainer";
+  const pendingCount = trainer?.is_admin ? await getPendingCount().catch(() => 0) : 0;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -44,7 +46,16 @@ export default async function DashboardLayout({
               <NavLink href="/dashboard">Dashboard</NavLink>
               <NavLink href="/clients">Clients</NavLink>
               <NavLink href="/account">Account</NavLink>
-              {trainer?.is_admin && <NavLink href="/admin">Admin</NavLink>}
+              {trainer?.is_admin && (
+                <NavLink href="/admin">
+                  Admin
+                  {pendingCount > 0 && (
+                    <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white">
+                      {pendingCount}
+                    </span>
+                  )}
+                </NavLink>
+              )}
             </nav>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
@@ -71,7 +82,7 @@ export default async function DashboardLayout({
         {children}
       </main>
 
-      <BottomNav isAdmin={trainer?.is_admin} />
+      <BottomNav isAdmin={trainer?.is_admin} pendingCount={pendingCount} />
     </div>
   );
 }

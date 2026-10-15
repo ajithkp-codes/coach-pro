@@ -5,16 +5,16 @@ import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 
-export function BottomNav({ isAdmin }: { isAdmin?: boolean }) {
+export function BottomNav({ isAdmin, pendingCount = 0 }: { isAdmin?: boolean; pendingCount?: number }) {
   const pathname = usePathname();
 
-  const items: { href: string; label: string; icon: IconName; match: (p: string) => boolean }[] = [
+  const items: { href: string; label: string; icon: IconName; badge?: number; match: (p: string) => boolean }[] = [
     { href: "/dashboard", label: "Home", icon: "home", match: (p) => p === "/dashboard" },
     { href: "/clients", label: "Clients", icon: "users", match: (p) => p.startsWith("/clients") },
     { href: "/account", label: "Account", icon: "user", match: (p) => p.startsWith("/account") },
   ];
   if (isAdmin) {
-    items.push({ href: "/admin", label: "Admin", icon: "sparkles", match: (p) => p.startsWith("/admin") });
+    items.push({ href: "/admin", label: "Admin", icon: "sparkles", badge: pendingCount || undefined, match: (p) => p.startsWith("/admin") });
   }
 
   return (
@@ -34,7 +34,14 @@ export function BottomNav({ isAdmin }: { isAdmin?: boolean }) {
                 active ? "text-primary" : "text-muted-foreground",
               )}
             >
-              <Icon name={it.icon} size={21} strokeWidth={active ? 2.2 : 1.8} />
+              <span className="relative">
+                <Icon name={it.icon} size={21} strokeWidth={active ? 2.2 : 1.8} />
+                {it.badge && (
+                  <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[9px] font-bold text-white">
+                    {it.badge > 9 ? "9+" : it.badge}
+                  </span>
+                )}
+              </span>
               {it.label}
             </Link>
           );

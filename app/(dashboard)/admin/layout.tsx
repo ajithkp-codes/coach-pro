@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/data/admin";
+import { requireAdmin, getPendingCount } from "@/lib/data/admin";
 import { AdminNav } from "@/components/admin/admin-nav";
 
 export default async function AdminLayout({
@@ -7,6 +7,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   await requireAdmin(); // gate: redirects non-admins to /dashboard
+  const pendingCount = await getPendingCount().catch(() => 0);
 
   return (
     <div>
@@ -16,12 +17,17 @@ export default async function AdminLayout({
           <span className="rounded-full bg-info-bg px-2.5 py-0.5 text-xs font-medium text-primary">
             Platform
           </span>
+          {pendingCount > 0 && (
+            <span className="rounded-full bg-danger px-2.5 py-0.5 text-xs font-bold text-white">
+              {pendingCount} pending
+            </span>
+          )}
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
           Platform overview and trainer management. No client health data is shown here.
         </p>
       </div>
-      <AdminNav />
+      <AdminNav pendingCount={pendingCount} />
       <div className="py-6">{children}</div>
     </div>
   );
