@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,32 +30,52 @@ export function ReminderRow({
   revalClientId?: string | null;
   showClient?: boolean;
 }) {
-  const badge = r.done ? null : dueBadge(r.due_on);
+  // Optimistic local state so toggling/deleting feels instant.
+  const [done, setDone] = useState(r.done);
+  const [removed, setRemoved] = useState(false);
+  const [, startTransition] = useTransition();
+  const clientForReval = revalClientId ?? r.client_id;
+
+  if (removed) return null;
+  const badge = done ? null : dueBadge(r.due_on);
+
+  function toggle() {
+    const next = !done;
+    setDone(next);
+    startTransition(() => {
+      toggleReminderAction(r.id, next, clientForReval);
+    });
+  }
+  function remove() {
+    setRemoved(true);
+    startTransition(() => {
+      deleteReminderAction(r.id, clientForReval);
+    });
+  }
 
   return (
     <div className="flex items-start gap-3 py-2.5">
-      <form action={toggleReminderAction.bind(null, r.id, !r.done, revalClientId ?? r.client_id)}>
-        <button
-          type="submit"
-          aria-label={r.done ? "Mark not done" : "Mark done"}
-          className={cn(
-            "mt-0.5 flex h-5 w-5 items-center justify-center rounded-full border transition-colors",
-            r.done
-              ? "border-success bg-success text-white"
-              : "border-input text-transparent hover:border-success",
-          )}
-        >
-          <Icon name="check" size={12} strokeWidth={3} />
-        </button>
-      </form>
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={done ? "Mark not done" : "Mark done"}
+        className={cn(
+          "mt-0.5 flex h-5 w-5 items-center justify-center rounded-full border transition-colors",
+          done
+            ? "border-success bg-success text-white"
+            : "border-input text-transparent hover:border-success",
+        )}
+      >
+        <Icon name="check" size={12} strokeWidth={3} />
+      </button>
 
       <div className="min-w-0 flex-1">
-        <p className={cn("text-sm", r.done && "text-muted-foreground line-through")}>
+        <p className={cn("text-sm", done && "text-muted-foreground line-through")}>
           {r.title}
         </p>
         <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
           {badge && <Badge tone={badge.tone}>{badge.label}</Badge>}
-          {r.done && r.done_at && <span>Done {formatDate(r.done_at)}</span>}
+          {done && <span>Done</span>}
           {showClient && r.client_name && (
             <Link href={`/clients/${r.client_id}`} className="hover:text-foreground hover:underline">
               {r.client_name}
@@ -72,7 +93,7 @@ export function ReminderRow({
             aria-label="Delete reminder"
             className="mt-0.5 text-muted-foreground hover:text-danger"
           >
-            <Icon name="plus" size={16} className="rotate-45" />
+            <Icon name="x" size={16} />
           </button>
         )}
       >
@@ -81,11 +102,15 @@ export function ReminderRow({
             <Button variant="outline" onClick={close}>
               Cancel
             </Button>
-            <form action={deleteReminderAction.bind(null, r.id, revalClientId ?? r.client_id)}>
-              <Button type="submit" variant="danger">
-                Delete
-              </Button>
-            </form>
+            <Button
+              variant="danger"
+              onClick={() => {
+                close();
+                remove();
+              }}
+            >
+              Delete
+            </Button>
           </div>
         )}
       </Modal>
