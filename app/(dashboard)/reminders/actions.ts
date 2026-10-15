@@ -15,7 +15,7 @@ export interface ReminderState {
 
 function revalidate(clientId?: string | null) {
   revalidatePath("/dashboard");
-  if (clientId) revalidatePath(`/clients/${clientId}/reminders`);
+  if (clientId) revalidatePath(`/clients/${clientId}`);
 }
 
 export async function createReminderAction(

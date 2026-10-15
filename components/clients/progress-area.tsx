@@ -1,12 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { Segmented } from "@/components/ui/segmented";
 import { MetricsPanel } from "@/components/metrics/metrics-panel";
 import { MarkersPanel } from "@/components/markers/markers-panel";
 import { GoalsPanel } from "@/components/goals/goals-panel";
-import { ChartsPanel, type SeriesOption } from "@/components/charts/charts-panel";
+import type { SeriesOption } from "@/components/charts/charts-panel";
 import type { TrendPoint } from "@/components/charts/trend-chart";
+
+// Charts pull in Recharts; load it only when the Charts tab is opened.
+const ChartsPanel = dynamic(
+  () => import("@/components/charts/charts-panel").then((m) => m.ChartsPanel),
+  {
+    ssr: false,
+    loading: () => <div className="skeleton h-64 rounded-[var(--radius)]" />,
+  },
+);
 import type { BodyMetric, HealthMarker, Goal } from "@/lib/types";
 import type { GoalProgress } from "@/lib/data/goals";
 
