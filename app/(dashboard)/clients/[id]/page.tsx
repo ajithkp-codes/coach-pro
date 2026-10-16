@@ -4,6 +4,7 @@ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { StatTile, Delta } from "@/components/ui/stat-tile";
+import { Icon } from "@/components/ui/icon";
 import { Sparkline } from "@/components/charts/sparkline";
 import { GoalProgressBar } from "@/components/goals/goal-progress-bar";
 import { getClient } from "@/lib/data/clients";
@@ -14,9 +15,17 @@ import { listSessions, sessionVolume } from "@/lib/data/training";
 import { listPhotos } from "@/lib/data/photos";
 import { listClientReminders } from "@/lib/data/reminders";
 import { RemindersPanel } from "@/components/reminders/reminders-panel";
+import { CopyButton } from "@/components/ui/copy-button";
 import { MARKER_BY_KEY, markerLabel } from "@/lib/catalog/markers";
+import { computeInsights, generateProgressSummary } from "@/lib/data/insights";
 import { formatDate, formatNumber, timeAgo } from "@/lib/format";
 import type { BodyMetric, HealthMarker } from "@/lib/types";
+
+const toneClass: Record<string, string> = {
+  positive: "bg-success/10 text-success border-success/20",
+  warning: "bg-warning/10 text-warning border-warning/20",
+  neutral: "bg-muted text-muted-foreground border-border",
+};
 
 export default async function ClientOverviewPage({
   params,
@@ -50,8 +59,29 @@ export default async function ClientOverviewPage({
 
   const hasHero = weight.latest != null || fat.latest != null || waist.latest != null;
 
+  const insights = computeInsights(metrics, markers, goals, sessions);
+  const summary = generateProgressSummary(client.full_name, metrics, markers, goals, sessions);
+
   return (
     <div className="flex flex-col gap-6">
+      {/* Insight strip */}
+      {insights.length > 0 && (
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-wrap gap-2">
+            {insights.map((ins, i) => (
+              <span
+                key={i}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium ${toneClass[ins.tone]}`}
+              >
+                <Icon name={ins.icon} size={13} />
+                {ins.text}
+              </span>
+            ))}
+          </div>
+          <CopyButton text={summary} label="Copy summary" />
+        </div>
+      )}
+
       {/* Hero metric tiles */}
       {hasHero && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

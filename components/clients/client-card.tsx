@@ -5,8 +5,20 @@ import { Badge } from "@/components/ui/badge";
 import { Delta } from "@/components/ui/stat-tile";
 import { Icon } from "@/components/ui/icon";
 import { Sparkline } from "@/components/charts/sparkline";
-import { ageFromDob, formatNumber, timeAgo } from "@/lib/format";
+import { ageFromDob, formatNumber } from "@/lib/format";
 import type { ClientCardData } from "@/lib/data/dashboard";
+
+function sessionInsight(lastSessionDate: string | null): string {
+  if (!lastSessionDate) return "No sessions yet";
+  const days = Math.round(
+    (Date.now() - new Date(lastSessionDate).getTime()) / 86_400_000,
+  );
+  if (days === 0) return "Trained today";
+  if (days === 1) return "Trained yesterday";
+  if (days <= 7) return `Trained ${days}d ago`;
+  if (days <= 14) return `No training in ${days}d`;
+  return `Inactive ${days}d`;
+}
 
 const sexLabel: Record<string, string> = {
   male: "M",
@@ -63,7 +75,7 @@ export function ClientCard({ c }: { c: ClientCardData }) {
             )}
             {!c.consent_given && <Badge tone="warning">No consent</Badge>}
             <span className="ml-auto text-muted-foreground">
-              {timeAgo(c.lastActivity)}
+              {sessionInsight(c.lastSessionDate)}
             </span>
           </div>
         </CardBody>

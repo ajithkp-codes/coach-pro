@@ -11,6 +11,7 @@ export interface ClientCardData {
   weightDelta: number | null;
   weightSpark: number[];
   lastActivity: string | null;
+  lastSessionDate: string | null;
   activeGoals: number;
 }
 
@@ -167,6 +168,7 @@ export async function getTrainerDashboard(): Promise<DashboardData> {
         weightDelta,
         weightSpark: w.slice(-8),
         lastActivity,
+        lastSessionDate: lastSessionDate.get(c.id) ?? null,
         activeGoals: activeGoalsByClient.get(c.id) ?? 0,
       };
     })
