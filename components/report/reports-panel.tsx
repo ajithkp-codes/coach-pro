@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { Button } from "@/components/ui/button";
+import { Button, DeleteButton } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Modal } from "@/components/ui/modal";
 import { Input, Select } from "@/components/ui/input";
@@ -199,7 +199,7 @@ export function ReportsPanel({
                       <div className="flex justify-end gap-2">
                         <Button variant="outline" onClick={close}>Cancel</Button>
                         <form action={deleteReportAction.bind(null, clientId, r.id)}>
-                          <Button type="submit" variant="danger">Delete</Button>
+                          <DeleteButton />
                         </form>
                       </div>
                     )}

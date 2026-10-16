@@ -1,6 +1,6 @@
 "use client";
 
-import { ButtonLink, Button } from "@/components/ui/button";
+import { ButtonLink, Button, DeleteButton } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 
 export function ClientActions({
@@ -54,9 +54,7 @@ export function ClientActions({
                 Cancel
               </Button>
               <form action={deleteAction}>
-                <Button type="submit" variant="danger">
-                  Delete permanently
-                </Button>
+                <DeleteButton label="Delete permanently" />
               </form>
             </div>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, DeleteButton } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import {
   setPlanAction,
@@ -40,7 +40,7 @@ export function AdminActions({
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={close}>Cancel</Button>
               <form action={setApprovedAction.bind(null, trainerId, false)}>
-                <Button type="submit" variant="danger">Suspend access</Button>
+                <DeleteButton label="Suspend access" />
               </form>
             </div>
           )}

@@ -1,5 +1,7 @@
+"use client";
 import * as React from "react";
 import Link from "next/link";
+import { useFormStatus } from "react-dom";
 import { cn } from "@/lib/utils";
 
 type Variant = "primary" | "secondary" | "outline" | "ghost" | "danger";
@@ -39,6 +41,16 @@ export function Button({
       className={cn(base, variants[variant], sizes[size], className)}
       {...props}
     />
+  );
+}
+
+/** Drop-in replacement for a delete submit button inside a <form action>. Shows "Deleting…" and disables while the action is pending. */
+export function DeleteButton({ label = "Delete", className }: { label?: string; className?: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" variant="danger" disabled={pending} className={className}>
+      {pending ? "Deleting…" : label}
+    </Button>
   );
 }
 

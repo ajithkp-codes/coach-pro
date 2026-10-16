@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button, DeleteButton } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Modal } from "@/components/ui/modal";
 import { Input, Select } from "@/components/ui/input";
@@ -241,9 +241,7 @@ export function FilesPanel({
                           Cancel
                         </Button>
                         <form action={deleteSharedFileAction.bind(null, clientId, f.id)}>
-                          <Button type="submit" variant="danger">
-                            Delete
-                          </Button>
+                          <DeleteButton />
                         </form>
                       </div>
                     )}

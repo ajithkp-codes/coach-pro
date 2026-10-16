@@ -10,7 +10,7 @@ export interface EntryState {
 }
 
 function revalidate(clientId: string) {
-  revalidatePath(`/clients/${clientId}/photos`);
+  revalidatePath(`/clients/${clientId}/share`);
   revalidatePath(`/clients/${clientId}`);
 }
 

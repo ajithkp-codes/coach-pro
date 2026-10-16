@@ -46,7 +46,7 @@ function parse(formData: FormData) {
 function revalidate(clientId: string) {
   revalidatePath(`/clients/${clientId}/training`);
   revalidatePath(`/clients/${clientId}`);
-  revalidatePath(`/clients/${clientId}/charts`);
+  revalidatePath(`/clients/${clientId}/progress`);
 }
 
 export async function createSessionAction(

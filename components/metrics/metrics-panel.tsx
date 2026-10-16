@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { BodyMetricForm } from "./body-metric-form";
 import { BODY_METRIC_FIELDS } from "@/lib/catalog/metrics";
 import { formatDate, formatNumber } from "@/lib/format";
+import { DeleteButton } from "@/components/ui/button";
 import {
   createBodyMetricAction,
   updateBodyMetricAction,
@@ -118,12 +119,8 @@ export function MetricsPanel({
                             <Button variant="outline" onClick={close}>
                               Cancel
                             </Button>
-                            <form
-                              action={deleteBodyMetricAction.bind(null, clientId, m.id)}
-                            >
-                              <Button type="submit" variant="danger">
-                                Delete
-                              </Button>
+                            <form action={deleteBodyMetricAction.bind(null, clientId, m.id)}>
+                              <DeleteButton />
                             </form>
                           </div>
                         )}
