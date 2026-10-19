@@ -32,11 +32,11 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3 animate-slide-up">
         <div>
-          <p className="text-sm text-muted-foreground">{today}</p>
-          <h1 className="mt-0.5 text-2xl font-semibold tracking-tight">
-            Good to see you, {firstName}
+          <p className="text-sm font-medium text-muted-foreground">{today}</p>
+          <h1 className="mt-0.5 text-2xl font-bold tracking-tight">
+            Hey, <span className="text-gradient">{firstName}</span>
           </h1>
         </div>
         <ButtonLink href="/clients/new">
@@ -44,7 +44,7 @@ export default async function DashboardPage() {
         </ButtonLink>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="stagger-children grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile
           icon="users"
           label="Active clients"
@@ -89,7 +89,7 @@ export default async function DashboardPage() {
               action={<ButtonLink href="/clients/new">Add client</ButtonLink>}
             />
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="stagger-children grid gap-4 sm:grid-cols-2">
               {data.cards.slice(0, 6).map((c) => (
                 <ClientCard key={c.id} c={c} />
               ))}

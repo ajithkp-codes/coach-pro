@@ -1,16 +1,15 @@
 import { initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-// Pleasant, accessible avatar backgrounds (text stays readable on each).
 const PALETTE = [
-  { bg: "#eef2ff", fg: "#4338ca" },
-  { bg: "#ecfeff", fg: "#0e7490" },
-  { bg: "#f0fdf4", fg: "#15803d" },
-  { bg: "#fef2f2", fg: "#b91c1c" },
-  { bg: "#fff7ed", fg: "#c2410c" },
-  { bg: "#faf5ff", fg: "#7e22ce" },
-  { bg: "#fdf2f8", fg: "#be185d" },
-  { bg: "#f0f9ff", fg: "#0369a1" },
+  { bg: "linear-gradient(135deg, #6d5cff20, #6d5cff08)", fg: "#6d5cff" },
+  { bg: "linear-gradient(135deg, #00d4aa20, #00d4aa08)", fg: "#059669" },
+  { bg: "linear-gradient(135deg, #0ea5e920, #0ea5e908)", fg: "#0284c7" },
+  { bg: "linear-gradient(135deg, #f59e0b20, #f59e0b08)", fg: "#d97706" },
+  { bg: "linear-gradient(135deg, #ef444420, #ef444408)", fg: "#dc2626" },
+  { bg: "linear-gradient(135deg, #8b5cf620, #8b5cf608)", fg: "#7c3aed" },
+  { bg: "linear-gradient(135deg, #ec489920, #ec489908)", fg: "#db2777" },
+  { bg: "linear-gradient(135deg, #14b8a620, #14b8a608)", fg: "#0d9488" },
 ];
 
 function colorFor(seed: string) {
@@ -38,11 +37,11 @@ export function Avatar({
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-full font-semibold",
+        "flex shrink-0 items-center justify-center rounded-full font-bold",
         sizes[size],
         className,
       )}
-      style={{ backgroundColor: c.bg, color: c.fg }}
+      style={{ background: c.bg, color: c.fg }}
     >
       {initials(name) || "?"}
     </div>

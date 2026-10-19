@@ -3,11 +3,8 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
+import { Icon } from "./icon";
 
-/**
- * Lightweight modal built on <dialog>. Controlled open/close via a trigger button.
- * Use for add/edit forms so the trainer stays in context.
- */
 export function Modal({
   trigger,
   title,
@@ -18,13 +15,11 @@ export function Modal({
   trigger: (open: () => void) => React.ReactNode;
   title: string;
   description?: string;
-  /** Render-prop body; `close` dismisses the modal (e.g. after a successful save). */
   children: (close: () => void) => React.ReactNode;
   wide?: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
 
-  // Lock body scroll while open.
   React.useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
@@ -41,7 +36,7 @@ export function Modal({
       {trigger(() => setOpen(true))}
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 sm:p-6"
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-6 animate-fade-in"
           role="dialog"
           aria-modal="true"
           aria-label={title}
@@ -49,9 +44,10 @@ export function Modal({
             if (e.target === e.currentTarget) close();
           }}
         >
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" aria-hidden />
           <div
             className={cn(
-              "my-8 w-full rounded-[var(--radius)] border border-border bg-card shadow-xl",
+              "relative my-8 w-full rounded-[var(--radius)] border border-border bg-card shadow-xl animate-slide-up",
               wide ? "max-w-2xl" : "max-w-md",
             )}
           >
@@ -72,8 +68,9 @@ export function Modal({
                 size="icon"
                 aria-label="Close"
                 onClick={close}
+                className="shrink-0"
               >
-                ✕
+                <Icon name="x" size={16} />
               </Button>
             </div>
             <div className="px-5 py-5">{children(close)}</div>

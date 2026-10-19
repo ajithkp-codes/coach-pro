@@ -30,14 +30,17 @@ export function BottomNav({ isAdmin, pendingCount = 0 }: { isAdmin?: boolean; pe
               key={it.href}
               href={it.href}
               className={cn(
-                "flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-colors",
-                active ? "text-primary" : "text-muted-foreground",
+                "flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-all duration-200",
+                active ? "text-primary" : "text-muted-foreground hover:text-foreground",
               )}
             >
               <span className="relative">
-                <Icon name={it.icon} size={21} strokeWidth={active ? 2.2 : 1.8} />
+                {active && (
+                  <span className="absolute -inset-1.5 rounded-full bg-primary-glow" />
+                )}
+                <Icon name={it.icon} size={21} strokeWidth={active ? 2.2 : 1.8} className="relative" />
                 {it.badge && (
-                  <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[9px] font-bold text-white">
+                  <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[9px] font-bold text-white shadow-sm">
                     {it.badge > 9 ? "9+" : it.badge}
                   </span>
                 )}

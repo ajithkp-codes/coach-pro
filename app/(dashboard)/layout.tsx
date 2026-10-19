@@ -22,7 +22,6 @@ export default async function DashboardLayout({
   await ensureTrainerProfile();
   const trainer = await getTrainerProfile();
 
-  // Admin approval gate: unapproved trainers cannot use the app yet.
   if (trainer && !trainer.approved) redirect("/pending");
 
   const name = trainer?.full_name || email || "Trainer";
@@ -31,18 +30,20 @@ export default async function DashboardLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <header
-        className="glass sticky top-0 z-30 border-b border-border"
+        className="glass sticky top-0 z-30 border-b border-border/50"
         style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
       >
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
           <div className="flex items-center gap-6">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-[var(--radius)] bg-primary text-xs font-bold text-primary-foreground">
+            <Link href="/dashboard" className="group flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] bg-gradient-brand text-xs font-bold text-white shadow-sm transition-shadow group-hover:shadow-md">
                 CP
               </div>
-              <span className="font-semibold tracking-tight">CoachPro</span>
+              <span className="text-base font-bold tracking-tight">
+                Coach<span className="text-gradient">Pro</span>
+              </span>
             </Link>
-            <nav className="hidden items-center gap-1 sm:flex">
+            <nav className="hidden items-center gap-0.5 sm:flex">
               <NavLink href="/dashboard">Dashboard</NavLink>
               <NavLink href="/clients">Clients</NavLink>
               <NavLink href="/account">Account</NavLink>
@@ -50,7 +51,7 @@ export default async function DashboardLayout({
                 <NavLink href="/admin">
                   Admin
                   {pendingCount > 0 && (
-                    <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white">
+                    <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white shadow-sm">
                       {pendingCount}
                     </span>
                   )}
@@ -60,7 +61,7 @@ export default async function DashboardLayout({
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="hidden text-right sm:block">
-              <p className="text-sm font-medium leading-tight">{name}</p>
+              <p className="text-sm font-semibold leading-tight">{name}</p>
               {trainer?.business_name && (
                 <p className="text-xs text-muted-foreground">
                   {trainer.business_name}
@@ -70,7 +71,7 @@ export default async function DashboardLayout({
             <ThemeToggle />
             <Avatar name={name} size="sm" />
             <form action={logoutAction} className="hidden sm:block">
-              <Button type="submit" variant="outline" size="sm">
+              <Button type="submit" variant="ghost" size="sm">
                 Sign out
               </Button>
             </form>

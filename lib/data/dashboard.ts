@@ -53,14 +53,16 @@ const maxDate = (...ds: (string | null | undefined)[]) =>
 export async function getTrainerDashboard(): Promise<DashboardData> {
   const { supabase } = await authed();
 
+  const recentCutoff = daysAgoISO(90);
+
   const [clientsRes, metricsRes, markersRes, goalsRes, sessionsRes, photosRes] =
     await Promise.all([
       supabase.from("clients").select("id, full_name, sex, date_of_birth, status, consent_given, created_at"),
-      supabase.from("body_metrics").select("client_id, measured_on, weight_kg, created_at").order("measured_on", { ascending: true }),
-      supabase.from("health_markers").select("client_id, marker_key, custom_name, value, measured_on, created_at").order("created_at", { ascending: false }),
-      supabase.from("goals").select("client_id, title, status, target_date, metric_key, target_value, created_at"),
-      supabase.from("workout_sessions").select("client_id, performed_on, title, created_at").order("created_at", { ascending: false }),
-      supabase.from("client_photos").select("client_id, taken_on, created_at").order("created_at", { ascending: false }),
+      supabase.from("body_metrics").select("client_id, measured_on, weight_kg").gte("measured_on", recentCutoff).order("measured_on", { ascending: true }),
+      supabase.from("health_markers").select("client_id, marker_key, custom_name, value, measured_on, created_at").order("created_at", { ascending: false }).limit(200),
+      supabase.from("goals").select("client_id, title, status, target_date"),
+      supabase.from("workout_sessions").select("client_id, performed_on, title, created_at").order("created_at", { ascending: false }).limit(200),
+      supabase.from("client_photos").select("client_id, taken_on, created_at").order("created_at", { ascending: false }).limit(50),
     ]);
 
   type ClientRow = {
@@ -106,6 +108,8 @@ export async function getTrainerDashboard(): Promise<DashboardData> {
     taken_on: string;
     created_at: string;
   }[];
+
+  // For metrics we no longer fetch created_at, so derive lastMetricDate from measured_on only.
 
   // Per-client weight series (ascending).
   const weightsByClient = new Map<string, number[]>();
@@ -239,7 +243,7 @@ export async function getTrainerDashboard(): Promise<DashboardData> {
     activity.push({ clientId: p.client_id, clientName: nm(p.client_id), icon: "camera", label: "Added a progress photo", at: p.created_at });
   const recentMetricRows = [...metrics].sort((a, b) => (a.measured_on < b.measured_on ? 1 : -1)).slice(0, 8);
   for (const m of recentMetricRows)
-    activity.push({ clientId: m.client_id, clientName: nm(m.client_id), icon: "scale", label: "Updated body metrics", at: `${m.measured_on}T12:00:00Z` });
+    activity.push({ clientId: m.client_id, clientName: nm(m.client_id), icon: "scale", label: "Updated body metrics", at: m.measured_on });
 
   activity.sort((a, b) => (a.at < b.at ? 1 : -1));
 
