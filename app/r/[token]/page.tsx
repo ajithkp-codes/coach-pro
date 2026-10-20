@@ -13,7 +13,7 @@ export const metadata = { title: "Progress Report · CoachPro" };
 
 const CHART_KEYS = ["weight_kg", "body_fat_pct", "waist_cm"];
 const CHART_COLOR: Record<string, string> = {
-  weight_kg: "#4f46e5",
+  weight_kg: "#f04e28",
   body_fat_pct: "#0369a1",
   waist_cm: "#c2410c",
 };
@@ -54,7 +54,7 @@ export default async function ReportPage({
           {/* Header band */}
           <div
             className="relative px-6 py-8 text-white sm:px-10 sm:py-10"
-            style={{ background: "linear-gradient(120deg, #4f46e5, #7c3aed 60%, #2563eb)" }}
+            style={{ background: "linear-gradient(120deg, #f04e28, #c5381a 60%, #f5704a)" }}
           >
             {data.businessName && (
               <p className="text-sm font-medium text-white/80">{data.businessName}</p>

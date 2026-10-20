@@ -2,14 +2,14 @@ import { initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const PALETTE = [
-  { bg: "linear-gradient(135deg, #6d5cff20, #6d5cff08)", fg: "#6d5cff" },
-  { bg: "linear-gradient(135deg, #00d4aa20, #00d4aa08)", fg: "#059669" },
-  { bg: "linear-gradient(135deg, #0ea5e920, #0ea5e908)", fg: "#0284c7" },
-  { bg: "linear-gradient(135deg, #f59e0b20, #f59e0b08)", fg: "#d97706" },
-  { bg: "linear-gradient(135deg, #ef444420, #ef444408)", fg: "#dc2626" },
-  { bg: "linear-gradient(135deg, #8b5cf620, #8b5cf608)", fg: "#7c3aed" },
-  { bg: "linear-gradient(135deg, #ec489920, #ec489908)", fg: "#db2777" },
-  { bg: "linear-gradient(135deg, #14b8a620, #14b8a608)", fg: "#0d9488" },
+  { bg: "linear-gradient(135deg, #0e8a8420, #0e8a8408)", fg: "#0a7570" },
+  { bg: "linear-gradient(135deg, #2f6df020, #2f6df008)", fg: "#1d5fd6" },
+  { bg: "linear-gradient(135deg, #c0790f20, #c0790f08)", fg: "#8a5208" },
+  { bg: "linear-gradient(135deg, #7c3aed20, #7c3aed08)", fg: "#6d28d9" },
+  { bg: "linear-gradient(135deg, #0d948820, #0d948808)", fg: "#0f766e" },
+  { bg: "linear-gradient(135deg, #be2d1b20, #be2d1b08)", fg: "#be2d1b" },
+  { bg: "linear-gradient(135deg, #0284c720, #0284c708)", fg: "#0369a1" },
+  { bg: "linear-gradient(135deg, #db277720, #db277708)", fg: "#be185d" },
 ];
 
 function colorFor(seed: string) {

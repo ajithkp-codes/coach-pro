@@ -54,7 +54,7 @@ export function UpgradeButton({ disabled }: { disabled?: boolean }) {
       subscription_id: start.subscriptionId,
       name: "CoachPro",
       description: "Pro subscription",
-      theme: { color: "#4f46e5" },
+      theme: { color: "#f04e28" },
       handler: async (resp: Record<string, string>) => {
         const v = await verifyPaymentAction({
           razorpay_payment_id: resp.razorpay_payment_id,

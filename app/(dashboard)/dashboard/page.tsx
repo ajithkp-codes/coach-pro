@@ -1,13 +1,15 @@
 import Link from "next/link";
-import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { ButtonLink } from "@/components/ui/button";
+import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { StatTile } from "@/components/ui/stat-tile";
 import { Icon } from "@/components/ui/icon";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ClientCard } from "@/components/clients/client-card";
 import { DashboardReminders } from "@/components/reminders/dashboard-reminders";
+import { DonutWidget } from "@/components/dashboard/donut-widget";
+import { SessionsBarWidget } from "@/components/dashboard/sessions-bar-widget";
+import { GoalRingsWidget } from "@/components/dashboard/goal-rings-widget";
 import { getTrainerDashboard } from "@/lib/data/dashboard";
 import { listOpenReminders } from "@/lib/data/reminders";
 import { getTrainerProfile } from "@/lib/data/session";
@@ -30,6 +32,11 @@ export default async function DashboardPage() {
     month: "long",
   });
 
+  const totalGoals = data.cards.reduce((sum, c) => sum + c.activeGoals, 0);
+  const goalPct = totalGoals > 0
+    ? Math.round((data.stats.goalsAchieved / (data.stats.goalsAchieved + totalGoals)) * 100)
+    : 0;
+
   return (
     <>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3 animate-slide-up">
@@ -44,36 +51,26 @@ export default async function DashboardPage() {
         </ButtonLink>
       </div>
 
-      <div className="stagger-children grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile
-          icon="users"
-          label="Active clients"
-          value={data.stats.activeClients}
-          sub={data.stats.archived > 0 ? `${data.stats.archived} archived` : "Your roster"}
+      {/* Visual widget row */}
+      <div className="stagger-children grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <DonutWidget
+          value={goalPct}
+          label="Goal completion"
+          achieved={data.stats.goalsAchieved}
+          active={totalGoals}
         />
-        <StatTile
-          icon="dumbbell"
-          label="Sessions this week"
-          value={data.stats.sessionsThisWeek}
-          accent="sky"
-          sub="Across all clients"
+        <SessionsBarWidget
+          sessionsThisWeek={data.stats.sessionsThisWeek}
         />
-        <StatTile
-          icon="checkCircle"
-          label="Goals achieved"
-          value={data.stats.goalsAchieved}
-          accent="green"
-          sub="All time"
-        />
-        <StatTile
-          icon="alert"
-          label="Needs attention"
-          value={data.attention.length}
-          accent={data.attention.length ? "amber" : "green"}
-          sub={data.attention.length ? "See the list" : "All clear"}
+        <GoalRingsWidget
+          activeClients={data.stats.activeClients}
+          sessionsThisWeek={data.stats.sessionsThisWeek}
+          goalsAchieved={data.stats.goalsAchieved}
+          attentionCount={data.attention.length}
         />
       </div>
 
+      {/* Main grid */}
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <div className="mb-3 flex items-center justify-between">

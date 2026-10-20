@@ -1,0 +1,206 @@
+/* CoachPro — generated from tokens.json. Light is default; add data-theme="dark" to <html> for dark. */
+:root, [data-theme="light"] {
+  --bg: #f5f3ef;
+  --surface: #ffffff;
+  --surface-muted: #efebe3;
+  --surface-sunken: #e9e4da;
+  --overlay: rgba(23,21,15,0.55);
+  --border: #e0dacf;
+  --border-strong: #c7c0b2;
+  --ink: #1a1713;
+  --ink-secondary: #57514a;
+  --ink-muted: #716a5e;
+  --ink-faint: #8f887a;
+  --ink-inverse: #faf7f2;
+  --brand: #f04e28;
+  --brand-strong: #c5381a;
+  --brand-tint: #fdeae3;
+  --accent-text: #b33a1a;
+  --on-brand: #17150f;
+  --pos: #0e8a84;
+  --pos-text: #0a7570;
+  --pos-tint: #def1ef;
+  --warn: #c0790f;
+  --warn-text: #8a5208;
+  --warn-tint: #f8efdd;
+  --neg: #d93a2a;
+  --neg-text: #be2d1b;
+  --neg-tint: #fceae7;
+  --info: #2f6df0;
+  --info-text: #1d5fd6;
+  --focus: #1a6dff;
+  --shadow-sm: 0 1px 2px rgba(23,21,15,0.06), 0 1px 1px rgba(23,21,15,0.04);
+  --shadow-md: 0 4px 12px -2px rgba(23,21,15,0.10), 0 2px 4px -2px rgba(23,21,15,0.06);
+  --shadow-lg: 0 18px 40px -12px rgba(23,21,15,0.18), 0 6px 12px -6px rgba(23,21,15,0.08);
+  --shadow-pop: 0 10px 30px -8px rgba(23,21,15,0.16);
+}
+[data-theme="dark"] {
+  --bg: #141210;
+  --surface: #1c1915;
+  --surface-muted: #24201b;
+  --surface-sunken: #100e0b;
+  --overlay: rgba(6,5,4,0.66);
+  --border: #2f2a23;
+  --border-strong: #473f35;
+  --ink: #f6f1e9;
+  --ink-secondary: #c6bdb0;
+  --ink-muted: #9a9183;
+  --ink-faint: #7c7467;
+  --ink-inverse: #17150f;
+  --brand: #ff6a43;
+  --brand-strong: #ff8a66;
+  --brand-tint: #3a1e14;
+  --accent-text: #ff9f85;
+  --on-brand: #17150f;
+  --pos: #3fcac2;
+  --pos-text: #5fd8d0;
+  --pos-tint: #0c2522;
+  --warn: #e8b44a;
+  --warn-text: #f0c068;
+  --warn-tint: #2e2410;
+  --neg: #ff6b5a;
+  --neg-text: #ff8f82;
+  --neg-tint: #301612;
+  --info: #6f9bff;
+  --info-text: #93b4ff;
+  --focus: #7aa6ff;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
+  --shadow-md: 0 6px 16px -4px rgba(0,0,0,0.6);
+  --shadow-lg: 0 24px 48px -16px rgba(0,0,0,0.72);
+  --shadow-pop: 0 12px 32px -8px rgba(0,0,0,0.66);
+}
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+  --font-display: "Bricolage Grotesque", "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.display-xl {
+  font-family: var(--font-display);
+  font-size: 60px;
+  line-height: 0.94;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.display-lg {
+  font-family: var(--font-display);
+  font-size: 44px;
+  line-height: 0.98;
+  font-weight: 700;
+  letter-spacing: -0.018em;
+}
+.display-md {
+  font-family: var(--font-display);
+  font-size: 32px;
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.headline {
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.006em;
+}
+.subtitle {
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+.body-lg {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+.body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  font-weight: 400;
+}
+.body-sm {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+.label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.caption {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+.metric-xl {
+  font-family: var(--font-sans);
+  font-size: 40px;
+  line-height: 1.0;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.metric {
+  font-family: var(--font-sans);
+  font-size: 28px;
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.metric-sm {
+  font-family: var(--font-sans);
+  font-size: 19px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.overline {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+.data {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+.data-sm {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.4;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}

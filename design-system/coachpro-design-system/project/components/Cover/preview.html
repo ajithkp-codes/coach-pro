@@ -1,0 +1,41 @@
+<!-- @dsCard height=320 -->
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+  body { margin: 0; }
+  .cover { display: block; width: 100%; height: auto; }
+  .ground { fill: var(--bg); }
+  .brand { fill: var(--brand); }
+  .brandStrong { fill: var(--brand-strong); }
+  .ink { fill: var(--ink); }
+  .pos { fill: var(--pos); }
+  .rXl { rx: var(--radius-xl); } .rLg { rx: var(--radius-lg); } .rMd { rx: var(--radius-md); }
+  .arc { fill: none; stroke: var(--bg); }
+  .name { fill: var(--ink); font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em; }
+  .tag { fill: var(--ink-muted); font-family: var(--font-mono); font-weight: 500; letter-spacing: 0.02em; }
+</style>
+<!--
+  derivation
+  blocks: brand slab 420x372 (bleeds top+right) · ink slab 92x268 (space-6 gap) · pos teal 150 square · brand-strong quarter-circle
+  arrangement: one tall vermilion slab bleeding off top-right, ink + teal satellites, name bottom-left on paper ground (one-hue, neutral-first)
+  pattern: concentric open rings + a breakaway line stroked in bg — the brand's literal "Breakaway" arc motif
+  scales: corners radius-xl/lg/md; gap space-6; arc stroke from the mark weight; name 78px / .95
+-->
+<svg class="cover" viewBox="0 0 960 320" role="img" aria-label="CoachPro">
+  <rect class="ground" x="0" y="0" width="960" height="320"/>
+  <!-- blocks -->
+  <rect class="ink rLg" x="484" y="92" width="92" height="268"/>
+  <rect class="brand rXl" x="600" y="-44" width="420" height="372"/>
+  <path class="brandStrong" d="M600 206 A118 118 0 0 1 718 324 L600 324 Z"/>
+  <rect class="pos rMd" x="742" y="214" width="150" height="150"/>
+  <!-- pattern: the Breakaway arcs, stroked in paper -->
+  <g>
+    <circle class="arc" cx="812" cy="110" r="124" stroke-width="7" pathLength="100" stroke-dasharray="69 31" transform="rotate(128 812 110)"/>
+    <circle class="arc" cx="812" cy="110" r="88" stroke-width="11" pathLength="100" stroke-dasharray="71 29" transform="rotate(122 812 110)"/>
+    <circle class="arc" cx="812" cy="110" r="54" stroke-width="16" pathLength="100" stroke-dasharray="72 28" transform="rotate(118 812 110)"/>
+    <path class="arc" d="M864 66 C905 50 918 8 946 -28" stroke-width="16" stroke-linecap="round"/>
+  </g>
+  <!-- name -->
+  <text class="name" x="48" y="250" font-size="78">CoachPro</text>
+  <text class="tag" x="50" y="282" font-size="13.5">Coaching, in full view.</text>
+</svg>
