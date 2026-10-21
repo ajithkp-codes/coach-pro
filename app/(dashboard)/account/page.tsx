@@ -55,7 +55,7 @@ export default async function AccountPage() {
         <CardBody className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
             {plan === "pro"
-              ? "You're on Pro. Unlimited clients."
+              ? "You're on Pro."
               : "You're on the Free plan."}
           </p>
           <ButtonLink href="/account/billing" variant="outline" size="sm">

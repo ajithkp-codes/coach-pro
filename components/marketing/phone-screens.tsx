@@ -13,7 +13,7 @@ export function ScreenDashboard() {
       <div className="flex items-center justify-between py-3">
         <div>
           <p className="text-[10px] text-white/40">Good morning</p>
-          <p className="text-sm font-bold text-white">Rahul Kapoor</p>
+          <p className="text-sm font-bold text-white">Alex Morgan</p>
         </div>
         <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#ff6a43] to-[#ff8a66]" />
       </div>
@@ -27,11 +27,11 @@ export function ScreenDashboard() {
       {/* Client list */}
       <div className="mt-3 rounded-xl bg-white/[0.04] p-3">
         <p className="mb-2 text-[9px] font-bold uppercase tracking-wider text-white/30">Active clients</p>
-        <ClientMini name="Aarav S." goal="Half-marathon" weight="79.3 kg" delta="-4.7" color="#ff8a66" />
-        <ClientMini name="Priya N." goal="Fat loss" weight="63.8 kg" delta="-4.2" color="#ff8a66" />
-        <ClientMini name="Ananya I." goal="Marathon" weight="58.0 kg" delta="-6.0" color="#ff6a43" />
-        <ClientMini name="Vikram R." goal="Muscle gain" weight="82.1 kg" delta="+3.4" color="#ff6a43" />
-        <ClientMini name="Meera K." goal="PCOS mgmt" weight="71.5 kg" delta="-2.8" color="#ff8a66" />
+        <ClientMini name="Taylor K." goal="Half-marathon" weight="79.3 kg" delta="-4.7" color="#ff8a66" />
+        <ClientMini name="Devin C." goal="Fat loss" weight="63.8 kg" delta="-4.2" color="#ff8a66" />
+        <ClientMini name="Riley Q." goal="Marathon" weight="58.0 kg" delta="-6.0" color="#ff6a43" />
+        <ClientMini name="Jordan L." goal="Muscle gain" weight="82.1 kg" delta="+3.4" color="#ff6a43" />
+        <ClientMini name="Jamie R." goal="PCOS mgmt" weight="71.5 kg" delta="-2.8" color="#ff8a66" />
       </div>
 
       {/* Bottom nav hint */}
@@ -53,10 +53,10 @@ export function ScreenClientDetail() {
         <Icon name="chevronLeft" size={16} className="text-white/40" />
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#ff6a43]/30 to-[#ff8a66]/10 text-xs font-bold text-white/70">
-            AS
+            TK
           </div>
           <div>
-            <p className="text-sm font-bold text-white">Aarav Sharma</p>
+            <p className="text-sm font-bold text-white">Taylor Kim</p>
             <p className="text-[10px] text-white/40">34 · Half-marathon prep</p>
           </div>
         </div>

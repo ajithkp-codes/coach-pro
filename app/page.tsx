@@ -8,10 +8,11 @@ import { MediaPhoto } from "@/components/marketing/media-photo";
 import { RouteOverlay } from "@/components/marketing/route-overlay";
 import { LoadLineOverlay, MobilityRadialOverlay } from "@/components/marketing/tile-overlays";
 import { BrowserFrame } from "@/components/marketing/device-frames";
+import { DemoBooking } from "@/components/marketing/demo-booking";
 import { ProductScreenshot } from "@/components/marketing/product-screenshot";
 import { MockWebApp, MockClientReport } from "@/components/marketing/mocks";
 import { createClient } from "@/lib/supabase/server";
-import { FREE_CLIENT_LIMIT, PRO_PRICE_INR } from "@/lib/constants";
+import { FREE_CLIENT_LIMIT, PRO_CLIENT_LIMIT, PRO_PRICE_INR } from "@/lib/constants";
 
 /* ------------------------------------------------------------------ */
 
@@ -32,10 +33,6 @@ const DISCIPLINES = [
   { slot: "d2", title: "Endurance", tag: "Running · Cycling", img: "/images/discipline-endurance.jpg", pos: "center" },
   { slot: "d3", title: "Movement", tag: "Dance · Pilates · Mobility", img: "/images/discipline-movement.jpg", pos: "center" },
 ] as const;
-
-const DISCIPLINE_WORDS = [
-  "Strength", "Running", "Movement", "Dance", "Pilates", "Boxing", "Zumba", "Rehab",
-];
 
 const VALUES = [
   {
@@ -60,13 +57,6 @@ export default async function Home() {
 
   return (
     <div data-landing="" className="flex flex-1 flex-col overflow-x-clip bg-[#f5f3ef]">
-      {/* Marquee keyframes */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html:
-            "@keyframes cp-marquee{to{transform:translateX(-50%)}}@media (prefers-reduced-motion:reduce){.cp-marquee{animation:none!important}}",
-        }}
-      />
 
       {/* ===== NAV ===== */}
       <LandingNav signedIn={!!user} />
@@ -112,12 +102,7 @@ export default async function Home() {
                   <ButtonLink href={primaryHref} className="h-[52px] px-7 text-base font-semibold">
                     {primaryLabel}
                   </ButtonLink>
-                  <a
-                    href="#product"
-                    className="inline-flex h-[52px] items-center rounded-[10px] border border-white/30 px-6 text-[15px] font-semibold text-[#f6f3ee] transition-colors hover:bg-white/10"
-                  >
-                    See the product
-                  </a>
+                  <DemoBooking />
                 </Reveal>
               </div>
 
@@ -140,26 +125,6 @@ export default async function Home() {
           </div>
 
         </section>
-
-        {/* ============================================================
-            MARQUEE — disciplines, scrolling
-            ============================================================ */}
-        <div
-          aria-hidden="true"
-          className="overflow-hidden border-y border-white/10 bg-[#060606] py-[18px] text-[#f6f3ee]"
-        >
-          <div className="cp-marquee flex w-max" style={{ animation: "cp-marquee 32s linear infinite" }}>
-            {[...DISCIPLINE_WORDS, ...DISCIPLINE_WORDS].map((w, i) => (
-              <span
-                key={i}
-                className="font-serif inline-flex items-center px-7 text-[clamp(22px,3vw,34px)] font-medium"
-              >
-                {w}
-                <span className="ml-7 text-[0.5em] text-[#e8402a]">✦</span>
-              </span>
-            ))}
-          </div>
-        </div>
 
         {/* ============================================================
             STATEMENT 1 — full-bleed, centered
@@ -337,7 +302,7 @@ export default async function Home() {
                   price={`₹${PRO_PRICE_INR}`}
                   suffix="/mo"
                   tagline="For working coaches with a full roster."
-                  features={["Unlimited active clients", "Everything in Starter", "Trend charts & progress photos", "Branding & priority support"]}
+                  features={[`Up to ${PRO_CLIENT_LIMIT} active clients`, "Everything in Starter", "Trend charts & progress photos", "Branding & priority support"]}
                   cta={user ? "Go Pro" : "Start 14-day trial"}
                   href={user ? "/account/billing" : "/signup"}
                   highlight

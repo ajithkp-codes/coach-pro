@@ -51,7 +51,7 @@ function MockSidebar() {
             RK
           </div>
           <div>
-            <p className="text-[12px] font-semibold text-white/90">Rahul Kapoor</p>
+            <p className="text-[12px] font-semibold text-white/90">Alex Morgan</p>
             <p className="text-[10px] text-white/40">Peak Fitness Studio</p>
           </div>
         </div>
@@ -228,7 +228,7 @@ export function MockDashboard({ className = "" }: { className?: string }) {
           <div>
             <p className="text-[13px] font-medium text-white/40">Tuesday, 20 October</p>
             <h1 className="mt-1 text-2xl font-bold">
-              Hey, <span className="bg-gradient-to-r from-[#ff6a43] to-[#ff8a66] bg-clip-text text-transparent">Rahul</span>
+              Hey, <span className="bg-gradient-to-r from-[#ff6a43] to-[#ff8a66] bg-clip-text text-transparent">Alex</span>
             </h1>
           </div>
           <div className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#ff6a43] to-[#ff6a43]/80 px-4 py-2 text-[13px] font-semibold text-white">
@@ -253,10 +253,10 @@ export function MockDashboard({ className = "" }: { className?: string }) {
               <span className="text-[13px] font-medium text-[#ff6a43]">View all →</span>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <MockClientCard initials="VS" name="Vikram Singh" age="43 yrs" sex="M" weight="88 kg" delta="-0.8" spark={[92, 91, 90, 89.5, 89, 88]} goals={1} session="Trained 5d ago" />
-              <MockClientCard initials="AS" name="Aarav Sharma" age="36 yrs" sex="M" weight="79.3 kg" delta="-0.9" spark={[84, 83, 82, 81, 80, 79.3]} goals={2} session="Trained 5d ago" />
-              <MockClientCard initials="AI" name="Ananya Iyer" age="28 yrs" sex="F" weight="58 kg" delta="-1.2" spark={[64, 62, 61, 60, 59, 58]} goals={1} session="No training in 10d" sessionWarn />
-              <MockClientCard initials="SR" name="Sneha Reddy" age="34 yrs" sex="F" weight="59.5 kg" delta="-0.3" spark={[62, 61.5, 61, 60.5, 60, 59.5]} goals={1} session="No sessions yet" />
+              <MockClientCard initials="JL" name="Jordan Lee" age="43 yrs" sex="M" weight="88 kg" delta="-0.8" spark={[92, 91, 90, 89.5, 89, 88]} goals={1} session="Trained 5d ago" />
+              <MockClientCard initials="TK" name="Taylor Kim" age="36 yrs" sex="M" weight="79.3 kg" delta="-0.9" spark={[84, 83, 82, 81, 80, 79.3]} goals={2} session="Trained 5d ago" />
+              <MockClientCard initials="RQ" name="Riley Quinn" age="28 yrs" sex="F" weight="58 kg" delta="-1.2" spark={[64, 62, 61, 60, 59, 58]} goals={1} session="No training in 10d" sessionWarn />
+              <MockClientCard initials="CF" name="Casey Flynn" age="34 yrs" sex="F" weight="59.5 kg" delta="-0.3" spark={[62, 61.5, 61, 60.5, 60, 59.5]} goals={1} session="No sessions yet" />
             </div>
           </div>
 
@@ -289,10 +289,10 @@ export function MockDashboard({ className = "" }: { className?: string }) {
               </div>
               <ul className="mt-3 space-y-2.5">
                 {[
-                  { name: "Vikram Singh", issue: "Blood pressure (diastolic) out of range" },
-                  { name: "Vikram Singh", issue: "Blood pressure (systolic) out of range" },
-                  { name: "Sneha Reddy", issue: "Vitamin D (25-OH) out of range" },
-                  { name: "Priya Nair", issue: "Fasting blood sugar out of range" },
+                  { name: "Jordan Lee", issue: "Blood pressure (diastolic) out of range" },
+                  { name: "Jordan Lee", issue: "Blood pressure (systolic) out of range" },
+                  { name: "Casey Flynn", issue: "Vitamin D (25-OH) out of range" },
+                  { name: "Devin Cole", issue: "Fasting blood sugar out of range" },
                 ].map((a, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <span className="mt-0.5 text-[#f59e0b]"><Icon name="alert" size={14} /></span>
@@ -310,9 +310,9 @@ export function MockDashboard({ className = "" }: { className?: string }) {
               <h3 className="text-[14px] font-semibold text-white">Recent activity</h3>
               <ul className="mt-3 space-y-3">
                 {[
-                  { name: "Aarav Sharma", icon: "scale" as IconName, label: "Updated body metrics", time: "2d ago" },
-                  { name: "Vikram Singh", icon: "pulse" as IconName, label: "Recorded Blood pressure", time: "3d ago" },
-                  { name: "Ananya Iyer", icon: "dumbbell" as IconName, label: "Logged a training session", time: "5d ago" },
+                  { name: "Taylor Kim", icon: "scale" as IconName, label: "Updated body metrics", time: "2d ago" },
+                  { name: "Jordan Lee", icon: "pulse" as IconName, label: "Recorded Blood pressure", time: "3d ago" },
+                  { name: "Riley Quinn", icon: "dumbbell" as IconName, label: "Logged a training session", time: "5d ago" },
                 ].map((a, i) => (
                   <li key={i} className="flex items-center gap-2.5">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#ff6a43]/15 to-[#ff8a66]/5 text-[9px] font-bold text-white/60">
@@ -403,7 +403,7 @@ export function MockPhoneApp({ className = "" }: { className?: string }) {
             style={{ fontFamily: "var(--font-serif)", fontWeight: 500, letterSpacing: "-0.02em" }}
           >
             Hey,{" "}
-            <span style={{ fontStyle: "italic", color: "#bc3420" }}>Rahul</span>
+            <span style={{ fontStyle: "italic", color: "#bc3420" }}>Alex</span>
           </p>
         </div>
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e8402a] text-[#160a07]">
@@ -430,9 +430,9 @@ export function MockPhoneApp({ className = "" }: { className?: string }) {
           <span className="text-[11px] font-semibold text-[#bc3420]">View all →</span>
         </div>
         <div className="flex flex-col gap-2">
-          <PhoneCrow initials="VS" name="Vikram Singh" sub="43 · M" weight="88.0" delta="−0.8" adherence={82} />
-          <PhoneCrow initials="AI" name="Ananya Iyer" sub="28 · F" weight="58.0" delta="−1.2" adherence={64} />
-          <PhoneCrow initials="AS" name="Aarav Sharma" sub="36 · M" weight="79.3" delta="−0.9" adherence={91} />
+          <PhoneCrow initials="JL" name="Jordan Lee" sub="43 · M" weight="88.0" delta="−0.8" adherence={82} />
+          <PhoneCrow initials="RQ" name="Riley Quinn" sub="28 · F" weight="58.0" delta="−1.2" adherence={64} />
+          <PhoneCrow initials="TK" name="Taylor Kim" sub="36 · M" weight="79.3" delta="−0.9" adherence={91} />
         </div>
       </div>
     </div>
@@ -481,9 +481,9 @@ function EditorialSidebar({ active }: { active: "Dashboard" | "Clients" | "Accou
       </nav>
       <div className="border-t border-[#e0dacf] px-4 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#fce8e3] text-[13px] font-bold text-[#bc3420]">RK</div>
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#fce8e3] text-[13px] font-bold text-[#bc3420]">AM</div>
           <div className="min-w-0">
-            <p className="truncate text-[13px] font-semibold text-[#1a1713]">Rahul Kapoor</p>
+            <p className="truncate text-[13px] font-semibold text-[#1a1713]">Alex Morgan</p>
             <p className="truncate text-[11px] text-[#716a5e]">Peak Fitness Studio</p>
           </div>
         </div>
@@ -636,7 +636,7 @@ export function MockWebApp({ className = "" }: { className?: string }) {
             <div>
               <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-[#716a5e]">Tuesday, 20 October</p>
               <p className="mt-1 text-[40px] leading-none" style={{ fontFamily: "var(--font-serif)", fontWeight: 500, letterSpacing: "-0.02em" }}>
-                Hey, <span style={{ fontStyle: "italic", color: "#bc3420" }}>Rahul</span>
+                Hey, <span style={{ fontStyle: "italic", color: "#bc3420" }}>Alex</span>
               </p>
             </div>
             <div className="flex items-center gap-2 rounded-[10px] bg-[#e8402a] px-4 py-2.5 text-[14px] font-bold text-[#160a07]">
@@ -666,10 +666,10 @@ export function MockWebApp({ className = "" }: { className?: string }) {
                 <span className="text-[13px] font-medium text-[#e8402a]">View all →</span>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <DashClientCard initials="VS" name="Vikram Singh" meta="43 yrs · M" weight="88.0 kg" delta="0.8 kg" good spark={[92, 91, 90, 89.5, 89, 88]} goals={1} session="Trained 2d ago" />
-                <DashClientCard initials="AS" name="Aarav Sharma" meta="36 yrs · M" weight="79.3 kg" delta="0.9 kg" good spark={[84, 83, 82, 81, 80, 79.3]} goals={2} session="Trained 1d ago" />
-                <DashClientCard initials="AI" name="Ananya Iyer" meta="28 yrs · F" weight="58.0 kg" delta="1.2 kg" good spark={[64, 62, 61, 60, 59, 58]} goals={1} session="No training in 10d" warn />
-                <DashClientCard initials="SR" name="Sneha Reddy" meta="34 yrs · F" weight="59.5 kg" delta="0.3 kg" good spark={[62, 61.5, 61, 60.5, 60, 59.5]} goals={1} session="No sessions yet" />
+                <DashClientCard initials="JL" name="Jordan Lee" meta="43 yrs · M" weight="88.0 kg" delta="0.8 kg" good spark={[92, 91, 90, 89.5, 89, 88]} goals={1} session="Trained 2d ago" />
+                <DashClientCard initials="TK" name="Taylor Kim" meta="36 yrs · M" weight="79.3 kg" delta="0.9 kg" good spark={[84, 83, 82, 81, 80, 79.3]} goals={2} session="Trained 1d ago" />
+                <DashClientCard initials="RQ" name="Riley Quinn" meta="28 yrs · F" weight="58.0 kg" delta="1.2 kg" good spark={[64, 62, 61, 60, 59, 58]} goals={1} session="No training in 10d" warn />
+                <DashClientCard initials="CF" name="Casey Flynn" meta="34 yrs · F" weight="59.5 kg" delta="0.3 kg" good spark={[62, 61.5, 61, 60.5, 60, 59.5]} goals={1} session="No sessions yet" />
               </div>
             </div>
 
@@ -697,8 +697,8 @@ export function MockWebApp({ className = "" }: { className?: string }) {
                 </div>
                 <ul className="mt-3 space-y-2.5">
                   {[
-                    { name: "Vikram Singh", issue: "Blood pressure out of range" },
-                    { name: "Sneha Reddy", issue: "Vitamin D out of range" },
+                    { name: "Jordan Lee", issue: "Blood pressure out of range" },
+                    { name: "Casey Flynn", issue: "Vitamin D out of range" },
                   ].map((a, i) => (
                     <li key={i} className="flex items-start gap-2">
                       <span className="mt-0.5 text-[#c0790f]"><Icon name="alert" size={14} /></span>
@@ -716,9 +716,9 @@ export function MockWebApp({ className = "" }: { className?: string }) {
                 <p className="text-[14px] font-semibold">Recent activity</p>
                 <ul className="mt-3 space-y-3">
                   {[
-                    { name: "Aarav Sharma", icon: "scale" as IconName, label: "Updated body metrics", time: "2d ago" },
-                    { name: "Vikram Singh", icon: "pulse" as IconName, label: "Recorded blood pressure", time: "3d ago" },
-                    { name: "Ananya Iyer", icon: "dumbbell" as IconName, label: "Logged a training session", time: "5d ago" },
+                    { name: "Taylor Kim", icon: "scale" as IconName, label: "Updated body metrics", time: "2d ago" },
+                    { name: "Jordan Lee", icon: "pulse" as IconName, label: "Recorded blood pressure", time: "3d ago" },
+                    { name: "Riley Quinn", icon: "dumbbell" as IconName, label: "Logged a training session", time: "5d ago" },
                   ].map((a, i) => (
                     <li key={i} className="flex items-center gap-2.5">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fce8e3] text-[9px] font-bold text-[#bc3420]">
@@ -808,10 +808,10 @@ export function MockClientReport({ className = "" }: { className?: string }) {
           {/* Client header */}
           <div className="mt-3 flex items-start justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#fce8e3] text-[18px] font-bold text-[#bc3420]">VS</div>
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#fce8e3] text-[18px] font-bold text-[#bc3420]">JL</div>
               <div>
                 <div className="flex items-center gap-2.5">
-                  <p className="text-[22px] font-semibold tracking-tight">Vikram Singh</p>
+                  <p className="text-[22px] font-semibold tracking-tight">Jordan Lee</p>
                   <span className="rounded-full bg-[#def1ef] px-2.5 py-0.5 text-[11px] font-semibold text-[#0a7570]">Active</span>
                 </div>
                 <p className="mt-1 text-[13px] text-[#716a5e]">43 yrs · +91 98765 43210 · vikram@example.in · Consent 12 Mar 2026</p>
