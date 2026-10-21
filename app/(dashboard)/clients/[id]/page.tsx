@@ -13,6 +13,9 @@ import { listHealthMarkers } from "@/lib/data/healthMarkers";
 import { listGoals, computeGoalProgress } from "@/lib/data/goals";
 import { listSessions, sessionVolume } from "@/lib/data/training";
 import { listPhotos } from "@/lib/data/photos";
+import { listDietLogs } from "@/lib/data/diet";
+import { getActiveDietPlan } from "@/lib/data/dietPlans";
+import { dayTotals, adherenceTone } from "@/lib/nutrition";
 import { listClientReminders } from "@/lib/data/reminders";
 import { RemindersPanel } from "@/components/reminders/reminders-panel";
 import { CopyButton } from "@/components/ui/copy-button";
@@ -36,14 +39,17 @@ export default async function ClientOverviewPage({
   const client = await getClient(id);
   if (!client) notFound();
 
-  const [metrics, markers, goals, sessions, photos, reminders] = await Promise.all([
-    listBodyMetrics(id),
-    listHealthMarkers(id),
-    listGoals(id),
-    listSessions(id),
-    listPhotos(id),
-    listClientReminders(id),
-  ]);
+  const [metrics, markers, goals, sessions, photos, reminders, dietLogs, dietPlan] =
+    await Promise.all([
+      listBodyMetrics(id),
+      listHealthMarkers(id),
+      listGoals(id),
+      listSessions(id),
+      listPhotos(id),
+      listClientReminders(id),
+      listDietLogs(id),
+      getActiveDietPlan(id),
+    ]);
 
   const asc = [...metrics].reverse(); // ascending by date
   const latestByMarker = latestPerMarker(markers);
@@ -56,6 +62,10 @@ export default async function ClientOverviewPage({
   const fat = series(asc, "body_fat_pct");
   const waist = series(asc, "waist_cm");
   const lastSession = sessions[0];
+
+  const lastDietLog = dietLogs[0]; // newest first
+  const lastDietTotals = lastDietLog ? dayTotals(lastDietLog.entries) : null;
+  const hasNutrition = !!dietPlan || dietLogs.length > 0;
 
   const hasHero = weight.latest != null || fat.latest != null || waist.latest != null;
 
@@ -223,6 +233,62 @@ export default async function ClientOverviewPage({
           </CardBody>
         </Card>
       </div>
+
+      {/* Nutrition */}
+      {hasNutrition && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Nutrition</CardTitle>
+            <Link href={`/clients/${id}/nutrition`} className="text-sm font-medium text-primary hover:underline">
+              View →
+            </Link>
+          </CardHeader>
+          <CardBody>
+            <div className="flex flex-col gap-4">
+              {dietPlan ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-info-bg text-primary">
+                    <Icon name="utensils" size={16} />
+                  </span>
+                  <span className="text-sm font-medium">{dietPlan.name}</span>
+                  <Badge tone="success">Active plan</Badge>
+                  {dietPlan.target_calories != null && (
+                    <Badge tone="neutral">{formatNumber(dietPlan.target_calories)} kcal / day</Badge>
+                  )}
+                  {dietPlan.target_protein_g != null && (
+                    <Badge tone="neutral">{formatNumber(dietPlan.target_protein_g)} g protein / day</Badge>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No active diet plan set.</p>
+              )}
+
+              {lastDietLog && lastDietTotals ? (
+                <div className="border-t border-border pt-3">
+                  <p className="mb-1.5 text-xs text-muted-foreground">
+                    Last logged · {formatDate(lastDietLog.logged_on)}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge tone={adherenceTone(lastDietTotals.calories, dietPlan?.target_calories)}>
+                      {formatNumber(Math.round(lastDietTotals.calories))}
+                      {dietPlan?.target_calories != null ? ` / ${formatNumber(dietPlan.target_calories)}` : ""} kcal
+                    </Badge>
+                    <Badge tone={adherenceTone(lastDietTotals.protein, dietPlan?.target_protein_g)}>
+                      {formatNumber(Math.round(lastDietTotals.protein))}
+                      {dietPlan?.target_protein_g != null ? ` / ${formatNumber(dietPlan.target_protein_g)}` : ""} g protein
+                    </Badge>
+                    {lastDietLog.water_ml != null && (
+                      <Badge tone="info">{formatNumber(lastDietLog.water_ml)} ml water</Badge>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <EmptyRow text="No food logged yet." href={`/clients/${id}/nutrition`} cta="Log a day" />
+              )}
+            </div>
+          </CardBody>
+        </Card>
+      )}
 
       {/* Reminders / follow-ups */}
       <div>

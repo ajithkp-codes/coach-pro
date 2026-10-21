@@ -11,6 +11,7 @@ export function ClientTabs({ clientId }: { clientId: string }) {
     { href: base, label: "Overview" },
     { href: `${base}/progress`, label: "Progress" },
     { href: `${base}/training`, label: "Training" },
+    { href: `${base}/nutrition`, label: "Nutrition" },
     { href: `${base}/share`, label: "Share" },
   ];
 

@@ -43,6 +43,10 @@ export function ProgressArea({
     volumeSeries: TrendPoint[];
     exerciseSeries: Record<string, TrendPoint[]>;
     exerciseOptions: SeriesOption[];
+    calorieSeries: TrendPoint[];
+    proteinSeries: TrendPoint[];
+    calorieTarget: number | null;
+    proteinTarget: number | null;
   };
 }) {
   const [tab, setTab] = useState<Tab>("body");
@@ -74,6 +78,10 @@ export function ProgressArea({
           volumeSeries={charts.volumeSeries}
           exerciseSeries={charts.exerciseSeries}
           exerciseOptions={charts.exerciseOptions}
+          calorieSeries={charts.calorieSeries}
+          proteinSeries={charts.proteinSeries}
+          calorieTarget={charts.calorieTarget}
+          proteinTarget={charts.proteinTarget}
         />
       )}
     </div>

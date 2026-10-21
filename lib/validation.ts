@@ -153,6 +153,72 @@ export const workoutPlanSchema = z.object({
 
 export type WorkoutPlanInput = z.infer<typeof workoutPlanSchema>;
 
+// ---- Nutrition: diet plan (per-item numbers are free text so "approx" works) ----
+const mealEnum = z.enum(["breakfast", "lunch", "dinner", "snack", "other"]);
+
+export const dietPlanFoodSchema = z.object({
+  food: z.string().trim().min(1, "Food is required").max(160),
+  qty: planText(40),
+  calories: planText(20),
+  protein: planText(20),
+  notes: planText(200),
+});
+
+export const dietPlanMealSchema = z.object({
+  meal: mealEnum.default("other"),
+  time: planText(40),
+  items: z.array(dietPlanFoodSchema).max(40),
+});
+
+export const dietPlanDaySchema = z.object({
+  day: z.string().trim().min(1).max(24),
+  title: planText(120),
+  meals: z.array(dietPlanMealSchema).max(10),
+});
+
+export const dietPlanSchema = z.object({
+  name: z.string().trim().min(1, "Give the plan a name").max(120),
+  notes: optionalText,
+  is_active: z
+    .union([z.boolean(), z.string()])
+    .optional()
+    .transform((v) => v === true || v === "true" || v === "on"),
+  target_calories: optionalNumber,
+  target_protein_g: optionalNumber,
+  days: z.array(dietPlanDaySchema).max(14).default([]),
+  // Optional attachment (uploaded browser-direct to Storage first).
+  storage_path: z.string().trim().max(400).optional().transform((v) => (v ? v : null)),
+  original_name: z.string().trim().max(260).optional().transform((v) => (v ? v : null)),
+  content_type: z.string().trim().max(160).optional().transform((v) => (v ? v : null)),
+  size_bytes: z
+    .union([z.string(), z.number(), z.null()])
+    .optional()
+    .transform((v) => (v === "" || v == null ? null : Number(v))),
+});
+
+export type DietPlanInput = z.infer<typeof dietPlanSchema>;
+
+// ---- Nutrition: intake log (what the client actually ate on a day) ----
+export const dietEntrySchema = z.object({
+  meal: mealEnum.default("other"),
+  eaten_at: z.string().trim().max(40).optional().transform((v) => (v ? v : null)),
+  food: z.string().trim().min(1, "Food is required").max(160),
+  quantity: z.string().trim().max(80).optional().transform((v) => (v ? v : null)),
+  calories: optionalNumber,
+  protein_g: optionalNumber,
+  notes: optionalText,
+});
+
+export const dietLogSchema = z.object({
+  logged_on: z.string().min(1, "Date is required"),
+  water_ml: optionalNumber,
+  notes: optionalText,
+  entries: z.array(dietEntrySchema).max(60).default([]),
+});
+
+export type DietEntryInput = z.infer<typeof dietEntrySchema>;
+export type DietLogInput = z.infer<typeof dietLogSchema>;
+
 // ---- Progress photos (metadata; the file is uploaded browser-direct to Storage) ----
 export const photoMetaSchema = z.object({
   storage_path: z.string().trim().min(1).max(400),

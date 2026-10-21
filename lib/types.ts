@@ -218,3 +218,82 @@ export interface WorkoutSession {
 export interface WorkoutSessionWithSets extends WorkoutSession {
   sets: WorkoutSet[];
 }
+
+// ---- Nutrition ----
+export type MealType = "breakfast" | "lunch" | "dinner" | "snack" | "other";
+
+/** One food line inside a planned meal (numbers kept as free text, like plan reps). */
+export interface DietPlanFoodItem {
+  food: string;
+  qty: string;
+  calories: string;
+  protein: string;
+  notes: string;
+}
+
+export interface DietPlanMeal {
+  meal: MealType;
+  time: string; // e.g. "08:00" or "Post-workout"
+  items: DietPlanFoodItem[];
+}
+
+export interface DietPlanDay {
+  day: string; // e.g. "Mon" or "Every day"
+  title: string; // e.g. "Training day"
+  meals: DietPlanMeal[];
+}
+
+export interface DietPlan {
+  id: string;
+  trainer_id: string;
+  client_id: string;
+  name: string;
+  notes: string | null;
+  is_active: boolean;
+  target_calories: number | null;
+  target_protein_g: number | null;
+  days: DietPlanDay[];
+  storage_path: string | null;
+  original_name: string | null;
+  content_type: string | null;
+  size_bytes: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** A plan with a short-lived signed URL for its attachment (if any). */
+export interface DietPlanWithUrl extends DietPlan {
+  attachment_url: string | null;
+}
+
+export interface DietLogEntry {
+  id: string;
+  trainer_id: string;
+  client_id: string;
+  log_id: string;
+  position: number;
+  meal: MealType;
+  eaten_at: string | null;
+  food: string;
+  quantity: string | null;
+  calories: number | null;
+  protein_g: number | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface DietLog {
+  id: string;
+  trainer_id: string;
+  client_id: string;
+  logged_on: string;
+  water_ml: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** A day's log with its food entries attached, for display. */
+export interface DietLogWithEntries extends DietLog {
+  entries: DietLogEntry[];
+}

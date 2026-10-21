@@ -63,6 +63,10 @@ export function ChartsPanel({
   volumeSeries = [],
   exerciseSeries = {},
   exerciseOptions = [],
+  calorieSeries = [],
+  proteinSeries = [],
+  calorieTarget = null,
+  proteinTarget = null,
 }: {
   metricSeries: Record<string, TrendPoint[]>;
   metricOptions: SeriesOption[];
@@ -71,6 +75,10 @@ export function ChartsPanel({
   volumeSeries?: TrendPoint[];
   exerciseSeries?: Record<string, TrendPoint[]>;
   exerciseOptions?: SeriesOption[];
+  calorieSeries?: TrendPoint[];
+  proteinSeries?: TrendPoint[];
+  calorieTarget?: number | null;
+  proteinTarget?: number | null;
 }) {
   const [metricKey, setMetricKey] = useState(metricOptions[0]?.key ?? "");
   const [markerKey, setMarkerKey] = useState(markerOptions[0]?.key ?? "");
@@ -84,7 +92,9 @@ export function ChartsPanel({
     metricOptions.length === 0 &&
     markerOptions.length === 0 &&
     volumeSeries.length === 0 &&
-    exerciseOptions.length === 0
+    exerciseOptions.length === 0 &&
+    calorieSeries.length === 0 &&
+    proteinSeries.length === 0
   ) {
     return (
       <EmptyState
@@ -206,6 +216,30 @@ export function ChartsPanel({
           <CardBody>
             <SeriesSummary data={volumeSeries} unit="kg" lowerIsBetter={false} />
             <TrendChart data={volumeSeries} unit="kg" label="Volume (reps × weight)" />
+          </CardBody>
+        </Card>
+      )}
+
+      {calorieSeries.length > 0 && (
+        <Card>
+          <CardHeader>
+            <TitleWithIcon icon="flame">Calories logged</TitleWithIcon>
+          </CardHeader>
+          <CardBody>
+            <SeriesSummary data={calorieSeries} unit="kcal" />
+            <TrendChart data={calorieSeries} unit="kcal" label="Calories / day" target={calorieTarget} />
+          </CardBody>
+        </Card>
+      )}
+
+      {proteinSeries.length > 0 && (
+        <Card>
+          <CardHeader>
+            <TitleWithIcon icon="target">Protein logged</TitleWithIcon>
+          </CardHeader>
+          <CardBody>
+            <SeriesSummary data={proteinSeries} unit="g" />
+            <TrendChart data={proteinSeries} unit="g" label="Protein / day" target={proteinTarget} />
           </CardBody>
         </Card>
       )}

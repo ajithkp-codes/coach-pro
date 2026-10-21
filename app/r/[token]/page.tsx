@@ -7,6 +7,7 @@ import {
   recordReportView,
 } from "@/lib/data/report-public";
 import { METRIC_BY_KEY } from "@/lib/catalog/metrics";
+import { adherenceTone, type AdherenceTone } from "@/lib/nutrition";
 import { formatDate, formatNumber } from "@/lib/format";
 
 export const metadata = { title: "Progress Report · CoachPro" };
@@ -171,6 +172,41 @@ export default async function ReportPage({
               </section>
             )}
 
+            {/* Nutrition */}
+            {data.nutrition && data.nutrition.daysLogged > 0 && (
+              <section className="avoid-break">
+                <SectionLabel icon="utensils">Nutrition</SectionLabel>
+                {data.nutrition.planName && (
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Plan: <span className="font-medium text-foreground">{data.nutrition.planName}</span>
+                  </p>
+                )}
+                <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <NutritionTile
+                    label="Avg calories"
+                    value={data.nutrition.avgCalories}
+                    target={data.nutrition.calorieTarget}
+                    unit="kcal"
+                  />
+                  <NutritionTile
+                    label="Avg protein"
+                    value={data.nutrition.avgProtein}
+                    target={data.nutrition.proteinTarget}
+                    unit="g"
+                  />
+                  <Highlight label="Days logged" value={String(data.nutrition.daysLogged)} />
+                </div>
+                {data.nutrition.calorieSeries.length >= 2 && (
+                  <div className="mt-4 rounded-xl border border-border p-4 avoid-break">
+                    <p className="text-sm font-semibold">Calories per day</p>
+                    <div className="mt-2">
+                      <ReportChart data={data.nutrition.calorieSeries} id="diet_calories" color="#c2410c" unit="kcal" />
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+
             {/* Photos */}
             {data.photos.length > 0 && (
               <section className="avoid-break">
@@ -236,6 +272,45 @@ function Highlight({
       {change !== undefined && (
         <div className="mt-0.5">
           <Change change={change} unit={unit} lowerIsBetter={lowerIsBetter} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+const ADHERENCE_CLASS: Record<AdherenceTone, string> = {
+  success: "bg-success-bg text-success",
+  warning: "bg-warning-bg text-warning",
+  info: "bg-info-bg text-primary",
+  neutral: "bg-muted text-muted-foreground",
+};
+
+function NutritionTile({
+  label,
+  value,
+  target,
+  unit,
+}: {
+  label: string;
+  value: number | null;
+  target: number | null;
+  unit: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border p-3">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="mt-1 text-xl font-semibold tracking-tight">
+        {value != null ? formatNumber(value, unit) : "—"}
+      </p>
+      {target != null && (
+        <div className="mt-1">
+          <span
+            className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${
+              value != null ? ADHERENCE_CLASS[adherenceTone(value, target)] : ADHERENCE_CLASS.neutral
+            }`}
+          >
+            Target {formatNumber(target, unit)}
+          </span>
         </div>
       )}
     </div>

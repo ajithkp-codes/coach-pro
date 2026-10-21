@@ -142,6 +142,13 @@ const PATHS: Record<string, React.ReactNode> = {
       <path d="M6 10v10h12V10" />
     </>
   ),
+  utensils: (
+    <>
+      <path d="M6 3v8a2 2 0 0 0 2 2v8M10 3v8a2 2 0 0 1-2 2M8 3v6" />
+      <path d="M17 21V3c-2 1.5-3 4-3 7v4h3" />
+    </>
+  ),
+  droplet: <path d="M12 3.5s-6 6.6-6 11a6 6 0 0 0 12 0c0-4.4-6-11-6-11z" />,
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
   x: <path d="M6 6l12 12M18 6L6 18" />,
 };
