@@ -34,10 +34,17 @@ const dates = (count, spanDays = 90) =>
 const lerp = (a, b, i, n) => round(a + (b - a) * (i / (n - 1)));
 
 // ---- Client blueprints -----------------------------------------------------
+// Each client is populated across EVERY section: body metrics, health markers,
+// goals, training, nutrition (plan + logs + sometimes a pending submission and a
+// self-logging link), and for some: photos, a shared file, and a progress report.
+//   diet:  [target_calories, target_protein_g]
+//   style: "veg" | "nonveg" | "highprotein"  (drives the meal bank)
+//   logLink / submissions / report: Phase-C and report coverage toggles
 const CLIENTS = [
   {
     full_name: "Aarav Sharma", sex: "male", date_of_birth: "1990-05-12",
-    phone: "+91 98765 43210", notes: "Training for a half marathon. Watching cholesterol.",
+    phone: "+91 98765 43210", email: "aarav.sharma@example.com",
+    notes: "Training for a half marathon. Watching cholesterol.",
     height: 178, weight: [84, 79.3], fat: [22, 18.5], waist: [94, 87],
     markers: { total_cholesterol: [210, 198, 188], hdl: [38, 42, 46] },
     goals: [
@@ -45,9 +52,11 @@ const CLIENTS = [
       { title: "Total cholesterol under 180", category: "health", metric_key: "total_cholesterol", start_value: 210, target_value: 180, target_unit: "mg/dL", status: "active" },
     ],
     training: "push", photos: true, share: true,
+    diet: [2300, 150], style: "nonveg", logLink: true, report: "6m",
   },
   {
     full_name: "Priya Nair", sex: "female", date_of_birth: "1995-11-03",
+    email: "priya.nair@example.com",
     notes: "Strength + fat loss. Pre-diabetic range — monitoring glucose.",
     height: 162, weight: [68, 63.8], fat: [31, 26], waist: [82, 74],
     markers: { fasting_glucose: [118, 108, 99], hba1c: [6.1, 5.8, 5.6] },
@@ -56,6 +65,7 @@ const CLIENTS = [
       { title: "Lose 5 kg", category: "health", metric_key: "weight_kg", start_value: 68, target_value: 63, target_unit: "kg", target_date: daysAgo(-20), status: "active" },
     ],
     training: "full", share: true,
+    diet: [1700, 120], style: "veg", logLink: true, submissions: 1, report: "3m",
   },
   {
     full_name: "Rohan Mehta", sex: "male", date_of_birth: "1988-02-20",
@@ -66,6 +76,7 @@ const CLIENTS = [
       { title: "Bulk to 82 kg", category: "workout", metric_key: "weight_kg", start_value: 76, target_value: 82, target_unit: "kg", target_date: daysAgo(-30), status: "active" },
     ],
     training: "push",
+    diet: [2900, 180], style: "nonveg",
   },
   {
     full_name: "Sneha Reddy", sex: "female", date_of_birth: "1992-07-09",
@@ -76,6 +87,7 @@ const CLIENTS = [
       { title: "Vitamin D above 30", category: "health", metric_key: "vitamin_d", start_value: 18, target_value: 30, target_unit: "ng/mL", status: "active" },
     ],
     training: null,
+    diet: [1800, 90], style: "veg",
   },
   {
     full_name: "Vikram Singh", sex: "male", date_of_birth: "1983-09-15",
@@ -86,6 +98,7 @@ const CLIENTS = [
       { title: "Systolic under 130", category: "health", metric_key: "bp_systolic", start_value: 148, target_value: 130, target_unit: "mmHg", target_date: daysAgo(-60), status: "active" },
     ],
     training: "full",
+    diet: [2000, 110], style: "nonveg", report: "6m", reportRevoked: true,
   },
   {
     full_name: "Ananya Iyer", sex: "female", date_of_birth: "1998-01-25",
@@ -97,8 +110,189 @@ const CLIENTS = [
       { title: "Run a sub-2:00 half", category: "workout", status: "active" },
     ],
     training: "full",
+    diet: [2100, 110], style: "veg", report: "12m",
+  },
+  {
+    full_name: "Kabir Khanna", sex: "male", date_of_birth: "1991-03-08",
+    phone: "+91 98111 22333", email: "kabir.khanna@example.com",
+    notes: "Powerlifting block. Pushing protein hard. Logs most meals himself.",
+    height: 180, weight: [88, 92], fat: [18, 17], waist: [88, 89],
+    markers: { total_cholesterol: [192, 188], vitamin_d: [30, 38], triglycerides: [140, 118] },
+    goals: [
+      { title: "Deadlift 200 kg", category: "workout", status: "active" },
+      { title: "Protein 190 g daily", category: "health", status: "active" },
+      { title: "Bulk to 92 kg", category: "workout", metric_key: "weight_kg", start_value: 88, target_value: 92, target_unit: "kg", status: "achieved" },
+    ],
+    training: "push", photos: true, share: true,
+    diet: [3000, 190], style: "highprotein", logLink: true, submissions: 2, report: "all",
+  },
+  {
+    full_name: "Meera Joshi", sex: "female", date_of_birth: "1993-06-22",
+    phone: "+91 97000 44556", notes: "PCOS — fat loss and insulin sensitivity focus.",
+    height: 160, weight: [74, 69], fat: [34, 30], waist: [90, 83],
+    markers: { fasting_glucose: [112, 104, 98], hba1c: [5.9, 5.7, 5.5], triglycerides: [168, 140, 122] },
+    goals: [
+      { title: "HbA1c under 5.6", category: "health", metric_key: "hba1c", start_value: 5.9, target_value: 5.6, target_unit: "%", status: "active" },
+      { title: "Lose 8 kg", category: "health", metric_key: "weight_kg", start_value: 74, target_value: 66, target_unit: "kg", target_date: daysAgo(-50), status: "active" },
+    ],
+    training: "full",
+    diet: [1600, 110], style: "veg", logLink: true, submissions: 1,
+  },
+  {
+    full_name: "Arjun Rao", sex: "male", date_of_birth: "1987-12-14",
+    email: "arjun.rao@example.com", notes: "Endurance cyclist. High training volume, watching lipids.",
+    height: 176, weight: [72, 70.5], fat: [16, 14], waist: [82, 79],
+    markers: { total_cholesterol: [205, 190, 182], ldl: [138, 122, 110], hdl: [44, 48, 52] },
+    goals: [
+      { title: "LDL under 100", category: "health", metric_key: "ldl", start_value: 138, target_value: 100, target_unit: "mg/dL", status: "active" },
+    ],
+    training: "full",
+    diet: [2600, 130], style: "nonveg", report: "6m",
+  },
+  {
+    full_name: "Divya Menon", sex: "female", date_of_birth: "1994-04-30",
+    notes: "Postnatal return to training. Rebuilding core strength gradually.",
+    height: 164, weight: [70, 66], fat: [32, 29], waist: [88, 81],
+    markers: { vitamin_d: [20, 27, 33], hdl: [50, 54] },
+    goals: [
+      { title: "Return to pre-pregnancy weight", category: "health", metric_key: "weight_kg", start_value: 70, target_value: 62, target_unit: "kg", target_date: daysAgo(-75), status: "active" },
+      { title: "Hold a 60s plank", category: "workout", status: "paused" },
+    ],
+    training: null,
+    diet: [1900, 100], style: "veg",
+  },
+  {
+    full_name: "Sameer Gupta", sex: "male", date_of_birth: "1980-08-19",
+    phone: "+91 90123 45678", notes: "Desk job, hypertension + weight. Needs sustainable habits.",
+    height: 173, weight: [96, 90], fat: [30, 27], waist: [106, 99],
+    markers: { bp_systolic: [150, 144, 139], bp_diastolic: [98, 94, 90], fasting_glucose: [106, 101] },
+    goals: [
+      { title: "Lose 10 kg", category: "health", metric_key: "weight_kg", start_value: 96, target_value: 86, target_unit: "kg", target_date: daysAgo(-40), status: "active" },
+      { title: "Systolic under 135", category: "health", metric_key: "bp_systolic", start_value: 150, target_value: 135, target_unit: "mmHg", status: "active" },
+    ],
+    training: "full", share: true,
+    diet: [2200, 120], style: "nonveg", report: "6m",
+  },
+  {
+    full_name: "Tanvi Desai", sex: "female", date_of_birth: "1996-10-11",
+    email: "tanvi.desai@example.com", notes: "Physique competition prep. Strict macros, high protein.",
+    height: 167, weight: [60, 56], fat: [22, 16], waist: [70, 64],
+    markers: { hdl: [56, 60], total_cholesterol: [172, 168] },
+    goals: [
+      { title: "Stage weight 55 kg", category: "health", metric_key: "weight_kg", start_value: 60, target_value: 55, target_unit: "kg", target_date: daysAgo(-25), status: "active" },
+      { title: "Protein 150 g daily", category: "health", status: "active" },
+    ],
+    training: "push", photos: true,
+    diet: [1900, 150], style: "highprotein", logLink: true, submissions: 1, report: "3m",
   },
 ];
+
+// ---- Nutrition meal bank ----------------------------------------------------
+// Realistic India-first meals with approximate per-serving kcal + protein (g).
+const MEAL_BANK = {
+  veg: {
+    breakfast: [
+      { food: "Masala oats", qty: "1 bowl", kcal: 300, protein: 12 },
+      { food: "Paneer bhurji + 2 roti", qty: "1 plate", kcal: 360, protein: 20 },
+      { food: "Poha with peanuts", qty: "1 bowl", kcal: 280, protein: 8 },
+    ],
+    lunch: [
+      { food: "Dal, rice & mixed veg", qty: "1 plate", kcal: 480, protein: 18 },
+      { food: "Rajma chawal", qty: "1 plate", kcal: 500, protein: 18 },
+      { food: "Chole + 2 roti", qty: "1 plate", kcal: 460, protein: 17 },
+    ],
+    snack: [
+      { food: "Greek yogurt", qty: "150 g", kcal: 120, protein: 15 },
+      { food: "Sprouts chaat", qty: "1 bowl", kcal: 180, protein: 11 },
+      { food: "Fruit & almonds", qty: "1 serving", kcal: 210, protein: 6 },
+    ],
+    dinner: [
+      { food: "Paneer curry + 2 roti", qty: "1 plate", kcal: 440, protein: 24 },
+      { food: "Tofu stir-fry + quinoa", qty: "1 bowl", kcal: 400, protein: 22 },
+      { food: "Mixed veg + dal + rice", qty: "1 plate", kcal: 430, protein: 18 },
+    ],
+  },
+  nonveg: {
+    breakfast: [
+      { food: "Egg bhurji + 2 toast", qty: "1 plate", kcal: 340, protein: 22 },
+      { food: "3 boiled eggs + oats", qty: "1 serving", kcal: 360, protein: 24 },
+      { food: "Chicken sandwich", qty: "1", kcal: 390, protein: 26 },
+    ],
+    lunch: [
+      { food: "Chicken curry + rice", qty: "1 plate", kcal: 540, protein: 38 },
+      { food: "Fish curry + rice", qty: "1 plate", kcal: 500, protein: 34 },
+      { food: "Egg curry + 2 roti", qty: "1 plate", kcal: 460, protein: 26 },
+    ],
+    snack: [
+      { food: "Whey shake", qty: "1 scoop", kcal: 160, protein: 30 },
+      { food: "Greek yogurt", qty: "150 g", kcal: 120, protein: 15 },
+      { food: "Boiled eggs (2)", qty: "2", kcal: 140, protein: 12 },
+    ],
+    dinner: [
+      { food: "Grilled chicken + veg", qty: "1 plate", kcal: 430, protein: 44 },
+      { food: "Tandoori fish + salad", qty: "1 plate", kcal: 380, protein: 38 },
+      { food: "Chicken + 2 roti", qty: "1 plate", kcal: 470, protein: 36 },
+    ],
+  },
+  highprotein: {
+    breakfast: [
+      { food: "4 egg-white omelette + oats", qty: "1 serving", kcal: 340, protein: 32 },
+      { food: "Protein pancakes", qty: "3", kcal: 380, protein: 34 },
+      { food: "Paneer + egg bhurji", qty: "1 plate", kcal: 360, protein: 34 },
+    ],
+    lunch: [
+      { food: "Grilled chicken + rice + salad", qty: "1 plate", kcal: 560, protein: 52 },
+      { food: "Fish + quinoa bowl", qty: "1 bowl", kcal: 520, protein: 46 },
+      { food: "Paneer tikka + rice", qty: "1 plate", kcal: 540, protein: 40 },
+    ],
+    snack: [
+      { food: "Double whey shake", qty: "2 scoops", kcal: 260, protein: 50 },
+      { food: "Greek yogurt + whey", qty: "1 bowl", kcal: 220, protein: 38 },
+      { food: "Cottage cheese", qty: "150 g", kcal: 180, protein: 24 },
+    ],
+    dinner: [
+      { food: "Chicken breast + veg", qty: "250 g", kcal: 440, protein: 56 },
+      { food: "Egg whites + paneer salad", qty: "1 plate", kcal: 400, protein: 48 },
+      { food: "Grilled fish + greens", qty: "1 plate", kcal: 380, protein: 44 },
+    ],
+  },
+};
+
+const pick = (arr, i) => arr[((i % arr.length) + arr.length) % arr.length];
+
+// Two plan-day templates (training / rest) from the client's meal style.
+function buildPlanDays(style) {
+  const b = MEAL_BANK[style] ?? MEAL_BANK.veg;
+  const toItem = (p) => ({ food: p.food, qty: p.qty, calories: String(p.kcal), protein: String(p.protein), notes: "" });
+  const day = (label, title, offset, extraSnack) => ({
+    day: label,
+    title,
+    meals: [
+      { meal: "breakfast", time: "08:00", items: [toItem(pick(b.breakfast, offset))] },
+      { meal: "lunch", time: "13:00", items: [toItem(pick(b.lunch, offset))] },
+      { meal: "snack", time: "17:00", items: extraSnack ? [toItem(pick(b.snack, offset)), toItem(pick(b.snack, offset + 1))] : [toItem(pick(b.snack, offset))] },
+      { meal: "dinner", time: "20:30", items: [toItem(pick(b.dinner, offset))] },
+    ],
+  });
+  return [day("Mon", "Training day", 0, true), day("Thu", "Rest day", 1, false)];
+}
+
+// One day's actual entries, numbers jittered by `factor` to vary adherence.
+function buildLogEntries(style, seed, factor) {
+  const b = MEAL_BANK[style] ?? MEAL_BANK.veg;
+  const mk = (meal, time, p) => ({
+    meal, eaten_at: time,
+    food: p.food, quantity: p.qty,
+    calories: Math.round(p.kcal * factor),
+    protein_g: round(p.protein * factor, 0),
+  });
+  return [
+    mk("breakfast", "08:10", pick(b.breakfast, seed)),
+    mk("lunch", "13:20", pick(b.lunch, seed + 1)),
+    mk("snack", "17:05", pick(b.snack, seed)),
+    mk("dinner", "20:40", pick(b.dinner, seed + 2)),
+  ];
+}
 
 function photoSVG(label, hue) {
   return Buffer.from(
@@ -142,13 +336,15 @@ async function main() {
   console.log(`Trainer ready: ${DEMO_EMAIL}`);
 
   let photoCount = 0;
+  let planCount = 0, logCount = 0, submissionCount = 0, logLinkCount = 0;
   const idByName = {};
   for (const cfg of CLIENTS) {
     const { data: client } = await admin
       .from("clients")
       .insert({
         trainer_id: trainerId, full_name: cfg.full_name, sex: cfg.sex,
-        date_of_birth: cfg.date_of_birth, phone: cfg.phone ?? null, notes: cfg.notes,
+        date_of_birth: cfg.date_of_birth, phone: cfg.phone ?? null,
+        email: cfg.email ?? null, notes: cfg.notes,
         consent_given: true, consent_at: new Date().toISOString(),
       })
       .select("id").single();
@@ -256,6 +452,84 @@ async function main() {
       }
     }
 
+    // Nutrition — plan, logs (+entries), optional self-logging link & submissions
+    if (cfg.diet) {
+      const [kcal, protein] = cfg.diet;
+      const style = cfg.style ?? "veg";
+
+      // An older intro plan (archived) + the current active plan.
+      await admin.from("diet_plans").insert([
+        {
+          trainer_id: trainerId, client_id: cid, name: "Intro plan", is_active: false,
+          target_calories: kcal + 150, target_protein_g: Math.max(60, protein - 20),
+          notes: "Starter week — ease into the routine.", days: buildPlanDays(style),
+        },
+        {
+          trainer_id: trainerId, client_id: cid, name: `${kcal} kcal · ${protein}g protein`, is_active: true,
+          target_calories: kcal, target_protein_g: protein,
+          notes: "Hit protein first, then fill calories. Water 3L/day. Two training-day templates and a rest-day template.",
+          days: buildPlanDays(style),
+        },
+      ]);
+      planCount += 2;
+
+      // Daily logs across the last two weeks, with a couple of natural gaps.
+      // Days 0–1 are left free for any pending client submissions below.
+      const factors = [0.95, 1.08, 1.15, 0.9, 1.05, 1.12, 0.98, 1.1, 1.0, 1.06, 0.92, 1.14];
+      let fi = 0;
+      for (let dayOffset = 2; dayOffset <= 15; dayOffset++) {
+        if (dayOffset % 5 === 0) continue; // a skipped day here and there
+        const factor = factors[fi % factors.length];
+        const seed = fi;
+        fi++;
+        const { data: log } = await admin
+          .from("diet_logs")
+          .insert({
+            trainer_id: trainerId, client_id: cid, logged_on: daysAgo(dayOffset),
+            water_ml: 1800 + ((seed * 240) % 1400),
+            notes: seed % 4 === 0 ? "Felt good, trained fasted." : null,
+            source: seed % 4 === 2 ? "client" : "trainer",
+          })
+          .select("id").single();
+        const entries = buildLogEntries(style, seed, factor);
+        await admin.from("diet_log_entries").insert(
+          entries.map((e, pos) => ({
+            trainer_id: trainerId, client_id: cid, log_id: log.id, position: pos,
+            meal: e.meal, eaten_at: e.eaten_at, food: e.food, quantity: e.quantity,
+            calories: e.calories, protein_g: e.protein_g, notes: null,
+          })),
+        );
+        logCount++;
+      }
+
+      // Self-logging link
+      if (cfg.logLink) {
+        await admin.from("clients").update({
+          log_token: randomBytes(24).toString("base64url"),
+          log_token_created_at: new Date().toISOString(),
+        }).eq("id", cid);
+        logLinkCount++;
+      }
+
+      // Pending client submissions awaiting trainer review (today / yesterday)
+      if (cfg.submissions) {
+        const subRows = [];
+        for (let s = 0; s < cfg.submissions; s++) {
+          const entries = buildLogEntries(style, 20 + s, 1.0 + s * 0.05).map((e) => ({
+            meal: e.meal, eaten_at: e.eaten_at, food: e.food, quantity: e.quantity,
+            calories: e.calories, protein_g: e.protein_g, notes: "",
+          }));
+          subRows.push({
+            trainer_id: trainerId, client_id: cid, logged_on: daysAgo(s),
+            water_ml: 2000 + s * 300, notes: s === 0 ? "Logged from my phone 🙂" : null,
+            entries,
+          });
+        }
+        await admin.from("diet_log_submissions").insert(subRows);
+        submissionCount += subRows.length;
+      }
+    }
+
     console.log(`  ✓ ${cfg.full_name}`);
   }
 
@@ -290,7 +564,41 @@ async function main() {
     },
   ]);
 
-  console.log(`\nSeeded ${CLIENTS.length} clients, ${photoCount} photos, 5 reminders, 2 plans.`);
+  // Progress reports — shareable snapshots, with varied states (active / revoked
+  // / expired / heavily viewed) so the reports list exercises every branch.
+  let reportCount = 0;
+  const reportRows = [];
+  for (const cfg of CLIENTS) {
+    if (!cfg.report) continue;
+    const cid = idByName[cfg.full_name];
+    const expired = cfg.report === "3m" && cfg.full_name === "Tanvi Desai";
+    reportRows.push({
+      trainer_id: trainerId, client_id: cid,
+      token: randomBytes(24).toString("base64url"),
+      title: `${cfg.full_name.split(" ")[0]}'s progress`,
+      period: cfg.report,
+      include_photos: !!cfg.photos,
+      revoked: !!cfg.reportRevoked,
+      view_count: cfg.reportRevoked ? 2 : expired ? 9 : Math.floor(Math.random() * 6),
+      expires_at: expired
+        ? new Date(Date.now() - 2 * 86400000).toISOString()
+        : new Date(Date.now() + 30 * 86400000).toISOString(),
+    });
+    reportCount++;
+  }
+  if (reportRows.length) await admin.from("progress_reports").insert(reportRows);
+
+  // Subscription — put the demo trainer on the Pro plan so pro-gated features show.
+  await admin.from("subscriptions").upsert({
+    trainer_id: trainerId, plan: "pro", status: "active",
+    current_end: new Date(Date.now() + 30 * 86400000).toISOString(),
+  }, { onConflict: "trainer_id" });
+
+  console.log(
+    `\nSeeded ${CLIENTS.length} clients, ${photoCount} photos, ${planCount} diet plans, ` +
+    `${logCount} diet logs, ${submissionCount} pending submissions, ${logLinkCount} self-logging links, ` +
+    `${reportCount} progress reports, 5 reminders, 2 workout plans, 1 Pro subscription.`,
+  );
   console.log(`\nSign in:\n  email:    ${DEMO_EMAIL}\n  password: ${DEMO_PASSWORD}\n`);
 }
 

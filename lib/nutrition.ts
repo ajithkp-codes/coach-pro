@@ -1,4 +1,4 @@
-import type { DietLogEntry, DietPlanDay, MealType } from "@/lib/types";
+import type { DietLogEntry, DietLogWithEntries, DietPlan, DietPlanDay, MealType } from "@/lib/types";
 
 /** Display order + labels for meal types. */
 export const MEALS: { value: MealType; label: string }[] = [
@@ -65,4 +65,103 @@ export function adherenceTone(
   if (pct > 1.1) return "warning";
   if (pct >= 0.9) return "success";
   return "info";
+}
+
+// ---- In-app nudges: adherence suggestions the trainer can turn into reminders ----
+
+/** A suggested follow-up computed from a client's logs — never sent anywhere. */
+export interface NutritionNudge {
+  key: string;
+  /** Ready-to-use reminder title (one-tap "Add reminder"). */
+  title: string;
+  /** What the trainer sees explaining the nudge. */
+  detail: string;
+  tone: "warning" | "info";
+  icon: string;
+}
+
+/** Whole days between two ISO dates (yyyy-mm-dd). */
+function daysBetween(fromISO: string, toISO: string): number {
+  const a = new Date(`${fromISO}T00:00:00Z`).getTime();
+  const b = new Date(`${toISO}T00:00:00Z`).getTime();
+  return Math.round((b - a) / 86_400_000);
+}
+
+/**
+ * Suggest nutrition follow-ups from recent logs. Only fires when the client is
+ * being coached on diet (an active plan exists). Stays entirely in-app: the
+ * trainer decides whether to turn each one into a reminder.
+ */
+export function computeNutritionNudges(opts: {
+  today: string;
+  clientName: string;
+  activePlan: Pick<DietPlan, "target_calories" | "target_protein_g"> | null;
+  logs: DietLogWithEntries[]; // newest day first
+}): NutritionNudge[] {
+  const { today, clientName, activePlan, logs } = opts;
+  if (!activePlan) return [];
+
+  const name = clientName.split(" ")[0] || clientName;
+  const nudges: NutritionNudge[] = [];
+
+  // 1) Stale / absent logging.
+  if (!logs.length) {
+    nudges.push({
+      key: "no-logs",
+      title: `Ask ${name} to start logging meals`,
+      detail: "No food has been logged yet against the active plan.",
+      tone: "info",
+      icon: "utensils",
+    });
+  } else {
+    const daysSince = daysBetween(logs[0].logged_on, today);
+    if (daysSince >= 3) {
+      nudges.push({
+        key: "stale-log",
+        title: `Nudge ${name} to log meals`,
+        detail: `No food logged in ${daysSince} days (last on ${logs[0].logged_on}).`,
+        tone: "warning",
+        icon: "clock",
+      });
+    }
+  }
+
+  // Recent logged days (up to 5) for average-based nudges.
+  const recent = logs.slice(0, 5).map((l) => dayTotals(l.entries));
+
+  // 2) Consistently over the calorie target.
+  if (activePlan.target_calories) {
+    const withCals = recent.filter((t) => t.calories > 0);
+    if (withCals.length >= 3) {
+      const avg = withCals.reduce((s, t) => s + t.calories, 0) / withCals.length;
+      if (avg > activePlan.target_calories * 1.1) {
+        nudges.push({
+          key: "over-calories",
+          title: `Check in with ${name} on portions`,
+          detail: `Averaging ${Math.round(avg)} kcal over the last ${withCals.length} logged days vs a ${activePlan.target_calories} kcal target.`,
+          tone: "warning",
+          icon: "flame",
+        });
+      }
+    }
+  }
+
+  // 3) Consistently under the protein target.
+  if (activePlan.target_protein_g) {
+    const withProtein = recent.filter((t) => t.protein > 0);
+    if (withProtein.length >= 3) {
+      const avg = withProtein.reduce((s, t) => s + t.protein, 0) / withProtein.length;
+      if (avg < activePlan.target_protein_g * 0.8) {
+        nudges.push({
+          key: "low-protein",
+          title: `Remind ${name} to hit protein`,
+          detail: `Protein averaging ${Math.round(avg)} g over the last ${withProtein.length} logged days vs a ${activePlan.target_protein_g} g target.`,
+          tone: "info",
+          icon: "target",
+        });
+      }
+    }
+  }
+
+  return nudges;
 }

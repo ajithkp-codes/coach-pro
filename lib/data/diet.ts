@@ -55,6 +55,7 @@ async function insertEntries(
 export async function createDietLog(
   clientId: string,
   input: DietLogInput,
+  source: "trainer" | "client" = "trainer",
 ): Promise<DietLog> {
   const { supabase, trainerId } = await authed();
   const { data, error } = await supabase
@@ -65,6 +66,7 @@ export async function createDietLog(
       logged_on: input.logged_on,
       water_ml: input.water_ml,
       notes: input.notes,
+      source,
     })
     .select("*")
     .single();

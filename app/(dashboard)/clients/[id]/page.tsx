@@ -15,13 +15,14 @@ import { listSessions, sessionVolume } from "@/lib/data/training";
 import { listPhotos } from "@/lib/data/photos";
 import { listDietLogs } from "@/lib/data/diet";
 import { getActiveDietPlan } from "@/lib/data/dietPlans";
-import { dayTotals, adherenceTone } from "@/lib/nutrition";
+import { dayTotals, adherenceTone, computeNutritionNudges } from "@/lib/nutrition";
 import { listClientReminders } from "@/lib/data/reminders";
 import { RemindersPanel } from "@/components/reminders/reminders-panel";
+import { NutritionNudges } from "@/components/nutrition/nutrition-nudges";
 import { CopyButton } from "@/components/ui/copy-button";
 import { MARKER_BY_KEY, markerLabel } from "@/lib/catalog/markers";
 import { computeInsights, generateProgressSummary } from "@/lib/data/insights";
-import { formatDate, formatNumber, timeAgo } from "@/lib/format";
+import { formatDate, formatNumber, timeAgo, todayISO } from "@/lib/format";
 import type { BodyMetric, HealthMarker } from "@/lib/types";
 
 const toneClass: Record<string, string> = {
@@ -66,6 +67,12 @@ export default async function ClientOverviewPage({
   const lastDietLog = dietLogs[0]; // newest first
   const lastDietTotals = lastDietLog ? dayTotals(lastDietLog.entries) : null;
   const hasNutrition = !!dietPlan || dietLogs.length > 0;
+  const nutritionNudges = computeNutritionNudges({
+    today: todayISO(),
+    clientName: client.full_name,
+    activePlan: dietPlan,
+    logs: dietLogs,
+  });
 
   const hasHero = weight.latest != null || fat.latest != null || waist.latest != null;
 
@@ -293,6 +300,7 @@ export default async function ClientOverviewPage({
       {/* Reminders / follow-ups */}
       <div>
         <h2 className="mb-3 text-sm font-semibold">Follow-ups</h2>
+        <NutritionNudges clientId={id} nudges={nutritionNudges} />
         <RemindersPanel clientId={id} reminders={reminders} />
       </div>
 

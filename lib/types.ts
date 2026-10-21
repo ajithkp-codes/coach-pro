@@ -28,6 +28,8 @@ export interface Client {
   status: ClientStatus;
   consent_given: boolean;
   consent_at: string | null;
+  log_token: string | null;
+  log_token_created_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -289,6 +291,7 @@ export interface DietLog {
   logged_on: string;
   water_ml: number | null;
   notes: string | null;
+  source: "trainer" | "client";
   created_at: string;
   updated_at: string;
 }
@@ -296,4 +299,28 @@ export interface DietLog {
 /** A day's log with its food entries attached, for display. */
 export interface DietLogWithEntries extends DietLog {
   entries: DietLogEntry[];
+}
+
+/** One food line inside a client submission (JSONB; same shape as a log entry). */
+export interface DietSubmissionEntry {
+  meal: MealType;
+  eaten_at: string | null;
+  food: string;
+  quantity: string | null;
+  calories: number | null;
+  protein_g: number | null;
+  notes: string | null;
+}
+
+/** A day the client submitted via their logging link, awaiting trainer review. */
+export interface DietSubmission {
+  id: string;
+  trainer_id: string;
+  client_id: string;
+  logged_on: string;
+  water_ml: number | null;
+  notes: string | null;
+  entries: DietSubmissionEntry[];
+  created_at: string;
+  updated_at: string;
 }

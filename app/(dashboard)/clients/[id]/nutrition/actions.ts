@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { dietLogSchema } from "@/lib/validation";
 import { createDietLog, updateDietLog, deleteDietLog } from "@/lib/data/diet";
+import { acceptDietSubmission, deleteDietSubmission } from "@/lib/data/dietSubmissions";
+import { setClientLogToken, clearClientLogToken } from "@/lib/data/clientLogLink";
 
 export interface DietLogState {
   ok?: boolean;
@@ -79,5 +81,55 @@ export async function updateDietLogAction(
 
 export async function deleteDietLogAction(clientId: string, logId: string): Promise<void> {
   await deleteDietLog(logId);
+  revalidate(clientId);
+}
+
+/** Create a log from an edited client submission, then clear it from the queue. */
+export async function createDietLogFromSubmissionAction(
+  clientId: string,
+  submissionId: string,
+  _prev: DietLogState,
+  formData: FormData,
+): Promise<DietLogState> {
+  const parsed = parse(formData);
+  if (!parsed.success) return { error: parsed.error };
+  try {
+    await createDietLog(clientId, parsed.data, "client");
+    await deleteDietSubmission(submissionId);
+  } catch (e) {
+    console.error("createDietLogFromSubmission failed", e);
+    return { error: "Couldn't accept the submission. Please try again." };
+  }
+  revalidate(clientId);
+  return { ok: true };
+}
+
+/** Accept a client submission as-is into the food log. */
+export async function acceptDietSubmissionAction(
+  clientId: string,
+  submissionId: string,
+): Promise<void> {
+  await acceptDietSubmission(submissionId);
+  revalidate(clientId);
+}
+
+/** Discard a client submission without logging it. */
+export async function discardDietSubmissionAction(
+  clientId: string,
+  submissionId: string,
+): Promise<void> {
+  await deleteDietSubmission(submissionId);
+  revalidate(clientId);
+}
+
+/** Turn on (or rotate) the client's self-logging link. */
+export async function enableClientLogAction(clientId: string): Promise<void> {
+  await setClientLogToken(clientId);
+  revalidate(clientId);
+}
+
+/** Turn off the client's self-logging link. */
+export async function disableClientLogAction(clientId: string): Promise<void> {
+  await clearClientLogToken(clientId);
   revalidate(clientId);
 }
