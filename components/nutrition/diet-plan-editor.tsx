@@ -8,6 +8,8 @@ import { Field } from "@/components/ui/field";
 import { createClient } from "@/lib/supabase/client";
 import { SHARE_BUCKET } from "@/lib/constants";
 import { FOOD_NAMES, findFood } from "@/lib/catalog/foods";
+import { DIET_TEMPLATES } from "@/lib/catalog/diet-templates";
+import { generateDietPlanAction } from "@/app/(dashboard)/clients/[id]/nutrition/plan-ai-actions";
 import { MEALS, planDayTotals } from "@/lib/nutrition";
 import { formatBytes, formatNumber } from "@/lib/format";
 import type { DietPlanState } from "@/app/(dashboard)/clients/[id]/nutrition/plan-actions";
@@ -28,6 +30,14 @@ const emptyDay = (day: string): DietPlanDay => ({
     emptyMeal("dinner", "20:30"),
   ],
 });
+
+/** Deep-clone seeded days so editing state never mutates a shared template. */
+const cloneDays = (ds: DietPlanDay[]): DietPlanDay[] =>
+  ds.map((d) => ({
+    day: d.day,
+    title: d.title,
+    meals: d.meals.map((m) => ({ meal: m.meal, time: m.time, items: m.items.map((it) => ({ ...it })) })),
+  }));
 
 function extOf(name: string): string {
   const e = name.includes(".") ? name.split(".").pop() : "";
@@ -50,10 +60,48 @@ export function DietPlanEditor({
   const [days, setDays] = useState<DietPlanDay[]>(
     plan ? plan.days : [emptyDay("Every day")],
   );
+  const [name, setName] = useState(plan?.name ?? "");
+  const [calTarget, setCalTarget] = useState(plan?.target_calories != null ? String(plan.target_calories) : "");
+  const [proTarget, setProTarget] = useState(plan?.target_protein_g != null ? String(plan.target_protein_g) : "");
   const [file, setFile] = useState<File | null>(null);
   const [removeAttachment, setRemoveAttachment] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // New plans open on a quick-start chooser (template / AI / blank); editing an
+  // existing plan skips straight to the builder.
+  const [started, setStarted] = useState<boolean>(!!plan);
+  const [goal, setGoal] = useState("");
+  const [aiCals, setAiCals] = useState("");
+  const [aiProtein, setAiProtein] = useState("");
+  const [prefs, setPrefs] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [genError, setGenError] = useState<string | null>(null);
+
+  function seed(opts: { days: DietPlanDay[]; calories?: number | null; protein?: number | null; name?: string }) {
+    setDays(opts.days.length ? cloneDays(opts.days) : [emptyDay("Every day")]);
+    if (opts.calories != null) setCalTarget(String(opts.calories));
+    if (opts.protein != null) setProTarget(String(opts.protein));
+    if (opts.name && !name.trim()) setName(opts.name);
+    setStarted(true);
+  }
+
+  async function generate() {
+    setGenerating(true);
+    setGenError(null);
+    const res = await generateDietPlanAction({
+      goal,
+      calories: aiCals,
+      protein: aiProtein,
+      preferences: prefs,
+    });
+    setGenerating(false);
+    if (res.ok && res.days) {
+      seed({ days: res.days, calories: res.targetCalories, protein: res.targetProtein });
+    } else {
+      setGenError(res.error ?? "Something went wrong generating the plan.");
+    }
+  }
 
   // ---- day / meal / item mutations ----
   const updateDay = (di: number, patch: Partial<DietPlanDay>) =>
@@ -161,6 +209,76 @@ export function DietPlanEditor({
     }
   }
 
+  if (!started) {
+    return (
+      <div className="flex flex-col gap-5">
+        <div>
+          <p className="text-sm font-medium">Start from a template</p>
+          <p className="text-sm text-muted-foreground">Seed a day of meals and targets, then edit anything.</p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            {DIET_TEMPLATES.map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => seed({ days: t.days, calories: t.target_calories, protein: t.target_protein_g, name: t.label.split(" · ")[0] })}
+                className="flex flex-col gap-1 rounded-[var(--radius)] border border-border p-3 text-left transition-colors hover:border-primary hover:bg-muted/50"
+              >
+                <span className="text-sm font-semibold">{t.label}</span>
+                <span className="text-xs text-muted-foreground">{t.description}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-[var(--radius)] border border-border p-4">
+          <p className="flex items-center gap-1.5 text-sm font-medium">
+            <Icon name="sparkles" size={15} className="text-primary" /> Generate with AI
+          </p>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            Describe the client&apos;s goal — Claude drafts a day of meals and targets, and you refine them.
+          </p>
+          <div className="mt-3 flex flex-col gap-3">
+            <Field label="Goal" htmlFor="ai-goal">
+              <Input
+                id="ai-goal"
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+                placeholder="e.g. lose fat while keeping muscle, vegetarian"
+              />
+            </Field>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Calorie target" htmlFor="ai-cals" hint="optional">
+                <Input id="ai-cals" inputMode="numeric" value={aiCals} onChange={(e) => setAiCals(e.target.value)} placeholder="e.g. 1800" />
+              </Field>
+              <Field label="Protein target" htmlFor="ai-protein" hint="optional, grams">
+                <Input id="ai-protein" inputMode="numeric" value={aiProtein} onChange={(e) => setAiProtein(e.target.value)} placeholder="e.g. 140" />
+              </Field>
+            </div>
+            <Field label="Preferences / restrictions" htmlFor="ai-prefs">
+              <Input
+                id="ai-prefs"
+                value={prefs}
+                onChange={(e) => setPrefs(e.target.value)}
+                placeholder="e.g. vegetarian, no dairy, South Indian breakfasts"
+              />
+            </Field>
+            {genError && <p className="text-sm text-danger">{genError}</p>}
+            <Button type="button" onClick={generate} disabled={generating} className="self-start">
+              <Icon name="sparkles" size={15} /> {generating ? "Generating…" : "Generate draft"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+          <Button type="button" variant="secondary" onClick={() => setStarted(true)}>
+            Start blank
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       <datalist id="diet-food-catalog">
@@ -171,7 +289,7 @@ export function DietPlanEditor({
 
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label="Plan name" htmlFor="name" required>
-          <Input id="name" name="name" defaultValue={plan?.name} placeholder="e.g. Fat loss, phase 1" required />
+          <Input id="name" name="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Fat loss, phase 1" required />
         </Field>
         <Field label=" " htmlFor="is_active">
           <label className="flex h-10 items-center gap-2 text-sm">
@@ -193,7 +311,8 @@ export function DietPlanEditor({
             type="number"
             inputMode="numeric"
             min="0"
-            defaultValue={plan?.target_calories ?? ""}
+            value={calTarget}
+            onChange={(e) => setCalTarget(e.target.value)}
             placeholder="e.g. 2000"
           />
         </Field>
@@ -204,7 +323,8 @@ export function DietPlanEditor({
             type="number"
             inputMode="numeric"
             min="0"
-            defaultValue={plan?.target_protein_g ?? ""}
+            value={proTarget}
+            onChange={(e) => setProTarget(e.target.value)}
             placeholder="e.g. 140"
           />
         </Field>

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardBody } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PlanEditor } from "./plan-editor";
+import { daySummary } from "@/lib/training-analytics";
 import {
   createPlanAction,
   updatePlanAction,
@@ -32,6 +33,7 @@ function PlanView({ plan, clientId }: { plan: WorkoutPlan; clientId: string }) {
     <div className="grid gap-3 sm:grid-cols-2">
       {days.map((d) => {
         const realIdx = plan.days.indexOf(d);
+        const summary = daySummary(d);
         return (
           <div key={realIdx} className="rounded-lg border border-border p-3">
             <div className="flex items-center justify-between gap-2">
@@ -49,6 +51,22 @@ function PlanView({ plan, clientId }: { plan: WorkoutPlan; clientId: string }) {
                 </ButtonLink>
               )}
             </div>
+            {d.items.length > 0 && (
+              <div className="mt-1.5 flex flex-wrap gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
+                {[
+                  summary.focus.length ? summary.focus.join(" · ") : null,
+                  `${summary.exercises} exercise${summary.exercises === 1 ? "" : "s"}`,
+                  `~${summary.minutes} min`,
+                ]
+                  .filter(Boolean)
+                  .map((chip, i) => (
+                    <span key={i} className="flex items-center gap-1.5">
+                      {i > 0 && <span className="text-border">·</span>}
+                      {chip}
+                    </span>
+                  ))}
+              </div>
+            )}
             {d.items.length ? (
               <ul className="mt-2 flex flex-col gap-1.5 text-sm">
                 {d.items.map((it, j) => (

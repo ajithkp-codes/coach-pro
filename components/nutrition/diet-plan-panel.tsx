@@ -32,6 +32,7 @@ function PlanView({ plan, clientId }: { plan: DietPlanWithUrl; clientId: string 
     <div className="grid gap-3 sm:grid-cols-2">
       {plan.days.map((d, di) => {
         const totals = planDayTotals(d);
+        const itemCount = d.meals.reduce((n, m) => n + m.items.length, 0);
         return (
           <div key={di} className="rounded-lg border border-border p-3">
             <div className="flex items-center justify-between gap-2">
@@ -49,9 +50,20 @@ function PlanView({ plan, clientId }: { plan: DietPlanWithUrl; clientId: string 
                 </ButtonLink>
               )}
             </div>
-            {(totals.calories > 0 || totals.protein > 0) && (
+            {(d.meals.length > 0 || totals.calories > 0 || totals.protein > 0) && (
               <p className="mt-1 text-xs text-muted-foreground">
-                ≈ {formatNumber(totals.calories)} kcal · {formatNumber(totals.protein)} g protein
+                {d.meals.length > 0 && (
+                  <>
+                    {d.meals.length} meal{d.meals.length === 1 ? "" : "s"} · {itemCount} item
+                    {itemCount === 1 ? "" : "s"}
+                  </>
+                )}
+                {(totals.calories > 0 || totals.protein > 0) && (
+                  <>
+                    {d.meals.length > 0 && " · "}≈ {formatNumber(totals.calories)} kcal ·{" "}
+                    {formatNumber(totals.protein)} g protein
+                  </>
+                )}
               </p>
             )}
             <div className="mt-2 flex flex-col gap-2.5">

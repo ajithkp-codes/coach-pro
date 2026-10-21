@@ -7,12 +7,18 @@ import { Icon } from "@/components/ui/icon";
 import { Input, Textarea, Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import type { PlanState } from "@/app/(dashboard)/clients/[id]/training/plan-actions";
+import { generatePlanAction } from "@/app/(dashboard)/clients/[id]/training/plan-ai-actions";
+import { SPLIT_TEMPLATES } from "@/lib/catalog/split-templates";
 import type { WorkoutPlan, PlanDay, PlanItem } from "@/lib/types";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const emptyItem = (): PlanItem => ({ exercise_name: "", sets: "", reps: "", weight: "", notes: "" });
 const emptyDay = (day: string): PlanDay => ({ day, title: "", items: [emptyItem()] });
+
+/** Deep-clone seeded days so editing state never mutates a shared template. */
+const cloneDays = (ds: PlanDay[]): PlanDay[] =>
+  ds.map((d) => ({ day: d.day, title: d.title, items: d.items.map((it) => ({ ...it })) }));
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -39,9 +45,36 @@ export function PlanEditor({
     plan && plan.days.length ? plan.days : [emptyDay("Mon")],
   );
 
+  // New plans open on a quick-start chooser (template / AI / blank); editing an
+  // existing plan skips straight to the editor.
+  const [started, setStarted] = useState<boolean>(!!plan);
+  const [goal, setGoal] = useState("");
+  const [dpw, setDpw] = useState("3");
+  const [exp, setExp] = useState("intermediate");
+  const [generating, setGenerating] = useState(false);
+  const [genError, setGenError] = useState<string | null>(null);
+
   useEffect(() => {
     if (state.ok) onSuccess();
   }, [state.ok, onSuccess]);
+
+  function seed(newDays: PlanDay[]) {
+    setDays(newDays.length ? cloneDays(newDays) : [emptyDay("Mon")]);
+    setStarted(true);
+  }
+
+  async function generate() {
+    setGenerating(true);
+    setGenError(null);
+    const res = await generatePlanAction({
+      goal,
+      daysPerWeek: Number(dpw),
+      experience: exp,
+    });
+    setGenerating(false);
+    if (res.ok && res.days) seed(res.days);
+    else setGenError(res.error ?? "Something went wrong generating the plan.");
+  }
 
   function updateDay(i: number, patch: Partial<PlanDay>) {
     setDays((ds) => ds.map((d, idx) => (idx === i ? { ...d, ...patch } : d)));
@@ -76,6 +109,76 @@ export function PlanEditor({
   const daysJson = JSON.stringify(
     days.map((d) => ({ ...d, items: d.items.filter((it) => it.exercise_name.trim()) })),
   );
+
+  if (!started) {
+    return (
+      <div className="flex flex-col gap-5">
+        <div>
+          <p className="text-sm font-medium">Start from a template</p>
+          <p className="text-sm text-muted-foreground">Seed the week, then edit anything.</p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            {SPLIT_TEMPLATES.map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => seed(t.days)}
+                className="flex flex-col gap-1 rounded-[var(--radius)] border border-border p-3 text-left transition-colors hover:border-primary hover:bg-muted/50"
+              >
+                <span className="text-sm font-semibold">{t.label}</span>
+                <span className="text-xs text-muted-foreground">{t.description}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-[var(--radius)] border border-border p-4">
+          <p className="flex items-center gap-1.5 text-sm font-medium">
+            <Icon name="sparkles" size={15} className="text-primary" /> Generate with AI
+          </p>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            Describe the client&apos;s goal — Claude drafts the days and you refine them.
+          </p>
+          <div className="mt-3 flex flex-col gap-3">
+            <Field label="Goal" htmlFor="ai-goal">
+              <Input
+                id="ai-goal"
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+                placeholder="e.g. build strength and add muscle, some lower-back caution"
+              />
+            </Field>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Days per week" htmlFor="ai-dpw">
+                <Select id="ai-dpw" value={dpw} onChange={(e) => setDpw(e.target.value)}>
+                  {["2", "3", "4", "5", "6"].map((n) => (
+                    <option key={n} value={n}>{n} days</option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Experience" htmlFor="ai-exp">
+                <Select id="ai-exp" value={exp} onChange={(e) => setExp(e.target.value)}>
+                  {["beginner", "intermediate", "advanced"].map((v) => (
+                    <option key={v} value={v}>{v}</option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+            {genError && <p className="text-sm text-danger">{genError}</p>}
+            <Button type="button" onClick={generate} disabled={generating} className="self-start">
+              <Icon name="sparkles" size={15} /> {generating ? "Generating…" : "Generate draft"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+          <Button type="button" variant="secondary" onClick={() => setStarted(true)}>
+            Start blank
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form action={formAction} className="flex flex-col gap-5">

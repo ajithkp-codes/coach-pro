@@ -94,6 +94,13 @@ export function WorkoutLogger({
     session ? blocksFromSession(session) : prefill ? blocksFromPlanDay(prefill) : [],
   );
 
+  // In-gym focus mode: one exercise at a time with a big rest timer.
+  const [focus, setFocus] = useState(false);
+  const [focusIdx, setFocusIdx] = useState(0);
+  useEffect(() => {
+    if (focus && blocks.length === 0) setFocus(false); // eslint-disable-line react-hooks/set-state-in-effect
+  }, [focus, blocks.length]);
+
   // Rest timer
   const [rest, setRest] = useState<{ total: number; left: number } | null>(null);
   const restRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -209,6 +216,19 @@ export function WorkoutLogger({
         </label>
       </div>
 
+      {blocks.length > 0 && (
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => { setFocusIdx(0); setFocus(true); }}
+          >
+            <Icon name="target" size={15} /> Focus mode
+          </Button>
+        </div>
+      )}
+
       {/* Exercise blocks */}
       {blocks.map((blk) => {
         const last = lastByExercise[blk.name.toLowerCase()];
@@ -306,6 +326,101 @@ export function WorkoutLogger({
       )}
 
       {state.error && <p className="text-sm text-danger">{state.error}</p>}
+
+      {/* In-gym focus mode overlay */}
+      {focus && blocks.length > 0 && (() => {
+        const fi = Math.min(focusIdx, blocks.length - 1);
+        const fb = blocks[fi];
+        const last = lastByExercise[fb.name.toLowerCase()];
+        const isLast = fi === blocks.length - 1;
+        return (
+          <div className="fixed inset-0 z-40 flex flex-col bg-background" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+            <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
+              <span className="text-xs font-medium text-muted-foreground">
+                Exercise {fi + 1} of {blocks.length}
+              </span>
+              <Button type="button" variant="ghost" size="sm" onClick={() => setFocus(false)}>
+                <Icon name="x" size={16} /> Exit focus
+              </Button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-4 py-5">
+              <div className="mx-auto flex w-full max-w-md flex-col gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-primary">{fb.name}</h2>
+                  {last && (
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Last: {last.sets.map((s) => `${s.weight_kg != null ? formatNumber(s.weight_kg) : "-"}×${s.reps != null ? formatNumber(s.reps) : "-"}`).join(", ")}
+                    </p>
+                  )}
+                </div>
+
+                {/* Big rest timer */}
+                <div className="rounded-[var(--radius)] border border-border p-4">
+                  {rest ? (
+                    <div className="flex flex-col items-center gap-3">
+                      <span className="font-mono text-5xl font-bold tabular-nums text-primary">
+                        {Math.floor(rest.left / 60)}:{String(rest.left % 60).padStart(2, "0")}
+                      </span>
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(rest.left / rest.total) * 100}%` }} />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button type="button" variant="outline" size="sm" onClick={() => setRest((r) => (r ? { ...r, left: r.left + 15 } : r))}>+15s</Button>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => setRest(null)}>Skip rest</Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-center text-sm text-muted-foreground">
+                      Tap <Icon name="check" size={13} className="inline align-text-bottom" /> on a set to start a 90s rest.
+                    </p>
+                  )}
+                </div>
+
+                {/* Set rows — large touch targets, same handlers as the list view */}
+                <div className="flex flex-col gap-2">
+                  {fb.sets.map((s, i) => {
+                    const lp = last?.sets[i];
+                    return (
+                      <div key={i} className={cn("flex items-center gap-2 rounded-lg px-1 py-1", s.done && "bg-success-bg")}>
+                        <span className="w-6 text-center text-base font-semibold text-muted-foreground">{i + 1}</span>
+                        <Input className="h-14 flex-1 text-center text-lg" type="number" inputMode="decimal" step="0.5" value={s.weight} placeholder={lp?.weight_kg != null ? String(lp.weight_kg) : "kg"} onChange={(e) => updateSet(fb.id, i, { weight: e.target.value })} />
+                        <Input className="h-14 flex-1 text-center text-lg" type="number" inputMode="numeric" value={s.reps} placeholder={lp?.reps != null ? String(lp.reps) : "reps"} onChange={(e) => updateSet(fb.id, i, { reps: e.target.value })} />
+                        <Input className="h-14 w-14 text-center text-lg" type="number" inputMode="decimal" step="0.5" min="0" max="10" value={s.rpe} placeholder="RPE" onChange={(e) => updateSet(fb.id, i, { rpe: e.target.value })} />
+                        <button type="button" aria-label={s.done ? "Mark set not done" : "Mark set done"} onClick={() => toggleDone(fb.id, i)} className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border transition-colors", s.done ? "border-success bg-success text-white" : "border-input text-muted-foreground hover:border-success")}>
+                          <Icon name="check" size={18} strokeWidth={2.6} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+                <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => addSet(fb.id)}>
+                  <Icon name="plus" size={14} /> Add set
+                </Button>
+              </div>
+            </div>
+
+            {/* Prev / Next */}
+            <div
+              className="flex items-center gap-3 border-t border-border px-4 py-3"
+              style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
+            >
+              <Button type="button" variant="outline" className="h-12 flex-1" disabled={fi === 0} onClick={() => setFocusIdx(fi - 1)}>
+                <Icon name="chevronRight" size={16} className="rotate-180" /> Prev
+              </Button>
+              {isLast ? (
+                <Button type="button" className="h-12 flex-1" onClick={() => setFocus(false)}>
+                  Review &amp; finish
+                </Button>
+              ) : (
+                <Button type="button" className="h-12 flex-1" onClick={() => setFocusIdx(fi + 1)}>
+                  Next <Icon name="chevronRight" size={16} />
+                </Button>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Sticky action bar with rest timer */}
       <div

@@ -9,6 +9,9 @@ export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
 
   const tabs = [
     { href: "/admin", label: "Overview", exact: true, badge: 0 },
+    { href: "/admin/analytics", label: "Analytics", exact: false, badge: 0 },
+    { href: "/admin/revenue", label: "Revenue", exact: false, badge: 0 },
+    { href: "/admin/funnel", label: "Funnel", exact: false, badge: 0 },
     { href: "/admin/trainers", label: "Trainers", exact: false, badge: pendingCount },
   ];
 
