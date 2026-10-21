@@ -74,6 +74,7 @@
   --radius-full: 9999px;
 
   --font-display: var(--font-display), "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-serif-ds), "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
   --font-sans: var(--font-sans-ds), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: var(--font-mono-ds), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
@@ -102,11 +103,11 @@
   --ink-inverse: #faf7f2;
 
   /* brand — vermilion */
-  --brand: #f04e28;
-  --brand-strong: #c5381a;
-  --brand-tint: #fdeae3;
-  --accent-text: #b33a1a;
-  --on-brand: #17150f;
+  --brand: #e8402a;
+  --brand-strong: #c6331c;
+  --brand-tint: #fce8e3;
+  --accent-text: #bc3420;
+  --on-brand: #160a07;
 
   /* status */
   --pos: #0e8a84;
@@ -115,9 +116,9 @@
   --warn: #c0790f;
   --warn-text: #8a5208;
   --warn-tint: #f8efdd;
-  --neg: #d93a2a;
-  --neg-text: #be2d1b;
-  --neg-tint: #fceae7;
+  --neg: #d22a1a;
+  --neg-text: #b3281a;
+  --neg-tint: #fce7e3;
   --info: #2f6df0;
   --info-text: #1d5fd6;
   --focus: #1a6dff;
@@ -179,11 +180,11 @@
     --ink-faint: #7c7467;
     --ink-inverse: #17150f;
 
-    --brand: #ff6a43;
-    --brand-strong: #ff8a66;
+    --brand: #ff5e40;
+    --brand-strong: #ff7e60;
     --brand-tint: #3a1e14;
-    --accent-text: #ff9f85;
-    --on-brand: #17150f;
+    --accent-text: #ff9076;
+    --on-brand: #160a07;
 
     --pos: #3fcac2;
     --pos-text: #5fd8d0;
@@ -218,11 +219,11 @@
   --ink-faint: #7c7467;
   --ink-inverse: #17150f;
 
-  --brand: #ff6a43;
-  --brand-strong: #ff8a66;
+  --brand: #ff5e40;
+  --brand-strong: #ff7e60;
   --brand-tint: #3a1e14;
-  --accent-text: #ff9f85;
-  --on-brand: #17150f;
+  --accent-text: #ff9076;
+  --on-brand: #160a07;
 
   --pos: #3fcac2;
   --pos-text: #5fd8d0;
@@ -240,49 +241,7 @@
   --shadow-color: 30 30% 2%;
 }
 
-/* ---- Landing page: always-dark editorial scope ----
-   Wrap the marketing page in [data-landing] to force the warm dark
-   palette regardless of user theme preference. */
-[data-landing] {
-  color-scheme: dark;
-  --bg: #141210;
-  --surface: #1c1915;
-  --surface-muted: #24201b;
-  --surface-sunken: #100e0b;
-  --overlay: rgba(6, 5, 4, 0.66);
-  --border: #2f2a23;
-  --border-strong: #473f35;
-
-  --ink: #f6f1e9;
-  --ink-secondary: #c6bdb0;
-  --ink-muted: #9a9183;
-  --ink-faint: #7c7467;
-  --ink-inverse: #17150f;
-
-  --brand: #ff6a43;
-  --brand-strong: #ff8a66;
-  --brand-tint: #3a1e14;
-  --accent-text: #ff9f85;
-  --on-brand: #17150f;
-
-  --pos: #3fcac2;
-  --pos-text: #5fd8d0;
-  --pos-tint: #0c2522;
-  --warn: #e8b44a;
-  --warn-text: #f0c068;
-  --warn-tint: #2e2410;
-  --neg: #ff6b5a;
-  --neg-text: #ff8f82;
-  --neg-tint: #301612;
-  --info: #6f9bff;
-  --info-text: #93b4ff;
-  --focus: #7aa6ff;
-
-  --shadow-color: 30 30% 2%;
-
-  background: var(--bg);
-  color: var(--ink);
-}
+/* [data-landing] no longer forces a palette — inherits the default light theme from :root */
 
 * {
   border-color: var(--border);
@@ -307,6 +266,24 @@ h1, h2, h3, h4 {
 }
 
 .font-display { font-family: var(--font-display); }
+
+/* Editorial serif display — the cinematic voice.
+   Big marketing/section headlines; italic em carries a vermilion accent.
+   UI chrome stays on the grotesque; this is opt-in via .hdisp / .font-serif. */
+.font-serif { font-family: var(--font-serif); }
+.hdisp {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+  font-optical-sizing: auto;
+}
+.hdisp em,
+.serif-accent {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--accent-text);
+}
 
 /* The data voice — overlines, deltas, units, timestamps. */
 .overline {

@@ -14,7 +14,7 @@ export default async function ResetPasswordPage() {
   return (
     <Card>
       <CardBody>
-        <h1 className="text-lg font-semibold">Set a new password</h1>
+        <h1 className="hdisp text-[1.75rem] text-ink">Set a new password</h1>
         {user ? (
           <>
             <p className="mt-1 text-sm text-muted-foreground">

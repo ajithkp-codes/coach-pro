@@ -49,29 +49,33 @@ export function PhoneFrame({
 export function BrowserFrame({
   children,
   url = "coachpro.co.in/dashboard",
+  chrome = true,
   className,
 }: {
   children: React.ReactNode;
   url?: string;
+  chrome?: boolean;
   className?: string;
 }) {
   return (
     <div className={`relative ${className ?? ""}`}>
       <div className="overflow-hidden rounded-xl border border-[#1a1a2e] bg-[#0a0a0f] shadow-[0_8px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.05)]">
-        {/* Browser chrome */}
-        <div className="flex items-center gap-3 border-b border-[#1a1a2e] bg-[#0d0d1a] px-4 py-2.5">
-          {/* Traffic lights */}
-          <div className="flex items-center gap-1.5">
-            <div className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
-            <div className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
-            <div className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+        {/* Browser chrome (traffic lights + URL) — optional */}
+        {chrome && (
+          <div className="flex items-center gap-3 border-b border-[#1a1a2e] bg-[#0d0d1a] px-4 py-2.5">
+            {/* Traffic lights */}
+            <div className="flex items-center gap-1.5">
+              <div className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+              <div className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+              <div className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+            </div>
+            {/* URL bar */}
+            <div className="flex flex-1 items-center gap-2 rounded-md bg-[#1a1a2e] px-3 py-1">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0 text-white/30"><path d="M6 1a3.5 3.5 0 0 0-3.5 3.5c0 .74.23 1.43.62 2L6 11l2.88-4.5c.39-.57.62-1.26.62-2A3.5 3.5 0 0 0 6 1z" stroke="currentColor" strokeWidth="1"/></svg>
+              <span className="truncate text-[11px] text-white/40">{url}</span>
+            </div>
           </div>
-          {/* URL bar */}
-          <div className="flex flex-1 items-center gap-2 rounded-md bg-[#1a1a2e] px-3 py-1">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0 text-white/30"><path d="M6 1a3.5 3.5 0 0 0-3.5 3.5c0 .74.23 1.43.62 2L6 11l2.88-4.5c.39-.57.62-1.26.62-2A3.5 3.5 0 0 0 6 1z" stroke="currentColor" strokeWidth="1"/></svg>
-            <span className="truncate text-[11px] text-white/40">{url}</span>
-          </div>
-        </div>
+        )}
         {/* Content */}
         <div className="bg-[#141210]">
           {children}

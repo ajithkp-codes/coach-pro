@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Fraunces, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider, themeScript } from "@/components/theme-provider";
 
@@ -8,6 +8,14 @@ const fontDisplay = Bricolage_Grotesque({
   variable: "--font-display",
   subsets: ["latin"],
   weight: ["600", "700", "800"],
+});
+
+// Editorial serif — big cinematic display moments, italic vermilion accents
+const fontSerif = Fraunces({
+  variable: "--font-serif-ds",
+  subsets: ["latin"],
+  axes: ["opsz"],
+  style: ["normal", "italic"],
 });
 
 // Body, UI, labels and metric numbers
@@ -43,7 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${fontDisplay.variable} ${fontSans.variable} ${fontMono.variable} h-full antialiased`}
+      className={`${fontDisplay.variable} ${fontSerif.variable} ${fontSans.variable} ${fontMono.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />

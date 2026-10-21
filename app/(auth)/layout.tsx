@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LogoWordmark } from "@/components/brand/logo";
 
 export default function AuthLayout({
   children,
@@ -7,12 +8,9 @@ export default function AuthLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4 py-10">
-      <div className="mb-6 flex items-center gap-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-[var(--radius)] bg-primary text-sm font-bold text-primary-foreground">
-          CP
-        </div>
-        <span className="text-lg font-semibold tracking-tight">CoachPro</span>
-      </div>
+      <Link href="/" className="mb-7">
+        <LogoWordmark size={30} />
+      </Link>
       <div className="w-full max-w-sm">{children}</div>
       <p className="mt-6 text-center text-xs text-muted-foreground">
         Private workspace for personal trainers ·{" "}

@@ -41,9 +41,9 @@ export default async function DashboardPage() {
     <>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3 animate-slide-up">
         <div>
-          <p className="text-sm font-medium text-muted-foreground">{today}</p>
-          <h1 className="mt-0.5 text-2xl font-bold tracking-tight">
-            Hey, <span className="text-gradient">{firstName}</span>
+          <p className="overline">{today}</p>
+          <h1 className="hdisp mt-1 text-[2rem] sm:text-[2.5rem]">
+            Hey, <em>{firstName}</em>
           </h1>
         </div>
         <ButtonLink href="/clients/new">
