@@ -21,7 +21,7 @@ const GRAIN =
 
 /* Section-shaped scrims, lifted from the design artifact. */
 const SCRIM_HERO =
-  "linear-gradient(90deg,rgba(6,6,6,.82) 0%,rgba(6,6,6,.4) 46%,rgba(6,6,6,.15) 100%),linear-gradient(180deg,rgba(6,6,6,.5),transparent 16%),linear-gradient(0deg,rgba(6,6,6,.82),transparent 42%)";
+  "linear-gradient(90deg,rgba(6,6,6,.82) 0%,rgba(6,6,6,.46) 46%,rgba(6,6,6,.5) 100%),linear-gradient(180deg,rgba(6,6,6,.5),transparent 16%),linear-gradient(0deg,rgba(6,6,6,.82),transparent 42%)";
 const SCRIM_STATEMENT =
   "linear-gradient(0deg,rgba(6,6,6,.78),transparent 55%),linear-gradient(90deg,rgba(6,6,6,.55),transparent 60%)";
 const SCRIM_CENTER =
@@ -93,7 +93,7 @@ export default async function Home() {
                   </h1>
                 </Reveal>
                 <Reveal delay={120}>
-                  <p className="mt-6 max-w-[34ch] text-lg leading-relaxed text-[#dcd6cc]">
+                  <p className="mt-6 max-w-[34ch] text-lg leading-relaxed text-[#f6f3ee]">
                     Strength, running, movement and rehab. CoachPro helps you
                     coach anyone and feel exactly how every client is moving.
                   </p>
