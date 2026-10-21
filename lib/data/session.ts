@@ -28,19 +28,23 @@ export const authed = cache(async (): Promise<AuthedContext> => {
   return { supabase, trainerId: user.id, email: user.email ?? null };
 });
 
-/** For pages/layouts: redirect to /login instead of throwing. */
+/**
+ * For pages/layouts: redirect to /login instead of throwing.
+ * Delegates to the cached `authed()` so the getUser() call is shared
+ * with every other data function in the same request.
+ */
 export async function requireTrainer(): Promise<AuthedContext> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
+  try {
+    return await authed();
+  } catch {
     redirect("/login");
   }
-  return { supabase, trainerId: user.id, email: user.email ?? null };
 }
 
-export async function getTrainerProfile(): Promise<Trainer | null> {
+/**
+ * Trainer profile, cached per-request so layout + page don't double-fetch.
+ */
+export const getTrainerProfile = cache(async (): Promise<Trainer | null> => {
   const { supabase, trainerId } = await authed();
   const { data } = await supabase
     .from("trainers")
@@ -48,32 +52,36 @@ export async function getTrainerProfile(): Promise<Trainer | null> {
     .eq("id", trainerId)
     .maybeSingle();
   return data as Trainer | null;
-}
+});
 
 /**
  * Ensure the signed-in trainer has a profile row. The signup trigger normally
  * creates it; this self-heals accounts where it didn't (e.g. created before the
  * trigger existed), preventing foreign-key failures when they add data.
- * Requires the trainers_insert RLS policy (migration 0003).
+ *
+ * Uses the cached authed() to avoid an extra getUser() call.
  */
 export async function ensureTrainerProfile(): Promise<void> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return;
+  let ctx: AuthedContext;
+  try {
+    ctx = await authed();
+  } catch {
+    return;
+  }
+  const { supabase, trainerId, email } = ctx;
 
   const { data: existing } = await supabase
     .from("trainers")
     .select("id")
-    .eq("id", user.id)
+    .eq("id", trainerId)
     .maybeSingle();
   if (existing) return;
 
+  const user = (await supabase.auth.getUser()).data.user;
   await supabase.from("trainers").insert({
-    id: user.id,
-    email: user.email,
-    full_name: (user.user_metadata?.full_name as string) ?? null,
-    business_name: (user.user_metadata?.business_name as string) ?? null,
+    id: trainerId,
+    email,
+    full_name: (user?.user_metadata?.full_name as string) ?? null,
+    business_name: (user?.user_metadata?.business_name as string) ?? null,
   });
 }

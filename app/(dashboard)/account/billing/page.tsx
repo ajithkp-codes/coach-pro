@@ -6,7 +6,7 @@ import { Icon } from "@/components/ui/icon";
 import { UpgradeButton, CancelButton } from "@/components/billing/billing-actions";
 import { getSubscription, planOf, canAddClient } from "@/lib/data/billing";
 import { razorpayConfigured } from "@/lib/razorpay";
-import { FREE_CLIENT_LIMIT, PRO_PRICE_INR } from "@/lib/constants";
+import { FREE_CLIENT_LIMIT, PRO_CLIENT_LIMIT, PRO_PRICE_INR } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
 
 export const metadata = { title: "Billing · CoachPro" };
@@ -23,7 +23,7 @@ export default async function BillingPage() {
     "Reminders",
   ];
   const proFeatures = [
-    "Unlimited active clients",
+    `Up to ${PRO_CLIENT_LIMIT} active clients`,
     "Everything in Free",
     "Priority support",
   ];
@@ -44,7 +44,7 @@ export default async function BillingPage() {
             {plan === "pro" ? (
               <>
                 You&apos;re on <span className="font-medium text-foreground">Pro</span>.
-                Unlimited clients.
+                {usage.count} of {usage.limit} client slots used.
                 {sub?.current_end && <> Renews {formatDate(sub.current_end)}.</>}
               </>
             ) : (

@@ -3,7 +3,7 @@ export function Sparkline({
   data,
   width = 96,
   height = 28,
-  color = "#4f46e5",
+  color = "var(--brand)",
   className,
 }: {
   data: number[];

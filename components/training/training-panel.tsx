@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, ButtonLink } from "@/components/ui/button";
+import { Button, ButtonLink, DeleteButton } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Modal } from "@/components/ui/modal";
 import { Card, CardBody } from "@/components/ui/card";
@@ -118,9 +118,7 @@ export function TrainingPanel({
                               Cancel
                             </Button>
                             <form action={deleteSessionAction.bind(null, clientId, session.id)}>
-                              <Button type="submit" variant="danger">
-                                Delete
-                              </Button>
+                              <DeleteButton />
                             </form>
                           </div>
                         )}

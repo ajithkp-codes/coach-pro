@@ -33,9 +33,8 @@ export async function createBodyMetricAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid entry" };
   }
   await createBodyMetric(clientId, parsed.data);
-  revalidatePath(`/clients/${clientId}/metrics`);
+  revalidatePath(`/clients/${clientId}/progress`);
   revalidatePath(`/clients/${clientId}`);
-  revalidatePath(`/clients/${clientId}/charts`);
   return { ok: true };
 }
 
@@ -50,9 +49,8 @@ export async function updateBodyMetricAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid entry" };
   }
   await updateBodyMetric(metricId, parsed.data);
-  revalidatePath(`/clients/${clientId}/metrics`);
+  revalidatePath(`/clients/${clientId}/progress`);
   revalidatePath(`/clients/${clientId}`);
-  revalidatePath(`/clients/${clientId}/charts`);
   return { ok: true };
 }
 
@@ -61,7 +59,6 @@ export async function deleteBodyMetricAction(
   metricId: string,
 ): Promise<void> {
   await deleteBodyMetric(metricId);
-  revalidatePath(`/clients/${clientId}/metrics`);
+  revalidatePath(`/clients/${clientId}/progress`);
   revalidatePath(`/clients/${clientId}`);
-  revalidatePath(`/clients/${clientId}/charts`);
 }

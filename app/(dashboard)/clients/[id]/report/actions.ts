@@ -25,7 +25,7 @@ export async function createReportAction(
   }
   try {
     await createReport(clientId, parsed.data);
-    revalidatePath(`/clients/${clientId}/report`);
+    revalidatePath(`/clients/${clientId}/share`);
     return { ok: true };
   } catch (e) {
     console.error("createReport failed", e);
@@ -39,7 +39,7 @@ export async function setReportRevokedAction(
   revoked: boolean,
 ): Promise<void> {
   await setReportRevoked(id, revoked);
-  revalidatePath(`/clients/${clientId}/report`);
+  revalidatePath(`/clients/${clientId}/share`);
 }
 
 export async function deleteReportAction(
@@ -47,5 +47,5 @@ export async function deleteReportAction(
   id: string,
 ): Promise<void> {
   await deleteReport(id);
-  revalidatePath(`/clients/${clientId}/report`);
+  revalidatePath(`/clients/${clientId}/share`);
 }

@@ -16,7 +16,7 @@ export interface ShareState {
 }
 
 function revalidate(clientId: string) {
-  revalidatePath(`/clients/${clientId}/files`);
+  revalidatePath(`/clients/${clientId}/share`);
 }
 
 export async function createSharedFileAction(

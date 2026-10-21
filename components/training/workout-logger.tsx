@@ -111,6 +111,12 @@ export function WorkoutLogger({
     };
   }, [rest !== null]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Prevent double-submission: lock after first submit, unlock only on error.
+  const submittedRef = useRef(false);
+  useEffect(() => {
+    if (state.error) submittedRef.current = false;
+  }, [state.error]);
+
   // Navigate away after a successful save (celebration shown first if PRs).
   const [celebrating, setCelebrating] = useState(false);
   useEffect(() => {
@@ -174,7 +180,14 @@ export function WorkoutLogger({
   const totalSets = blocks.reduce((n, b) => n + b.sets.filter((s) => s.weight || s.reps).length, 0);
 
   return (
-    <form action={formAction} className="flex flex-col gap-4 pb-28">
+    <form
+      action={formAction}
+      onSubmit={(e) => {
+        if (submittedRef.current) { e.preventDefault(); return; }
+        submittedRef.current = true;
+      }}
+      className="flex flex-col gap-4 pb-28"
+    >
       <input type="hidden" name="performed_on" value={performedOn} />
       <input type="hidden" name="title" value={title} />
       <input type="hidden" name="duration_min" value={duration} />

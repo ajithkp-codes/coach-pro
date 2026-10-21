@@ -1,5 +1,5 @@
 import { authed } from "./session";
-import { FREE_CLIENT_LIMIT } from "@/lib/constants";
+import { FREE_CLIENT_LIMIT, PRO_CLIENT_LIMIT } from "@/lib/constants";
 import type { Plan, Subscription } from "@/lib/types";
 
 /** The trainer's subscription row, or null (treated as free). */
@@ -27,6 +27,6 @@ export async function canAddClient(): Promise<{
   ]);
   const plan = planOf(sub);
   const count = countRes.count ?? 0;
-  if (plan === "pro") return { allowed: true, plan, count, limit: null };
-  return { allowed: count < FREE_CLIENT_LIMIT, plan, count, limit: FREE_CLIENT_LIMIT };
+  const limit = plan === "pro" ? PRO_CLIENT_LIMIT : FREE_CLIENT_LIMIT;
+  return { allowed: count < limit, plan, count, limit };
 }

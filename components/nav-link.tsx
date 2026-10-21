@@ -17,9 +17,9 @@ export function NavLink({
     <Link
       href={href}
       className={cn(
-        "rounded-[var(--radius)] px-3 py-1.5 text-sm font-medium transition-colors",
+        "relative rounded-[var(--radius-sm)] px-3 py-1.5 text-sm font-medium transition-all duration-200",
         active
-          ? "bg-muted text-foreground"
+          ? "bg-primary/10 text-primary"
           : "text-muted-foreground hover:bg-muted hover:text-foreground",
       )}
     >

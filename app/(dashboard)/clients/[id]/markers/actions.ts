@@ -25,9 +25,8 @@ function parse(formData: FormData) {
 }
 
 function revalidate(clientId: string) {
-  revalidatePath(`/clients/${clientId}/markers`);
+  revalidatePath(`/clients/${clientId}/progress`);
   revalidatePath(`/clients/${clientId}`);
-  revalidatePath(`/clients/${clientId}/charts`);
 }
 
 export async function createHealthMarkerAction(

@@ -8,7 +8,7 @@ export default function ForgotPasswordPage() {
   return (
     <Card>
       <CardBody>
-        <h1 className="text-lg font-semibold">Forgot your password?</h1>
+        <h1 className="hdisp text-[1.75rem] text-ink">Forgot your password?</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Enter your email and we&apos;ll send you a reset link.
         </p>

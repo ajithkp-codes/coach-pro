@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, DeleteButton } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Modal } from "@/components/ui/modal";
 import { Badge } from "@/components/ui/badge";
@@ -136,12 +136,8 @@ export function MarkersPanel({
                               <Button variant="outline" onClick={close}>
                                 Cancel
                               </Button>
-                              <form
-                                action={deleteHealthMarkerAction.bind(null, clientId, m.id)}
-                              >
-                                <Button type="submit" variant="danger">
-                                  Delete
-                                </Button>
+                              <form action={deleteHealthMarkerAction.bind(null, clientId, m.id)}>
+                                <DeleteButton />
                               </form>
                             </div>
                           )}

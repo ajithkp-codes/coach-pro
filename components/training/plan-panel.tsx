@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink, DeleteButton } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Modal } from "@/components/ui/modal";
 import { Badge } from "@/components/ui/badge";
@@ -22,33 +22,48 @@ function itemLine(it: PlanItem): string {
   return parts ? `${parts}` : "";
 }
 
-function PlanView({ plan }: { plan: WorkoutPlan }) {
+function PlanView({ plan, clientId }: { plan: WorkoutPlan; clientId: string }) {
   const days = plan.days.filter((d) => d.items.length || d.title);
   if (!days.length) {
     return <p className="text-sm text-muted-foreground">No days added yet.</p>;
   }
+  // Find the real index in plan.days (not in the filtered list) so prefill URL is correct.
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      {days.map((d, i) => (
-        <div key={i} className="rounded-lg border border-border p-3">
-          <div className="flex items-baseline gap-2">
-            <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-semibold">{d.day}</span>
-            {d.title && <span className="text-sm font-medium">{d.title}</span>}
+      {days.map((d) => {
+        const realIdx = plan.days.indexOf(d);
+        return (
+          <div key={realIdx} className="rounded-lg border border-border p-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-baseline gap-2">
+                <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-semibold">{d.day}</span>
+                {d.title && <span className="text-sm font-medium">{d.title}</span>}
+              </div>
+              {d.items.length > 0 && (
+                <ButtonLink
+                  href={`/clients/${clientId}/training/log?plan=${plan.id}&day=${realIdx}`}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Icon name="play" size={13} /> Log
+                </ButtonLink>
+              )}
+            </div>
+            {d.items.length ? (
+              <ul className="mt-2 flex flex-col gap-1.5 text-sm">
+                {d.items.map((it, j) => (
+                  <li key={j} className="flex items-baseline justify-between gap-3">
+                    <span>{it.exercise_name}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">{itemLine(it)}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 text-xs text-muted-foreground">Rest / no exercises</p>
+            )}
           </div>
-          {d.items.length ? (
-            <ul className="mt-2 flex flex-col gap-1.5 text-sm">
-              {d.items.map((it, j) => (
-                <li key={j} className="flex items-baseline justify-between gap-3">
-                  <span>{it.exercise_name}</span>
-                  <span className="shrink-0 text-xs text-muted-foreground">{itemLine(it)}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-2 text-xs text-muted-foreground">Rest / no exercises</p>
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -145,7 +160,7 @@ export function PlanPanel({
                         <div className="flex justify-end gap-2">
                           <Button variant="outline" onClick={close}>Cancel</Button>
                           <form action={deletePlanAction.bind(null, clientId, plan.id)}>
-                            <Button type="submit" variant="danger">Delete</Button>
+                            <DeleteButton />
                           </form>
                         </div>
                       )}
@@ -157,7 +172,7 @@ export function PlanPanel({
                   <p className="text-sm text-muted-foreground">{plan.notes}</p>
                 )}
 
-                <PlanView plan={plan} />
+                <PlanView plan={plan} clientId={clientId} />
               </CardBody>
             </Card>
           ))}

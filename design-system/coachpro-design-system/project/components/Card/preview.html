@@ -1,0 +1,29 @@
+<!-- @dsCard group="Containers" height=300 -->
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  body { margin: 0; font-family: var(--font-sans); }
+  .panes { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); min-height: 300px; }
+  .pane { background: var(--bg); padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+  .kick { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); }
+  .inner { display: flex; align-items: center; gap: 18px; }
+  @media (max-width: 560px){ .panes{ grid-template-columns: 1fr; } }
+</style>
+<div id="root" class="cp-root"></div>
+<script>
+  var CP = window.CoachPro, h = React.createElement;
+  function Pane(theme, label) {
+    return h("div", { className: "pane", "data-theme": theme, key: theme },
+      h("span", { className: "kick" }, label),
+      h(CP.Card, { title: "Weekly adherence", action: h(CP.Badge, { status: "on-track", icon: true }) },
+        h("div", { className: "inner" },
+          h(CP.ProgressRing, { value: 87, size: 92, sublabel: "this week" }),
+          h("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
+            h(CP.StatTile, { label: "Sessions", value: "4 / 5", caption: "1 remaining" }),
+            h(CP.Button, { variant: "secondary", size: "sm" }, "View program")))),
+      h(CP.Card, { muted: true },
+        h("div", { style: { color: "var(--ink-secondary)", fontSize: 14 } }, "Muted card — for secondary panels and empty states.")));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(
+    h("div", { className: "panes" }, Pane("light", "Light"), Pane("dark", "Dark")));
+</script>

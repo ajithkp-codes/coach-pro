@@ -16,17 +16,17 @@ export default async function LogWorkoutPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ session?: string }>;
+  searchParams: Promise<{ session?: string; plan?: string; day?: string }>;
 }) {
   const { id } = await params;
-  const { session: sessionId } = await searchParams;
+  const { session: sessionId, plan: planId, day: dayIndex } = await searchParams;
 
-  const [client, sessions, plans, lastByExercise] = await Promise.all([
+  const [client, sessions, plans] = await Promise.all([
     getClient(id),
     listSessions(id),
     listPlans(id),
-    getLastSetsByExercise(id),
   ]);
+  const lastByExercise = await getLastSetsByExercise(id, sessions);
   if (!client) notFound();
 
   const editing = sessionId ? sessions.find((s) => s.id === sessionId) : undefined;
@@ -34,13 +34,18 @@ export default async function LogWorkoutPage({
     ? updateSessionAction.bind(null, id, editing.id)
     : createSessionAction.bind(null, id);
 
+  // Pre-populate exercises from a specific plan day (?plan=<id>&day=<index>)
+  const prefillPlan = planId ? plans.find((p) => p.id === planId) : undefined;
+  const prefillDay = prefillPlan && dayIndex != null ? prefillPlan.days[Number(dayIndex)] : undefined;
+  const prefill = prefillDay?.items.length ? prefillDay.items : undefined;
+
   return (
     <div className="mx-auto max-w-3xl">
       <Link href={`/clients/${id}/training`} className="text-sm text-muted-foreground hover:text-foreground">
         ← {client.full_name} · Training
       </Link>
       <h1 className="mt-2 mb-5 text-xl font-semibold tracking-tight">
-        {editing ? "Edit workout" : "Log workout"}
+        {editing ? "Edit workout" : prefillDay ? `Log: ${prefillDay.day}${prefillDay.title ? ` · ${prefillDay.title}` : ""}` : "Log workout"}
       </h1>
 
       <WorkoutLogger
@@ -49,6 +54,7 @@ export default async function LogWorkoutPage({
         session={editing}
         plans={plans}
         lastByExercise={lastByExercise}
+        prefill={prefill}
       />
     </div>
   );

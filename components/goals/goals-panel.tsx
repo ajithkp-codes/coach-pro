@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, DeleteButton } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Modal } from "@/components/ui/modal";
 import { Badge } from "@/components/ui/badge";
@@ -129,9 +129,7 @@ export function GoalsPanel({
                           Cancel
                         </Button>
                         <form action={deleteGoalAction.bind(null, clientId, g.id)}>
-                          <Button type="submit" variant="danger">
-                            Delete
-                          </Button>
+                          <DeleteButton />
                         </form>
                       </div>
                     )}

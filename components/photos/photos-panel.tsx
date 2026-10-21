@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button, DeleteButton } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
@@ -233,9 +233,7 @@ export function PhotosPanel({
                         Cancel
                       </Button>
                       <form action={deletePhotoAction.bind(null, clientId, p.id)}>
-                        <Button type="submit" variant="danger">
-                          Delete
-                        </Button>
+                        <DeleteButton />
                       </form>
                     </div>
                   )}

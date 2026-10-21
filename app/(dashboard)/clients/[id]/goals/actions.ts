@@ -24,7 +24,7 @@ function parse(formData: FormData) {
 }
 
 function revalidate(clientId: string) {
-  revalidatePath(`/clients/${clientId}/goals`);
+  revalidatePath(`/clients/${clientId}/progress`);
   revalidatePath(`/clients/${clientId}`);
 }
 

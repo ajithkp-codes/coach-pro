@@ -34,7 +34,7 @@ export function TrendChart({
   const dark = resolved === "dark";
   const AXIS = dark ? "#64748b" : "#94a3b8";
   const GRID = dark ? "#1e2836" : "#eef2f6";
-  const LINE = dark ? "#818cf8" : "#4f46e5";
+  const LINE = dark ? "#ff6a43" : "#f04e28";
 
   if (data.length === 0) {
     return (

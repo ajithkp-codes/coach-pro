@@ -1,0 +1,5 @@
+The heart of CoachPro — one client at a glance: who they are, where they're headed, and whether they need attention.
+
+It composes Avatar, a name/meta block, a trend Spark, the headline adherence metric, and a status Badge. Pass `name`, `meta` ("Strength · Week 6"), `adherence` (0–100), `status` (`on-track`/`at-risk`/`off-track`), and a `trend` number series for the sparkline. Rows that are `at-risk` or `off-track` tint to `warn-tint` and flag themselves so a coach scanning a long list is pulled straight to who needs them — the whole point of the product. The sparkline color follows the status. `interactive` (default on) makes the row a clickable target into the client's profile.
+
+Stack rows with a small gap, or render them borderless inside a Card as a list. Keep the metric to the single most important number for your view (adherence by default); deeper detail belongs on the client page. The flag-by-exception coloring is deliberate — don't also color on-track rows, or nothing stands out.

@@ -3,7 +3,7 @@ import type { ReportPoint } from "@/lib/data/report-public";
 /** Print-friendly static area chart (pure SVG, no client JS). */
 export function ReportChart({
   data,
-  color = "#4f46e5",
+  color = "#f04e28",
   unit,
   id,
 }: {

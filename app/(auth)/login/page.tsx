@@ -13,8 +13,8 @@ export default async function LoginPage({
   return (
     <Card>
       <CardBody>
-        <h1 className="text-lg font-semibold">Welcome back</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h1 className="hdisp text-[1.75rem] text-ink">Welcome back</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">
           Sign in to your trainer workspace.
         </p>
         {error === "link-expired" && (

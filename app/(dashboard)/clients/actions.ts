@@ -10,6 +10,7 @@ import {
   deleteClientRecord,
 } from "@/lib/data/clients";
 import { canAddClient } from "@/lib/data/billing";
+import { PRO_CLIENT_LIMIT } from "@/lib/constants";
 
 export interface FormState {
   error?: string;
@@ -38,7 +39,10 @@ export async function createClientAction(
   const gate = await canAddClient();
   if (!gate.allowed) {
     return {
-      error: `You've reached the Free plan limit of ${gate.limit} active clients. Upgrade to Pro (Account → Billing) for unlimited clients.`,
+      error:
+        gate.plan === "pro"
+          ? `You've reached the Pro plan limit of ${gate.limit} active clients. Archive a client to add another.`
+          : `You've reached the Free plan limit of ${gate.limit} active clients. Upgrade to Pro (Account → Billing) for up to ${PRO_CLIENT_LIMIT}.`,
     };
   }
   let client;

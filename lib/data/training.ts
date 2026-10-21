@@ -123,8 +123,9 @@ export interface LastExercise {
 /** For each exercise the client has done, the sets from its most recent session. */
 export async function getLastSetsByExercise(
   clientId: string,
+  prefetched?: WorkoutSessionWithSets[],
 ): Promise<Record<string, LastExercise>> {
-  const sessions = await listSessions(clientId); // newest first
+  const sessions = prefetched ?? await listSessions(clientId); // newest first
   const out: Record<string, LastExercise> = {};
   for (const s of sessions) {
     for (const set of s.sets) {

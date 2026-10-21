@@ -13,8 +13,12 @@ export type Resolved = "light" | "dark";
 
 const STORAGE_KEY = "coachpro-theme";
 
-/** Inline script that applies the saved theme before first paint (no flash). */
-export const themeScript = `(function(){try{var t=localStorage.getItem('${STORAGE_KEY}')||'system';if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`;
+/**
+ * Inline script that applies the saved theme before first paint (no flash).
+ * Default is LIGHT: with no stored choice we pin data-theme="light" so a
+ * dark-OS machine still opens in light. Users can still opt into dark/system.
+ */
+export const themeScript = `(function(){try{var t=localStorage.getItem('${STORAGE_KEY}')||'light';if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){document.documentElement.setAttribute('data-theme','light');}})();`;
 
 interface Ctx {
   theme: Theme;
@@ -23,7 +27,7 @@ interface Ctx {
 }
 
 const ThemeContext = createContext<Ctx>({
-  theme: "system",
+  theme: "light",
   resolved: "light",
   setTheme: () => {},
 });
@@ -42,14 +46,15 @@ function apply(t: Theme) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
+  const [theme, setThemeState] = useState<Theme>("light");
   const [resolved, setResolved] = useState<Resolved>("light");
 
   useEffect(() => {
     // Read the persisted choice on mount (localStorage is client-only).
-    let stored: Theme = "system";
+    // Default is light when nothing has been chosen yet.
+    let stored: Theme = "light";
     try {
-      stored = (localStorage.getItem(STORAGE_KEY) as Theme) || "system";
+      stored = (localStorage.getItem(STORAGE_KEY) as Theme) || "light";
     } catch {}
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setThemeState(stored);

@@ -1,0 +1,29 @@
+{
+  "v": 3,
+  "layout": "files",
+  "createdOnFiles": { "v": 1, "at": "2026-10-20T18:48:05Z" },
+  "title": "CoachPro",
+  "namespace": "CoachPro",
+  "libraries": [
+    { "name": "react", "version": "18" },
+    { "name": "react-dom", "version": "18" }
+  ],
+  "sections": {},
+  "groups": ["Logos"],
+  "assetGroups": {
+    "Logos": {
+      "name": "Logos",
+      "tile": "l",
+      "order": ["coachpro-mark.svg", "coachpro-mark-ink.svg", "coachpro-mark-paper.svg", "coachpro-appicon.svg"],
+      "files": {
+        "coachpro-mark.svg": { "name": "coachpro-mark.svg", "blob": "54fbfcf212a5a76674b4ebdc660ee512", "size": 289, "type": "image/svg+xml" },
+        "coachpro-mark-ink.svg": { "name": "coachpro-mark-ink.svg", "blob": "6c0a681a17bf5b6b11f419afde6687fc", "size": 289, "type": "image/svg+xml" },
+        "coachpro-mark-paper.svg": { "name": "coachpro-mark-paper.svg", "blob": "179cd806f054b37f8b3da982f392ecc2", "size": 289, "type": "image/svg+xml" },
+        "coachpro-appicon.svg": { "name": "coachpro-appicon.svg", "blob": "810427adc2a2f0201b4ba495bf539d55", "size": 407, "type": "image/svg+xml" }
+      }
+    }
+  },
+  "blobs": {},
+  "docs": { "sections": [] },
+  "lastChange": { "by": "Claude", "via": "Cowork", "at": "2026-10-20T18:48:05Z", "note": "Initial CoachPro design system — tokens, brand book, logo and components." }
+}
