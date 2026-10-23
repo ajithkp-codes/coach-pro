@@ -6,7 +6,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
-import { timeAgo } from "@/lib/format";
+import { ageFromDob } from "@/lib/format";
 import type { ClientBoardItem } from "@/lib/data/dashboard";
 
 type Filter = "all" | "at_risk" | "watch" | "due_checkin" | "on_track";
@@ -48,8 +48,18 @@ function MiniBar({ label, pct }: { label: string; pct: number | null }) {
   );
 }
 
-export function ClientHealthBoard({ board }: { board: ClientBoardItem[] }) {
-  const [filter, setFilter] = useState<Filter>("all");
+const FILTERS: Filter[] = ["all", "at_risk", "watch", "due_checkin", "on_track"];
+
+export function ClientRoster({
+  board,
+  initialFilter,
+}: {
+  board: ClientBoardItem[];
+  initialFilter?: string;
+}) {
+  const [filter, setFilter] = useState<Filter>(
+    FILTERS.includes(initialFilter as Filter) ? (initialFilter as Filter) : "all",
+  );
 
   const counts = useMemo(() => {
     const c = { all: board.length, at_risk: 0, watch: 0, due_checkin: 0, on_track: 0 };
@@ -119,7 +129,11 @@ export function ClientHealthBoard({ board }: { board: ClientBoardItem[] }) {
         <ul className="flex flex-col divide-y divide-border rounded-[var(--radius)] border border-border bg-card">
           {shown.map((c) => {
             const risk = RISK_BADGE[c.risk.tier];
-            const topReason = c.risk.reasons[0];
+            const age = ageFromDob(c.date_of_birth);
+            const contact =
+              [age !== null ? `${age} yrs` : null, c.phone, c.email]
+                .filter(Boolean)
+                .join(" · ") || "No contact details";
             return (
               <li key={c.id}>
                 <Link
@@ -128,13 +142,17 @@ export function ClientHealthBoard({ board }: { board: ClientBoardItem[] }) {
                 >
                   <Avatar name={c.full_name} size="sm" />
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="truncate text-sm font-medium">{c.full_name}</span>
-                      {c.risk.tier !== "on_track" && <Badge tone={risk.tone}>{risk.label}</Badge>}
+                      {c.risk.tier !== "on_track" && c.status === "active" && (
+                        <Badge tone={risk.tone}>{risk.label}</Badge>
+                      )}
+                      {c.status === "archived" && <Badge>Archived</Badge>}
+                      {!c.consent_given && c.status === "active" && (
+                        <Badge tone="warning">No consent</Badge>
+                      )}
                     </div>
-                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                      {topReason ? topReason : `Active ${timeAgo(c.lastActivity)}`}
-                    </p>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">{contact}</p>
                   </div>
 
                   <div className="hidden shrink-0 flex-col gap-1 sm:flex">
@@ -142,7 +160,7 @@ export function ClientHealthBoard({ board }: { board: ClientBoardItem[] }) {
                     <MiniBar label="N" pct={c.compliance.nutritionPct} />
                   </div>
 
-                  <div className="w-12 shrink-0 text-right">
+                  <div className="flex w-12 shrink-0 flex-col items-end">
                     <span
                       className={cn(
                         "text-lg font-bold tabular-nums",
@@ -159,7 +177,7 @@ export function ClientHealthBoard({ board }: { board: ClientBoardItem[] }) {
                         ? "—"
                         : c.compliance.score}
                     </span>
-                    <Icon name="chevronRight" size={14} className="ml-auto mt-0.5 text-muted-foreground" />
+                    <Icon name="chevronRight" size={14} className="mt-0.5 text-muted-foreground" />
                   </div>
                 </Link>
               </li>

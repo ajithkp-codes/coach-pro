@@ -1,13 +1,10 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
 import { ButtonLink } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
-import { listClients } from "@/lib/data/clients";
-import { formatDate, ageFromDob } from "@/lib/format";
+import { ClientRoster } from "@/components/clients/client-roster";
+import { getClientBoard } from "@/lib/data/dashboard";
 import { cn } from "@/lib/utils";
 import type { ClientStatus } from "@/lib/types";
 
@@ -22,13 +19,13 @@ const TABS: { key: ClientStatus | "all"; label: string }[] = [
 export default async function ClientsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; filter?: string }>;
 }) {
-  const { status } = await searchParams;
+  const { status, filter } = await searchParams;
   const current = (TABS.find((t) => t.key === status)?.key ?? "active") as
     | ClientStatus
     | "all";
-  const clients = await listClients(current);
+  const clients = await getClientBoard(current);
 
   return (
     <>
@@ -84,39 +81,7 @@ export default async function ClientsPage({
           }
         />
       ) : (
-        <Card className="divide-y divide-border overflow-hidden">
-          {clients.map((c) => {
-            const age = ageFromDob(c.date_of_birth);
-            return (
-              <Link
-                key={c.id}
-                href={`/clients/${c.id}`}
-                className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/60"
-              >
-                <Avatar name={c.full_name} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{c.full_name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {[
-                      age !== null ? `${age} yrs` : null,
-                      c.phone,
-                      c.email,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ") || "No contact details"}
-                  </p>
-                </div>
-                <div className="hidden text-right text-xs text-muted-foreground sm:block">
-                  Added {formatDate(c.created_at)}
-                </div>
-                {c.status === "archived" && <Badge>Archived</Badge>}
-                {!c.consent_given && c.status === "active" && (
-                  <Badge tone="warning">No consent</Badge>
-                )}
-              </Link>
-            );
-          })}
-        </Card>
+        <ClientRoster board={clients} initialFilter={filter} />
       )}
     </>
   );
