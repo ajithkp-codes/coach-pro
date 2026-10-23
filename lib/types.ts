@@ -1,5 +1,7 @@
 /** Domain types mirroring the Postgres schema (supabase/migrations/0001_init.sql). */
 
+import type { Modality } from "@/lib/catalog/modalities";
+
 export type ClientStatus = "active" | "archived";
 export type Sex = "male" | "female" | "other" | "unspecified";
 export type GoalCategory = "health" | "workout";
@@ -117,6 +119,31 @@ export interface ReminderWithClient extends Reminder {
   client_name: string | null;
 }
 
+export type AppointmentStatus = "scheduled" | "completed" | "cancelled" | "no_show";
+/** 'event' = a one-off (consult, call); 'attendance' = a missed plan session. */
+export type AppointmentKind = "event" | "attendance";
+
+export interface Appointment {
+  id: string;
+  trainer_id: string;
+  client_id: string | null;
+  kind: AppointmentKind;
+  starts_at: string;
+  duration_min: number;
+  title: string | null;
+  location: string | null;
+  status: AppointmentStatus;
+  notes: string | null;
+  session_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Appointment with the related client's name resolved (for calendar/agenda views). */
+export interface AppointmentWithClient extends Appointment {
+  client_name: string | null;
+}
+
 export type ReportPeriod = "3m" | "6m" | "12m" | "all";
 
 export interface ProgressReport {
@@ -163,6 +190,10 @@ export interface SharedFile {
   created_at: string;
 }
 
+/** Extra metrics a logged set carries beyond the real columns (rounds, calories,
+ * avg HR, tempo, side, progression level…), keyed by modality LogField key. */
+export type SetMetrics = Record<string, string | number | null>;
+
 export interface WorkoutSet {
   id: string;
   trainer_id: string;
@@ -173,24 +204,42 @@ export interface WorkoutSet {
   reps: number | null;
   weight_kg: number | null;
   rpe: number | null;
+  // Cross-modality metrics (0015): real columns for the common two, jsonb for the rest.
+  duration_sec: number | null;
+  distance_m: number | null;
+  metrics: SetMetrics;
   notes: string | null;
   created_at: string;
   updated_at: string;
 }
 
+/** A planned line. `exercise_name`/`sets`/`reps`/`weight`/`notes` are the original
+ * strength fields; the rest are optional free-text slots other modalities use
+ * (which plan columns show is driven by lib/catalog/modalities.ts). */
 export interface PlanItem {
   exercise_name: string;
   sets: string;
   reps: string;
   weight: string;
   notes: string;
+  duration?: string;
+  distance?: string;
+  rounds?: string;
+  tempo?: string;
+  intensity?: string;
 }
 
 export interface PlanDay {
   day: string; // e.g. "Mon" or "Day 1"
   title: string; // e.g. "Push"
   items: PlanItem[];
+  /** Per-day override of the plan's modality; falls back to the plan's when unset. */
+  modality?: Modality;
 }
+
+/** How long a weekly plan runs; the week repeats for `duration_weeks` (see
+ *  lib/catalog/plan-cadence.ts). */
+export type PlanCadence = "weekly" | "biweekly" | "monthly" | "2-months" | "3-months" | "custom";
 
 export interface WorkoutPlan {
   id: string;
@@ -199,7 +248,13 @@ export interface WorkoutPlan {
   name: string;
   notes: string | null;
   is_active: boolean;
+  modality: Modality;
+  /** The repeating weekly structure. */
   days: PlanDay[];
+  /** Scheduling: the week repeats for `duration_weeks`, optionally from `starts_on`. */
+  cadence: PlanCadence;
+  duration_weeks: number;
+  starts_on: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -211,7 +266,12 @@ export interface WorkoutSession {
   performed_on: string;
   title: string | null;
   duration_min: number | null;
+  modality: Modality;
   notes: string | null;
+  /** When logged against a plan: the plan, the day key fulfilled, and which week. */
+  plan_id: string | null;
+  plan_day: string | null;
+  week_number: number | null;
   created_at: string;
   updated_at: string;
 }

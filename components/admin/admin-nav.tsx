@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
+export function AdminNav({ suspendedCount = 0 }: { suspendedCount?: number }) {
   const pathname = usePathname();
 
   const tabs = [
@@ -12,7 +12,7 @@ export function AdminNav({ pendingCount = 0 }: { pendingCount?: number }) {
     { href: "/admin/analytics", label: "Analytics", exact: false, badge: 0 },
     { href: "/admin/revenue", label: "Revenue", exact: false, badge: 0 },
     { href: "/admin/funnel", label: "Funnel", exact: false, badge: 0 },
-    { href: "/admin/trainers", label: "Trainers", exact: false, badge: pendingCount },
+    { href: "/admin/trainers", label: "Trainers", exact: false, badge: suspendedCount },
   ];
 
   return (

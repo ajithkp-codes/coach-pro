@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { Icon } from "@/components/ui/icon";
-import { daySummary, weekProgress, nextScheduledDay } from "@/lib/training-analytics";
+import { daySummary, weekProgress, todaysScheduledDays } from "@/lib/training-analytics";
+import { getModality } from "@/lib/catalog/modalities";
 import type { WorkoutPlan, WorkoutSessionWithSets } from "@/lib/types";
 
 function Ring({ pct }: { pct: number }) {
@@ -48,40 +49,18 @@ export function TodayCard({
   plans: WorkoutPlan[];
   sessions: WorkoutSessionWithSets[];
 }) {
-  const next = nextScheduledDay(plans, sessions);
-  if (!next) return null;
+  const days = todaysScheduledDays(plans, sessions);
+  if (days.length === 0) return null;
 
   const progress = weekProgress(sessions, plans);
-  const s = daySummary(next.day);
-  const chips = [
-    s.focus.length ? s.focus.join(" · ") : "Mixed",
-    `${s.exercises} exercise${s.exercises === 1 ? "" : "s"}`,
-    `~${s.minutes} min`,
-  ];
+  const multi = days.length > 1;
 
   return (
-    <div className="bg-gradient-brand flex flex-col gap-4 rounded-[var(--radius)] p-5 text-white shadow-sm sm:flex-row sm:items-center sm:justify-between">
-      <div className="min-w-0">
+    <div className="bg-gradient-brand flex flex-col gap-4 rounded-[var(--radius)] p-5 text-white shadow-sm">
+      <div className="flex items-center justify-between gap-3">
         <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-white/75">
-          <Icon name="sparkles" size={13} /> Up next
+          <Icon name="sparkles" size={13} /> Up next{multi ? ` · ${days.length} sessions` : ""}
         </p>
-        <div className="mt-1.5 flex flex-wrap items-baseline gap-2">
-          <span className="rounded-md bg-white/20 px-2 py-0.5 text-xs font-semibold">
-            {next.day.day}
-          </span>
-          {next.day.title && <span className="text-lg font-bold">{next.day.title}</span>}
-        </div>
-        <div className="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-sm text-white/85">
-          {chips.map((chip, i) => (
-            <span key={i} className="flex items-center gap-2">
-              {i > 0 && <span className="text-white/40">·</span>}
-              {chip}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex items-center gap-4">
         {progress && (
           <div className="flex items-center gap-2">
             <Ring pct={progress.pct} />
@@ -92,12 +71,52 @@ export function TodayCard({
             </span>
           </div>
         )}
-        <Link
-          href={`/clients/${clientId}/training/log?plan=${next.planId}&day=${next.dayIndex}`}
-          className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition-transform hover:scale-[1.02]"
-        >
-          <Icon name="dumbbell" size={15} /> Log this day
-        </Link>
+      </div>
+
+      <div className="flex flex-col divide-y divide-white/15">
+        {days.map((next, idx) => {
+          const plan = plans.find((p) => p.id === next.planId);
+          const def = getModality(next.day.modality ?? plan?.modality);
+          const s = daySummary(next.day);
+          const chips = [
+            s.focus.length ? s.focus.join(" · ") : "Mixed",
+            `${s.exercises} ${def.itemNoun.toLowerCase()}${s.exercises === 1 ? "" : "s"}`,
+            `~${s.minutes} min`,
+          ];
+          return (
+            <div
+              key={`${next.planId}-${next.dayIndex}`}
+              className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ${idx === 0 ? "pb-4" : "py-4"} ${idx === days.length - 1 ? "sm:pb-0" : ""}`}
+            >
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="flex items-center gap-1 rounded-md bg-white/20 px-2 py-0.5 text-xs font-semibold">
+                    <Icon name={def.icon} size={12} /> {def.short}
+                  </span>
+                  <span className="rounded-md bg-white/15 px-2 py-0.5 text-xs font-semibold">
+                    {next.day.day}
+                  </span>
+                  {next.day.title && <span className="text-lg font-bold">{next.day.title}</span>}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-sm text-white/85">
+                  {chips.map((chip, i) => (
+                    <span key={i} className="flex items-center gap-2">
+                      {i > 0 && <span className="text-white/40">·</span>}
+                      {chip}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <Link
+                href={`/clients/${clientId}/training/log?plan=${next.planId}&day=${next.dayIndex}`}
+                className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-[var(--radius-sm)] bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition-transform hover:scale-[1.02] sm:self-auto"
+              >
+                <Icon name={def.icon} size={15} /> Log this day
+              </Link>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import {
   getTrainerProfile,
   ensureTrainerProfile,
 } from "@/lib/data/session";
-import { getPendingCount } from "@/lib/data/admin";
+import { getSuspendedCount } from "@/lib/data/admin";
 import { logoutAction } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -20,10 +20,11 @@ export default async function DashboardLayout({
   await ensureTrainerProfile();
   const trainer = await getTrainerProfile();
 
-  if (trainer && !trainer.approved) redirect("/pending");
+  // `approved` now means "active, not suspended". A suspended trainer is locked out.
+  if (trainer && !trainer.approved) redirect("/suspended");
 
   const name = trainer?.full_name || email || "Trainer";
-  const pendingCount = trainer?.is_admin ? await getPendingCount().catch(() => 0) : 0;
+  const suspendedCount = trainer?.is_admin ? await getSuspendedCount().catch(() => 0) : 0;
 
   return (
     <div className="flex min-h-screen">
@@ -32,7 +33,7 @@ export default async function DashboardLayout({
         name={name}
         businessName={trainer?.business_name}
         isAdmin={trainer?.is_admin}
-        pendingCount={pendingCount}
+        suspendedCount={suspendedCount}
       />
 
       {/* Main content area — offset by sidebar width on desktop */}
@@ -68,7 +69,7 @@ export default async function DashboardLayout({
       </div>
 
       {/* Mobile bottom nav */}
-      <BottomNav isAdmin={trainer?.is_admin} pendingCount={pendingCount} />
+      <BottomNav isAdmin={trainer?.is_admin} suspendedCount={suspendedCount} />
     </div>
   );
 }

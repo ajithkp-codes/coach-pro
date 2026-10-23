@@ -44,12 +44,12 @@ export default async function BillingPage() {
             {plan === "pro" ? (
               <>
                 You&apos;re on <span className="font-medium text-foreground">Pro</span>.
-                {usage.count} of {usage.limit} client slots used.
+                {usage.count} of {usage.limit ?? "unlimited"} client slots used.
                 {sub?.current_end && <> Renews {formatDate(sub.current_end)}.</>}
               </>
             ) : (
               <>
-                {usage.count} of {usage.limit} client slots used on the{" "}
+                {usage.count} of {usage.limit ?? "unlimited"} client slots used on the{" "}
                 <span className="font-medium text-foreground">Free</span> plan.
               </>
             )}

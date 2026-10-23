@@ -19,12 +19,12 @@ export function TrainingArea({
   plans: WorkoutPlan[];
   sessions: WorkoutSessionWithSets[];
 }) {
-  const [tab, setTab] = useState<TabKey>("log");
+  const [tab, setTab] = useState<TabKey>("progress");
 
   const tabs: { key: TabKey; label: string }[] = [
-    { key: "plan", label: "Weekly plan" },
-    { key: "log", label: `Session log${sessions.length ? ` (${sessions.length})` : ""}` },
     { key: "progress", label: "Progress" },
+    { key: "plan", label: "Training plan" },
+    { key: "log", label: `Session log${sessions.length ? ` (${sessions.length})` : ""}` },
   ];
 
   return (

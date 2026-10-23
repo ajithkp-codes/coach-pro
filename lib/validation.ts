@@ -1,6 +1,14 @@
 import { z } from "zod";
 import { BODY_METRIC_KEYS } from "@/lib/catalog/metrics";
 import { MARKER_KEYS } from "@/lib/catalog/markers";
+import { MODALITIES, DEFAULT_MODALITY, type Modality } from "@/lib/catalog/modalities";
+import { CADENCE_KEYS } from "@/lib/catalog/plan-cadence";
+
+const MODALITY_KEYS = MODALITIES.map((m) => m.key) as [Modality, ...Modality[]];
+const modalityField = z
+  .enum(MODALITY_KEYS)
+  .optional()
+  .transform((v) => v ?? DEFAULT_MODALITY);
 
 /** Coerce an optional number field from a form: "" → undefined, else number. */
 const optionalNumber = z
@@ -9,10 +17,10 @@ const optionalNumber = z
   .transform((v) => (v === "" || v === undefined || v === null ? null : Number(v)))
   .refine((v) => v === null || !Number.isNaN(v), { message: "Must be a number" });
 
+// Accepts a string, null, or undefined (forms send strings/undefined; the Excel
+// importer sends explicit null for empty optionals). Normalizes "" / null → null.
 const optionalText = z
-  .string()
-  .trim()
-  .max(2000)
+  .union([z.string().trim().max(2000), z.null()])
   .optional()
   .transform((v) => (v ? v : null));
 
@@ -34,12 +42,15 @@ export const clientSchema = z.object({
   full_name: z.string().trim().min(1, "Client name is required").max(120),
   sex: z.enum(["male", "female", "other", "unspecified"]).default("unspecified"),
   date_of_birth: z
-    .string()
+    .union([z.string(), z.null()])
     .optional()
     .transform((v) => (v ? v : null)),
-  phone: z.string().trim().max(40).optional().transform((v) => (v ? v : null)),
+  phone: z
+    .union([z.string().trim().max(40), z.null()])
+    .optional()
+    .transform((v) => (v ? v : null)),
   email: z
-    .union([z.string().trim().email("Enter a valid email"), z.literal("")])
+    .union([z.string().trim().email("Enter a valid email"), z.literal(""), z.null()])
     .optional()
     .transform((v) => (v ? v : null)),
   notes: optionalText,
@@ -72,12 +83,18 @@ export const healthMarkerSchema = z
   .object({
     measured_on: z.string().min(1, "Date is required"),
     marker_key: z.enum(["custom", ...MARKER_KEYS] as [string, ...string[]]),
-    custom_name: z.string().trim().max(120).optional().transform((v) => (v ? v : null)),
+    custom_name: z
+      .union([z.string().trim().max(120), z.null()])
+      .optional()
+      .transform((v) => (v ? v : null)),
     value: z
       .union([z.string(), z.number()])
       .transform((v) => Number(v))
       .refine((v) => !Number.isNaN(v), { message: "Enter a numeric value" }),
-    unit: z.string().trim().max(20).optional().transform((v) => (v ? v : null)),
+    unit: z
+      .union([z.string().trim().max(20), z.null()])
+      .optional()
+      .transform((v) => (v ? v : null)),
     notes: optionalText,
   })
   .refine((d) => d.marker_key !== "custom" || !!d.custom_name, {
@@ -91,13 +108,19 @@ export const goalSchema = z.object({
   description: optionalText,
   category: z.enum(["health", "workout"]).default("health"),
   metric_key: z
-    .string()
+    .union([z.string(), z.null()])
     .optional()
     .transform((v) => (v && v !== "none" ? v : null)),
   start_value: optionalNumber,
   target_value: optionalNumber,
-  target_unit: z.string().trim().max(20).optional().transform((v) => (v ? v : null)),
-  target_date: z.string().optional().transform((v) => (v ? v : null)),
+  target_unit: z
+    .union([z.string().trim().max(20), z.null()])
+    .optional()
+    .transform((v) => (v ? v : null)),
+  target_date: z
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((v) => (v ? v : null)),
   status: z.enum(["active", "achieved", "paused", "dropped"]).default("active"),
 });
 
@@ -106,9 +129,17 @@ export const workoutSetSchema = z.object({
   exercise_name: z.string().trim().min(1, "Exercise name is required").max(120),
   reps: optionalNumber,
   weight_kg: optionalNumber,
-  rpe: optionalNumber.refine((v) => v === null || (v >= 0 && v <= 10), {
-    message: "RPE must be between 0 and 10",
+  rpe: optionalNumber.refine((v) => v === null || (v >= 1 && v <= 10), {
+    message: "RPE must be between 1 and 10",
   }),
+  // Cross-modality metrics (0015): two promoted columns + a free-form bag for the
+  // long tail (rounds, calories, avg HR, tempo, side, progression level…).
+  duration_sec: optionalNumber,
+  distance_m: optionalNumber,
+  metrics: z
+    .record(z.string(), z.union([z.string(), z.number(), z.null()]))
+    .optional()
+    .transform((v) => v ?? {}),
   notes: optionalText,
 });
 
@@ -116,7 +147,21 @@ export const workoutSessionSchema = z.object({
   performed_on: z.string().min(1, "Date is required"),
   title: z.string().trim().max(120).optional().transform((v) => (v ? v : null)),
   duration_min: optionalNumber,
+  modality: modalityField,
   notes: optionalText,
+  plan_id: z
+    .union([z.string().uuid(), z.string().length(0), z.null()])
+    .optional()
+    .transform((v) => (v ? v : null)),
+  plan_day: z.string().trim().max(24).optional().transform((v) => (v ? v : null)),
+  week_number: z
+    .union([z.string(), z.number(), z.null()])
+    .optional()
+    .transform((v) => {
+      if (v === "" || v == null) return null;
+      const n = Math.round(Number(v));
+      return Number.isFinite(n) && n >= 1 ? Math.min(52, n) : null;
+    }),
   sets: z.array(workoutSetSchema).max(200).default([]),
 });
 
@@ -127,18 +172,28 @@ export type WorkoutSessionInput = z.infer<typeof workoutSessionSchema>;
 const planText = (max: number) =>
   z.string().trim().max(max).optional().default("").transform((v) => v ?? "");
 
+// Optional free-text slots other modalities use. Left undefined (not "") when a
+// modality doesn't use them, so stored plans stay minimal and legacy plans parse.
+const optionalPlanText = (max: number) => z.string().trim().max(max).optional();
+
 export const planItemSchema = z.object({
   exercise_name: z.string().trim().min(1, "Exercise name is required").max(120),
   sets: planText(20),
   reps: planText(20),
   weight: planText(40),
   notes: planText(200),
+  duration: optionalPlanText(40),
+  distance: optionalPlanText(40),
+  rounds: optionalPlanText(20),
+  tempo: optionalPlanText(20),
+  intensity: optionalPlanText(40),
 });
 
 export const planDaySchema = z.object({
   day: z.string().trim().min(1).max(24),
   title: planText(120),
   items: z.array(planItemSchema).max(40),
+  modality: z.enum(MODALITY_KEYS).optional(),
 });
 
 export const workoutPlanSchema = z.object({
@@ -148,7 +203,20 @@ export const workoutPlanSchema = z.object({
     .union([z.boolean(), z.string()])
     .optional()
     .transform((v) => v === true || v === "true" || v === "on"),
+  modality: modalityField,
   days: z.array(planDaySchema).max(14).default([]),
+  cadence: z.enum(CADENCE_KEYS).optional().default("weekly"),
+  duration_weeks: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((v) => {
+      const n = Math.round(Number(v));
+      return Number.isFinite(n) && n >= 1 ? Math.min(52, n) : 1;
+    }),
+  starts_on: z
+    .union([z.string(), z.null()])
+    .optional()
+    .transform((v) => (v ? v : null)),
 });
 
 export type WorkoutPlanInput = z.infer<typeof workoutPlanSchema>;
@@ -256,6 +324,31 @@ export const reminderSchema = z.object({
 
 export type ReminderInput = z.infer<typeof reminderSchema>;
 
+// ---- Appointments (the trainer's calendar) ----
+export const appointmentSchema = z.object({
+  client_id: z
+    .string()
+    .optional()
+    .transform((v) => (v && v !== "none" ? v : null)),
+  // A <input type="datetime-local"> value ("2026-10-22T14:30") or ISO string.
+  starts_at: z.string().min(1, "Pick a date and time"),
+  duration_min: z
+    .union([z.string(), z.number(), z.null()])
+    .optional()
+    .transform((v) => (v === "" || v == null ? 60 : Number(v)))
+    .refine((v) => !Number.isNaN(v) && v > 0 && v <= 600, {
+      message: "Duration must be 1–600 minutes",
+    }),
+  title: z.string().trim().max(120).optional().transform((v) => (v ? v : null)),
+  location: z.string().trim().max(160).optional().transform((v) => (v ? v : null)),
+  notes: optionalText,
+  status: z
+    .enum(["scheduled", "completed", "cancelled", "no_show"])
+    .default("scheduled"),
+});
+
+export type AppointmentInput = z.infer<typeof appointmentSchema>;
+
 // ---- Progress reports ----
 export const reportSchema = z.object({
   title: z.string().trim().max(160).optional().transform((v) => (v ? v : null)),
@@ -275,3 +368,18 @@ export type ClientInput = z.infer<typeof clientSchema>;
 export type BodyMetricInput = z.infer<typeof bodyMetricSchema>;
 export type HealthMarkerInput = z.infer<typeof healthMarkerSchema>;
 export type GoalInput = z.infer<typeof goalSchema>;
+
+// ---- Bulk import (Excel → roster + one dated snapshot per client) ----
+// Composed from the per-entity schemas above; the server re-validates every
+// record the client sends through this, never trusting the browser-built shapes.
+export const importRecordSchema = z.object({
+  sourceRow: z.number().int().nonnegative(),
+  client: clientSchema,
+  metrics: bodyMetricSchema.nullable().optional().transform((v) => v ?? null),
+  markers: z.array(healthMarkerSchema).max(20).optional().transform((v) => v ?? []),
+  goal: goalSchema.nullable().optional().transform((v) => v ?? null),
+});
+
+export const bulkImportSchema = z.array(importRecordSchema).min(1).max(1000);
+
+export type ImportRecordInput = z.infer<typeof importRecordSchema>;

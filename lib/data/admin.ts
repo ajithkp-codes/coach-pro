@@ -35,7 +35,7 @@ async function count(
 export interface PlatformStats {
   trainers: number;
   admins: number;
-  pending: number;
+  suspended: number;
   clients: number;
   activeClients: number;
   proActive: number;
@@ -56,7 +56,7 @@ export async function getPlatformStats(): Promise<PlatformStats> {
   return {
     trainers: trainers.length,
     admins: trainers.filter((t) => t.is_admin).length,
-    pending: trainers.filter((t) => !t.approved).length,
+    suspended: trainers.filter((t) => !t.approved).length,
     clients,
     activeClients,
     proActive: subsRows.filter((s) => s.plan === "pro" && s.status === "active").length,
@@ -147,8 +147,8 @@ export async function getTrainerDetail(id: string): Promise<TrainerDetail | null
   };
 }
 
-/** Fast count of trainers awaiting approval - used for the nav badge. */
-export async function getPendingCount(): Promise<number> {
+/** Fast count of suspended trainers (approved=false) - used for the nav badge. */
+export async function getSuspendedCount(): Promise<number> {
   const { admin } = await requireAdmin();
   const { count: c } = await admin
     .from("trainers")

@@ -5,16 +5,17 @@ import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 
-export function BottomNav({ isAdmin, pendingCount = 0 }: { isAdmin?: boolean; pendingCount?: number }) {
+export function BottomNav({ isAdmin, suspendedCount = 0 }: { isAdmin?: boolean; suspendedCount?: number }) {
   const pathname = usePathname();
 
   const items: { href: string; label: string; icon: IconName; badge?: number; match: (p: string) => boolean }[] = [
     { href: "/dashboard", label: "Home", icon: "home", match: (p) => p === "/dashboard" },
     { href: "/clients", label: "Clients", icon: "users", match: (p) => p.startsWith("/clients") },
+    { href: "/schedule", label: "Schedule", icon: "calendar", match: (p) => p.startsWith("/schedule") },
     { href: "/account", label: "Account", icon: "user", match: (p) => p.startsWith("/account") },
   ];
   if (isAdmin) {
-    items.push({ href: "/admin", label: "Admin", icon: "sparkles", badge: pendingCount || undefined, match: (p) => p.startsWith("/admin") });
+    items.push({ href: "/admin", label: "Admin", icon: "sparkles", badge: suspendedCount || undefined, match: (p) => p.startsWith("/admin") });
   }
 
   return (

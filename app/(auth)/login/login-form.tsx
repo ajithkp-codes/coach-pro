@@ -6,6 +6,7 @@ import { loginAction, type AuthState } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
+import { useTheme } from "@/components/theme-provider";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -18,9 +19,16 @@ function SubmitButton() {
 
 export function LoginForm({ next }: { next?: string }) {
   const [state, action] = useActionState<AuthState, FormData>(loginAction, {});
+  const { setTheme } = useTheme();
+
+  // Signing in resets the workspace to its light-mode default.
+  function dispatch(formData: FormData) {
+    setTheme("light");
+    return action(formData);
+  }
 
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <form action={dispatch} className="flex flex-col gap-4">
       {next && <input type="hidden" name="next" value={next} />}
       <Field label="Email" htmlFor="email">
         <Input id="email" name="email" type="email" autoComplete="email" required />

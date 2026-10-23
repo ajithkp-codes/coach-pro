@@ -4,9 +4,9 @@ import { logoutAction } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 
-export const metadata = { title: "Awaiting approval · CoachPro" };
+export const metadata = { title: "Account suspended · CoachPro" };
 
-export default async function PendingPage() {
+export default async function SuspendedPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -19,9 +19,10 @@ export default async function PendingPage() {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (trainer?.approved) redirect("/dashboard");
+  // Not suspended (or profile not yet created) → let them into the app.
+  if (!trainer || trainer.approved) redirect("/dashboard");
 
-  const firstName = (trainer?.full_name || "").split(" ")[0];
+  const firstName = (trainer.full_name || "").split(" ")[0];
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4 py-10">
@@ -33,15 +34,20 @@ export default async function PendingPage() {
       </div>
 
       <div className="w-full max-w-md rounded-[var(--radius)] border border-border bg-card p-6 text-center shadow-sm">
-        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-info-bg text-primary">
-          <Icon name="clock" size={22} />
+        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-danger-bg text-danger">
+          <Icon name="alert" size={22} />
         </span>
         <h1 className="mt-4 text-lg font-semibold">
-          {firstName ? `Thanks, ${firstName}. ` : ""}Your account is awaiting approval
+          {firstName ? `${firstName}, your ` : "Your "}account is suspended
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          We review new trainer accounts before granting access. You will be able to
-          sign in and start adding clients as soon as your account is approved.
+          Access to CoachPro has been paused for this account. Your clients and data are safe.
+          If you think this is a mistake, reach out and we&rsquo;ll sort it out.
+        </p>
+        <p className="mt-3 text-sm font-medium">
+          <a href="mailto:ajith@coachpro.co.in" className="text-primary hover:underline">
+            ajith@coachpro.co.in
+          </a>
         </p>
         <form action={logoutAction} className="mt-6">
           <Button type="submit" variant="outline" className="w-full">
@@ -49,10 +55,6 @@ export default async function PendingPage() {
           </Button>
         </form>
       </div>
-
-      <p className="mt-6 text-center text-xs text-muted-foreground">
-        Already approved? Sign out and sign back in to refresh your access.
-      </p>
     </div>
   );
 }

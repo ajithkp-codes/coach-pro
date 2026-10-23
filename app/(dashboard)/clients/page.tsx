@@ -36,9 +36,14 @@ export default async function ClientsPage({
         title="Clients"
         description="Everyone you're monitoring. Open a client to record metrics, markers, and goals."
         action={
-          <ButtonLink href="/clients/new">
-            <Icon name="plus" size={16} /> Add client
-          </ButtonLink>
+          <div className="flex gap-2">
+            <ButtonLink href="/clients/import" variant="outline">
+              <Icon name="file" size={16} /> Import from Excel
+            </ButtonLink>
+            <ButtonLink href="/clients/new">
+              <Icon name="plus" size={16} /> Add client
+            </ButtonLink>
+          </div>
         }
       />
 
@@ -69,7 +74,12 @@ export default async function ClientsPage({
           }
           action={
             current !== "archived" && (
-              <ButtonLink href="/clients/new">Add client</ButtonLink>
+              <div className="flex gap-2">
+                <ButtonLink href="/clients/new">Add client</ButtonLink>
+                <ButtonLink href="/clients/import" variant="outline">
+                  Import from Excel
+                </ButtonLink>
+              </div>
             )
           }
         />

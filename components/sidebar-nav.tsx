@@ -18,18 +18,19 @@ export function SidebarNav({
   name,
   businessName,
   isAdmin,
-  pendingCount = 0,
+  suspendedCount = 0,
 }: {
   name: string;
   businessName?: string | null;
   isAdmin?: boolean;
-  pendingCount?: number;
+  suspendedCount?: number;
 }) {
   const pathname = usePathname();
 
   const items: NavItem[] = [
     { href: "/dashboard", label: "Dashboard", icon: "home", match: (p) => p === "/dashboard" },
     { href: "/clients", label: "Clients", icon: "users", match: (p) => p.startsWith("/clients") },
+    { href: "/schedule", label: "Schedule", icon: "calendar", match: (p) => p.startsWith("/schedule") },
     { href: "/account", label: "Account", icon: "user", match: (p) => p.startsWith("/account") },
   ];
   if (isAdmin) {
@@ -37,7 +38,7 @@ export function SidebarNav({
       href: "/admin",
       label: "Admin",
       icon: "sparkles",
-      badge: pendingCount || undefined,
+      badge: suspendedCount || undefined,
       match: (p) => p.startsWith("/admin"),
     });
   }

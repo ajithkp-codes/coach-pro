@@ -33,7 +33,11 @@ function parse(formData: FormData) {
     name: formData.get("name"),
     notes: formData.get("notes") || undefined,
     is_active: formData.get("is_active"),
+    modality: formData.get("modality") || undefined,
     days,
+    cadence: formData.get("cadence") || undefined,
+    duration_weeks: formData.get("duration_weeks") || undefined,
+    starts_on: formData.get("starts_on") || undefined,
   });
   if (!result.success) {
     return { success: false as const, error: result.error.issues[0]?.message ?? "Invalid plan" };

@@ -4,6 +4,8 @@ import { z } from "zod";
 import { authed } from "@/lib/data/session";
 import { planDaySchema } from "@/lib/validation";
 import type { PlanDay } from "@/lib/types";
+import { getModality, DEFAULT_MODALITY, type Modality } from "@/lib/catalog/modalities";
+import { movementsForModality } from "@/lib/catalog/movements";
 
 export interface GeneratePlanState {
   ok?: boolean;
@@ -15,19 +17,37 @@ export interface GeneratePlanInput {
   goal: string;
   daysPerWeek: number;
   experience: string;
+  modality?: Modality;
 }
 
 const draftSchema = z.object({ days: z.array(planDaySchema).min(1).max(14) });
 
-const SYSTEM = [
-  "You are an experienced strength & conditioning coach drafting a weekly workout plan.",
-  "Respond with ONLY a single JSON object — no prose, no markdown code fences.",
-  'Shape: {"days":[{"day":"Mon","title":"Push","items":[{"exercise_name":"Bench press","sets":"4","reps":"8","weight":"","notes":""}]}]}',
-  "Rules: `day` is a short weekday label (Mon, Tue, …). `title` is the session focus.",
-  "`sets`, `reps`, `weight`, `notes` are strings; leave `weight` empty unless an obvious default applies.",
-  "Use common, real exercise names. Produce exactly the requested number of training days (rest days omitted).",
-  "Each day should have 4–7 exercises appropriate to the stated experience level and goal.",
-].join(" ");
+/** A modality-specific system prompt: the right role, item shape and field rules,
+ * plus the modality's own movement vocabulary so names match the catalog. */
+function systemFor(modality: Modality): string {
+  const def = getModality(modality);
+  const fields = def.planColumns.map((c) => c.field);
+  // Example item: exercise_name + each field this modality programs.
+  const example: Record<string, string> = { exercise_name: "<movement>" };
+  for (const f of fields) example[f] = "";
+  const fieldList = fields.map((f) => `\`${f}\``).join(", ");
+  const library = movementsForModality(modality)
+    .slice(0, 48)
+    .map((m) => m.name)
+    .join(", ");
+
+  return [
+    `You are an experienced ${def.label} coach drafting a weekly ${def.label.toLowerCase()} plan.`,
+    "Respond with ONLY a single JSON object — no prose, no markdown code fences.",
+    `Shape: {"days":[{"day":"Mon","title":"${def.itemNoun} focus","items":[${JSON.stringify(example)}]}]}`,
+    "Rules: `day` is a short weekday label (Mon, Tue, …). `title` is the session focus.",
+    `Each item has \`exercise_name\` plus these string fields: ${fieldList}. Leave a field "" when it doesn't apply.`,
+    library
+      ? `Prefer these ${def.label} movements where they fit: ${library}. You may add other real, common ones.`
+      : "Use common, real movement names.",
+    `Produce exactly the requested number of training days (rest days omitted). Each day should have 4–7 ${def.itemNoun.toLowerCase()}s suited to the experience level and goal.`,
+  ].join(" ");
+}
 
 /**
  * Draft a weekly plan with Claude for the trainer to review and edit. Returns
@@ -47,6 +67,7 @@ export async function generatePlanAction(
     };
   }
 
+  const modality = getModality(input.modality ?? DEFAULT_MODALITY).key;
   const goal = input.goal.trim().slice(0, 500) || "general fitness";
   const days = Math.min(7, Math.max(1, Math.round(input.daysPerWeek) || 3));
   const experience = input.experience.trim().slice(0, 60) || "intermediate";
@@ -67,7 +88,7 @@ export async function generatePlanAction(
       body: JSON.stringify({
         model: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5-5",
         max_tokens: 2048,
-        system: SYSTEM,
+        system: systemFor(modality),
         messages: [{ role: "user", content: prompt }],
       }),
     });
@@ -100,5 +121,7 @@ export async function generatePlanAction(
     return { error: "The AI draft didn’t match the plan format. Please try again or use a template." };
   }
 
-  return { ok: true, days: result.data.days };
+  // Stamp the chosen modality so the editor renders the right columns per day.
+  const stampedDays = result.data.days.map((d) => ({ ...d, modality }));
+  return { ok: true, days: stampedDays };
 }

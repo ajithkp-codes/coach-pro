@@ -151,6 +151,15 @@ const PATHS: Record<string, React.ReactNode> = {
   droplet: <path d="M12 3.5s-6 6.6-6 11a6 6 0 0 0 12 0c0-4.4-6-11-6-11z" />,
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
   x: <path d="M6 6l12 12M18 6L6 18" />,
+  running: (
+    <>
+      <circle cx="15.5" cy="4.6" r="1.9" />
+      <path d="M15.2 7.3 11.5 10l3 2.2L15 18" />
+      <path d="M11.5 10 7 11l2.3 4" />
+      <path d="M15.2 8.8l4 1.1" />
+      <path d="M11.8 8.9 8.5 7.8" />
+    </>
+  ),
 };
 
 export type IconName = keyof typeof PATHS;

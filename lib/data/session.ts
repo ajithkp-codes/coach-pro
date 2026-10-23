@@ -78,10 +78,50 @@ export async function ensureTrainerProfile(): Promise<void> {
   if (existing) return;
 
   const user = (await supabase.auth.getUser()).data.user;
-  await supabase.from("trainers").insert({
+  const fullName = (user?.user_metadata?.full_name as string) ?? null;
+  const businessName = (user?.user_metadata?.business_name as string) ?? null;
+
+  const { error } = await supabase.from("trainers").insert({
     id: trainerId,
     email,
-    full_name: (user?.user_metadata?.full_name as string) ?? null,
-    business_name: (user?.user_metadata?.business_name as string) ?? null,
+    full_name: fullName,
+    business_name: businessName,
+    // Self-serve signup: accounts are active immediately. Admins can still
+    // suspend by setting approved=false (see the dashboard layout gate).
+    approved: true,
   });
+  if (error) return; // insert raced or failed — don't send a welcome for a non-insert
+
+  // First-time profile created: welcome the trainer and alert the admin.
+  // Awaited but failure-tolerant (sendMail swallows errors) so a flaky SMTP
+  // never blocks the first dashboard load. Runs exactly once per account.
+  await onNewTrainer({ email, fullName, businessName });
+}
+
+/** Send the welcome email + admin signup alert for a freshly created trainer. */
+async function onNewTrainer(t: {
+  email: string | null;
+  fullName: string | null;
+  businessName: string | null;
+}): Promise<void> {
+  const { sendMail } = await import("@/lib/email/mailer");
+  const { welcomeEmail, adminSignupAlertEmail } = await import("@/lib/email/templates");
+  const jobs: Promise<unknown>[] = [];
+  if (t.email) {
+    jobs.push(sendMail({ to: t.email, ...welcomeEmail(t.fullName) }));
+  }
+  const adminTo = process.env.ADMIN_NOTIFY_EMAIL;
+  if (adminTo) {
+    jobs.push(
+      sendMail({
+        to: adminTo,
+        ...adminSignupAlertEmail({
+          fullName: t.fullName,
+          email: t.email,
+          businessName: t.businessName,
+        }),
+      }),
+    );
+  }
+  await Promise.allSettled(jobs);
 }

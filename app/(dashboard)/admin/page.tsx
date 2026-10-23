@@ -12,7 +12,7 @@ export const metadata = { title: "Admin · CoachPro" };
 
 export default async function AdminOverviewPage() {
   const [stats, trainers] = await Promise.all([getPlatformStats(), listTrainers()]);
-  const pending = trainers.filter((t) => !t.approved);
+  const suspended = trainers.filter((t) => !t.approved);
   const recent = trainers.slice(0, 6);
 
   return (
@@ -23,22 +23,22 @@ export default async function AdminOverviewPage() {
         <StatTile icon="checkCircle" label="Pro subscriptions" value={stats.proActive} accent="green" />
         <StatTile
           icon="alert"
-          label="Pending approvals"
-          value={stats.pending}
-          accent={stats.pending ? "amber" : "green"}
-          sub={stats.pending ? "Action needed" : "All clear"}
+          label="Suspended accounts"
+          value={stats.suspended}
+          accent={stats.suspended ? "amber" : "green"}
+          sub={stats.suspended ? "Locked out" : "All active"}
         />
       </div>
 
-      {pending.length > 0 && (
+      {suspended.length > 0 && (
         <Card className="border-warning/40">
           <CardHeader>
-            <CardTitle>Pending approvals</CardTitle>
-            <Badge tone="warning">{pending.length}</Badge>
+            <CardTitle>Suspended accounts</CardTitle>
+            <Badge tone="warning">{suspended.length}</Badge>
           </CardHeader>
           <CardBody className="p-0">
             <div className="divide-y divide-border">
-              {pending.map((t) => (
+              {suspended.map((t) => (
                 <div key={t.id} className="flex items-center gap-3 px-4 py-3">
                   <Avatar name={t.full_name || t.email || "Trainer"} size="sm" />
                   <div className="min-w-0 flex-1">
@@ -52,7 +52,7 @@ export default async function AdminOverviewPage() {
                     View
                   </Link>
                   <form action={setApprovedAction.bind(null, t.id, true)}>
-                    <Button type="submit" size="sm">Approve</Button>
+                    <Button type="submit" size="sm">Reactivate</Button>
                   </form>
                 </div>
               ))}

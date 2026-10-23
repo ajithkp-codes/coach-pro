@@ -6,6 +6,8 @@
  */
 import type { WorkoutSessionWithSets, WorkoutPlan, PlanDay } from "@/lib/types";
 import { GROUP_BY_EXERCISE } from "@/lib/catalog/exercises";
+import { MODALITIES, type Modality } from "@/lib/catalog/modalities";
+import { expectedDayOn, localDateISO } from "@/lib/roster";
 
 const DAY = 86_400_000;
 
@@ -112,6 +114,99 @@ export function weeklyVolume(
   return keys.map((date, i) => ({ date, value: Math.round(vals[i]) }));
 }
 
+// ---- Modality-aware overview (hybrid clients train across several streams) ----
+
+/** Distinct modalities this client has actually logged, in registry order. */
+export function modalitiesTrained(sessions: WorkoutSessionWithSets[]): Modality[] {
+  const seen = new Set<string>();
+  for (const s of sessions) seen.add(s.modality);
+  return MODALITIES.map((m) => m.key).filter((k) => seen.has(k));
+}
+
+/** `weeks` empty weekly buckets (oldest first) + an index from week-start key. */
+function weekBuckets(weeks: number): { keys: string[]; index: Map<string, number> } {
+  const thisWeek = weekStart(new Date());
+  const keys: string[] = [];
+  const index = new Map<string, number>();
+  for (let i = weeks - 1; i >= 0; i--) {
+    const d = new Date(thisWeek);
+    d.setDate(d.getDate() - i * 7);
+    const k = toISODate(d);
+    index.set(k, keys.length);
+    keys.push(k);
+  }
+  return { keys, index };
+}
+
+function weekKeyOf(s: WorkoutSessionWithSets): string {
+  return toISODate(weekStart(new Date(`${s.performed_on}T00:00:00`)));
+}
+
+/** Sessions logged per week (modality-neutral), trailing `weeks` weeks. */
+export function weeklySessions(sessions: WorkoutSessionWithSets[], weeks = 12): TrendPoint[] {
+  const { keys, index } = weekBuckets(weeks);
+  const vals = new Array(keys.length).fill(0);
+  for (const s of sessions) {
+    const i = index.get(weekKeyOf(s));
+    if (i !== undefined) vals[i] += 1;
+  }
+  return keys.map((date, i) => ({ date, value: vals[i] }));
+}
+
+/** Distance covered per week. Running stores kilometres in distance_m, so the sum
+ *  is in km for a running client (the only distance-primary stream today). */
+export function weeklyDistance(sessions: WorkoutSessionWithSets[], weeks = 12): TrendPoint[] {
+  const { keys, index } = weekBuckets(weeks);
+  const vals = new Array(keys.length).fill(0);
+  for (const s of sessions) {
+    const i = index.get(weekKeyOf(s));
+    if (i === undefined) continue;
+    for (const set of s.sets) if (set.distance_m != null) vals[i] += Number(set.distance_m);
+  }
+  return keys.map((date, i) => ({ date, value: Math.round(vals[i] * 10) / 10 }));
+}
+
+/** Average pace (min/km) per week for running: total minutes ÷ total km that week.
+ *  Running stores minutes in duration_sec and km in distance_m. Weeks with no
+ *  distance are dropped so the line only spans weeks actually run. */
+export function paceTrend(sessions: WorkoutSessionWithSets[], weeks = 12): TrendPoint[] {
+  const { keys, index } = weekBuckets(weeks);
+  const min = new Array(keys.length).fill(0);
+  const km = new Array(keys.length).fill(0);
+  for (const s of sessions) {
+    const i = index.get(weekKeyOf(s));
+    if (i === undefined) continue;
+    for (const set of s.sets) {
+      if (set.duration_sec != null) min[i] += Number(set.duration_sec);
+      if (set.distance_m != null) km[i] += Number(set.distance_m);
+    }
+  }
+  return keys
+    .map((date, i) => ({ date, value: km[i] > 0 ? Math.round((min[i] / km[i]) * 100) / 100 : null }))
+    .filter((p): p is TrendPoint => p.value != null);
+}
+
+/** Total logged session-minutes over the trailing `days` days (uses session duration). */
+export function activeMinutes(sessions: WorkoutSessionWithSets[], days = 30): number {
+  const cutoff = Date.now() - days * DAY;
+  let sum = 0;
+  for (const s of sessions) {
+    if (new Date(`${s.performed_on}T00:00:00`).getTime() < cutoff) continue;
+    if (s.duration_min != null) sum += s.duration_min;
+  }
+  return sum;
+}
+
+/** Distinct days trained over the trailing `days` days. */
+export function activeDays(sessions: WorkoutSessionWithSets[], days = 30): number {
+  const cutoff = Date.now() - days * DAY;
+  const d = new Set<string>();
+  for (const s of sessions) {
+    if (new Date(`${s.performed_on}T00:00:00`).getTime() >= cutoff) d.add(s.performed_on);
+  }
+  return d.size;
+}
+
 export interface GroupShare {
   group: string;
   sets: number;
@@ -209,9 +304,13 @@ export function adherence(
   plans: WorkoutPlan[],
   weeks = 4,
 ): Adherence | null {
-  const active = plans.find((p) => p.is_active);
-  if (!active) return null;
-  const perWeek = active.days.filter((d) => d.items.length > 0).length;
+  // Sum across every active plan — a hybrid client may run one plan per modality.
+  const actives = plans.filter((p) => p.is_active);
+  if (actives.length === 0) return null;
+  const perWeek = actives.reduce(
+    (n, p) => n + p.days.filter((d) => d.items.length > 0).length,
+    0,
+  );
   if (perWeek === 0) return null;
 
   const cutoff = Date.now() - weeks * 7 * DAY;
@@ -260,9 +359,12 @@ export function weekProgress(
   sessions: WorkoutSessionWithSets[],
   plans: WorkoutPlan[],
 ): WeekProgress | null {
-  const active = plans.find((p) => p.is_active);
-  if (!active) return null;
-  const target = active.days.filter((d) => d.items.length > 0).length;
+  const actives = plans.filter((p) => p.is_active);
+  if (actives.length === 0) return null;
+  const target = actives.reduce(
+    (n, p) => n + p.days.filter((d) => d.items.length > 0).length,
+    0,
+  );
   if (target === 0) return null;
   const start = weekStart(new Date()).getTime();
   const done = sessions.filter(
@@ -294,4 +396,27 @@ export function nextScheduledDay(
   if (nonEmpty.length === 0) return null;
   const pick = nonEmpty[sessions.length % nonEmpty.length];
   return { planId: active.id, dayIndex: pick.i, day: pick.day };
+}
+
+/**
+ * The training day(s) a client is scheduled for on `dateISO`, one per active plan
+ * whose weekday-tagged day lands on that date. This is how two trainings on the
+ * same day surface as two blocks — and a single training as one. When nothing is
+ * weekday-tagged for the date (e.g. a plan that uses "Day 1" rotation labels), we
+ * fall back to a single rotation-based next day so the card is never empty.
+ */
+export function todaysScheduledDays(
+  plans: WorkoutPlan[],
+  sessions: WorkoutSessionWithSets[],
+  dateISO: string = localDateISO(new Date()),
+): NextDay[] {
+  const today: NextDay[] = [];
+  for (const p of plans) {
+    if (!p.is_active) continue;
+    const e = expectedDayOn(p, dateISO);
+    if (e) today.push({ planId: e.planId, dayIndex: e.dayIndex, day: e.day });
+  }
+  if (today.length > 0) return today;
+  const one = nextScheduledDay(plans, sessions);
+  return one ? [one] : [];
 }
