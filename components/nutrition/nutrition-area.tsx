@@ -29,9 +29,9 @@ export function NutritionArea({
   const activePlan = plans.find((p) => p.is_active) ?? null;
 
   const tabs: { key: TabKey; label: string }[] = [
+    { key: "progress", label: "Progress" },
     { key: "plan", label: "Diet plan" },
     { key: "log", label: `Food log${logs.length ? ` (${logs.length})` : ""}` },
-    { key: "progress", label: "Progress" },
   ];
 
   return (
