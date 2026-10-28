@@ -26,12 +26,12 @@ export function AdminActions({
     <div className="flex flex-wrap gap-2">
       {!approved ? (
         <form action={setApprovedAction.bind(null, trainerId, true)}>
-          <Button type="submit" size="sm">Approve access</Button>
+          <Button type="submit" size="sm">Reactivate account</Button>
         </form>
       ) : (
         <Modal
           title="Suspend access?"
-          description="This trainer will be signed out of the app until you approve them again."
+          description="This trainer will be signed out and locked out of the app until you reactivate them. Their clients and data are preserved."
           trigger={(open) => (
             <Button variant="outline" size="sm" onClick={open}>Suspend access</Button>
           )}

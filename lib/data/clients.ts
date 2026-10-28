@@ -48,6 +48,7 @@ export async function createClientRecord(input: ClientInput): Promise<Client> {
       notes: input.notes,
       consent_given: input.consent_given,
       consent_at: input.consent_given ? new Date().toISOString() : null,
+      source: "manual",
     })
     .select("*")
     .single();

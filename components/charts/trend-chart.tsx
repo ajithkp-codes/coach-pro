@@ -7,6 +7,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
 import { useTheme } from "@/components/theme-provider";
@@ -25,16 +26,20 @@ export function TrendChart({
   data,
   unit,
   label,
+  target,
 }: {
   data: TrendPoint[];
   unit?: string | null;
   label: string;
+  /** Optional daily target drawn as a dashed reference line (e.g. a diet goal). */
+  target?: number | null;
 }) {
   const { resolved } = useTheme();
   const dark = resolved === "dark";
   const AXIS = dark ? "#64748b" : "#94a3b8";
   const GRID = dark ? "#1e2836" : "#eef2f6";
   const LINE = dark ? "#ff6a43" : "#f04e28";
+  const TARGET = dark ? "#5b9bd5" : "#2f6fb0";
 
   if (data.length === 0) {
     return (
@@ -62,7 +67,14 @@ export function TrendChart({
             tickLine={false}
             axisLine={false}
             width={44}
-            domain={["auto", "auto"]}
+            domain={
+              target != null
+                ? [
+                    (min: number) => Math.min(min, target) * 0.96,
+                    (max: number) => Math.max(max, target) * 1.04,
+                  ]
+                : ["auto", "auto"]
+            }
           />
           <Tooltip
             formatter={(value) => [`${value}${unit ? ` ${unit}` : ""}`, label]}
@@ -78,6 +90,20 @@ export function TrendChart({
             labelStyle={{ color: dark ? "#93a1b5" : "#64748b" }}
             cursor={{ stroke: AXIS, strokeDasharray: "4 4" }}
           />
+          {target != null && (
+            <ReferenceLine
+              y={target}
+              stroke={TARGET}
+              strokeDasharray="5 4"
+              strokeWidth={1.5}
+              label={{
+                value: `Target ${target}${unit ? ` ${unit}` : ""}`,
+                position: "insideTopRight",
+                fill: TARGET,
+                fontSize: 11,
+              }}
+            />
+          )}
           <Line
             type="monotone"
             dataKey="value"

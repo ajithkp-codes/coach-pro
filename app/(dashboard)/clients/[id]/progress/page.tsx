@@ -2,6 +2,9 @@ import { listBodyMetrics } from "@/lib/data/bodyMetrics";
 import { listHealthMarkers } from "@/lib/data/healthMarkers";
 import { listGoals, computeGoalProgress, type GoalProgress } from "@/lib/data/goals";
 import { listSessions, sessionVolume } from "@/lib/data/training";
+import { listDietLogs } from "@/lib/data/diet";
+import { getActiveDietPlan } from "@/lib/data/dietPlans";
+import { dayTotals } from "@/lib/nutrition";
 import { BODY_METRIC_FIELDS } from "@/lib/catalog/metrics";
 import { markerLabel } from "@/lib/catalog/markers";
 import { ProgressArea } from "@/components/clients/progress-area";
@@ -14,11 +17,13 @@ export default async function ProgressPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [metrics, markers, goals, sessions] = await Promise.all([
+  const [metrics, markers, goals, sessions, dietLogs, activeDietPlan] = await Promise.all([
     listBodyMetrics(id),
     listHealthMarkers(id),
     listGoals(id),
     listSessions(id),
+    listDietLogs(id),
+    getActiveDietPlan(id),
   ]);
 
   const progressById: Record<string, GoalProgress> = {};
@@ -81,6 +86,16 @@ export default async function ProgressPage({
     .sort()
     .map((k) => ({ key: k, label: k, unit: "kg" }));
 
+  // ---- nutrition series: daily calories & protein from food logs (oldest first) ----
+  const dietAsc = [...dietLogs].sort((a, b) => (a.logged_on < b.logged_on ? -1 : 1));
+  const calorieSeries: TrendPoint[] = [];
+  const proteinSeries: TrendPoint[] = [];
+  for (const log of dietAsc) {
+    const totals = dayTotals(log.entries);
+    if (totals.calories > 0) calorieSeries.push({ date: log.logged_on, value: Math.round(totals.calories) });
+    if (totals.protein > 0) proteinSeries.push({ date: log.logged_on, value: Math.round(totals.protein) });
+  }
+
   return (
     <ProgressArea
       clientId={id}
@@ -96,6 +111,10 @@ export default async function ProgressPage({
         volumeSeries,
         exerciseSeries,
         exerciseOptions,
+        calorieSeries,
+        proteinSeries,
+        calorieTarget: activeDietPlan?.target_calories ?? null,
+        proteinTarget: activeDietPlan?.target_protein_g ?? null,
       }}
     />
   );

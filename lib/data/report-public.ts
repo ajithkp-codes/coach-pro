@@ -60,6 +60,17 @@ export interface ReportData {
   markers: ReportMarker[];
   goals: ReportGoal[];
   photos: ReportPhoto[];
+  nutrition: ReportNutrition | null;
+}
+
+export interface ReportNutrition {
+  planName: string | null;
+  calorieTarget: number | null;
+  proteinTarget: number | null;
+  daysLogged: number;
+  avgCalories: number | null;
+  avgProtein: number | null;
+  calorieSeries: ReportPoint[];
 }
 
 const PERIOD_MONTHS: Record<string, number | null> = { "3m": 3, "6m": 6, "12m": 12, all: null };
@@ -115,11 +126,13 @@ export async function buildReportData(report: ProgressReport): Promise<ReportDat
   const withRange = <T,>(q: T, col: string): T =>
     rangeStart ? ((q as { gte: (c: string, v: string) => T }).gte(col, rangeStart)) : q;
 
-  const [metricsRes, markersRes, goalsRes, sessionsRes] = await Promise.all([
+  const [metricsRes, markersRes, goalsRes, sessionsRes, dietLogsRes, dietPlanRes] = await Promise.all([
     withRange(admin.from("body_metrics").select("*").eq("client_id", report.client_id), "measured_on").order("measured_on", { ascending: true }),
     withRange(admin.from("health_markers").select("*").eq("client_id", report.client_id), "measured_on").order("measured_on", { ascending: false }),
     admin.from("goals").select("*").eq("client_id", report.client_id),
     withRange(admin.from("workout_sessions").select("*, sets:workout_sets(*)").eq("client_id", report.client_id), "performed_on").order("performed_on", { ascending: true }),
+    withRange(admin.from("diet_logs").select("logged_on, entries:diet_log_entries(calories, protein_g)").eq("client_id", report.client_id), "logged_on").order("logged_on", { ascending: true }),
+    admin.from("diet_plans").select("name, target_calories, target_protein_g").eq("client_id", report.client_id).eq("is_active", true).order("created_at", { ascending: false }).limit(1).maybeSingle(),
   ]);
 
   const metrics = (metricsRes.data ?? []) as Record<string, number | string | null>[];
@@ -220,6 +233,50 @@ export async function buildReportData(report: ProgressReport): Promise<ReportDat
     ),
   );
 
+  // ---- nutrition (diet-log adherence over the period) ----
+  const dietRows = (dietLogsRes.data ?? []) as {
+    logged_on: string;
+    entries: { calories: number | null; protein_g: number | null }[];
+  }[];
+  const dietPlan = dietPlanRes.data as
+    | { name: string; target_calories: number | null; target_protein_g: number | null }
+    | null;
+
+  let nutrition: ReportNutrition | null = null;
+  if (dietRows.length || dietPlan) {
+    const calorieSeries: ReportPoint[] = [];
+    let calSum = 0;
+    let calDays = 0;
+    let proSum = 0;
+    let proDays = 0;
+    for (const row of dietRows) {
+      let cal = 0;
+      let pro = 0;
+      for (const e of row.entries ?? []) {
+        cal += e.calories != null ? Number(e.calories) : 0;
+        pro += e.protein_g != null ? Number(e.protein_g) : 0;
+      }
+      if (cal > 0) {
+        calorieSeries.push({ date: row.logged_on, value: Math.round(cal) });
+        calSum += cal;
+        calDays++;
+      }
+      if (pro > 0) {
+        proSum += pro;
+        proDays++;
+      }
+    }
+    nutrition = {
+      planName: dietPlan?.name ?? null,
+      calorieTarget: dietPlan?.target_calories ?? null,
+      proteinTarget: dietPlan?.target_protein_g ?? null,
+      daysLogged: dietRows.length,
+      avgCalories: calDays ? Math.round(calSum / calDays) : null,
+      avgProtein: proDays ? Math.round(proSum / proDays) : null,
+      calorieSeries,
+    };
+  }
+
   // ---- photos ----
   let photos: ReportPhoto[] = [];
   if (report.include_photos) {
@@ -253,5 +310,6 @@ export async function buildReportData(report: ProgressReport): Promise<ReportDat
     markers,
     goals,
     photos,
+    nutrition,
   };
 }

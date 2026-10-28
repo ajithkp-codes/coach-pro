@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { workoutSessionSchema } from "@/lib/validation";
+import { getModality } from "@/lib/catalog/modalities";
 import {
   createSession,
   updateSession,
@@ -9,6 +10,7 @@ import {
   getExerciseBests,
   detectPRs,
   type PR,
+  type PRSetInput,
 } from "@/lib/data/training";
 
 export interface EntryState {
@@ -31,7 +33,11 @@ function parse(formData: FormData) {
     performed_on: formData.get("performed_on"),
     title: formData.get("title") || undefined,
     duration_min: formData.get("duration_min") || undefined,
+    modality: formData.get("modality") || undefined,
     notes: formData.get("notes") || undefined,
+    plan_id: formData.get("plan_id") || undefined,
+    plan_day: formData.get("plan_day") || undefined,
+    week_number: formData.get("week_number") || undefined,
     sets,
   });
   if (!result.success) {
@@ -58,16 +64,20 @@ export async function createSessionAction(
   if (!parsed.success) return { error: parsed.error };
   const bests = await getExerciseBests(clientId);
   await createSession(clientId, parsed.data);
-  const prs = detectPRs(
-    parsed.data.sets.map((s) => ({
-      exercise_name: s.exercise_name,
-      reps: s.reps,
-      weight_kg: s.weight_kg,
-    })),
-    bests,
-  );
+  const prs = detectPRs(prSets(parsed.data.sets), bests, getModality(parsed.data.modality).primaryMetric);
   revalidate(clientId);
   return { ok: true, prs };
+}
+
+/** Reduce validated sets to the fields PR detection reads. */
+function prSets(sets: ReturnType<typeof workoutSessionSchema.parse>["sets"]): PRSetInput[] {
+  return sets.map((s) => ({
+    exercise_name: s.exercise_name,
+    reps: s.reps,
+    weight_kg: s.weight_kg,
+    duration_sec: s.duration_sec,
+    distance_m: s.distance_m,
+  }));
 }
 
 export async function updateSessionAction(
@@ -80,14 +90,7 @@ export async function updateSessionAction(
   if (!parsed.success) return { error: parsed.error };
   const bests = await getExerciseBests(clientId, sessionId);
   await updateSession(sessionId, clientId, parsed.data);
-  const prs = detectPRs(
-    parsed.data.sets.map((s) => ({
-      exercise_name: s.exercise_name,
-      reps: s.reps,
-      weight_kg: s.weight_kg,
-    })),
-    bests,
-  );
+  const prs = detectPRs(prSets(parsed.data.sets), bests, getModality(parsed.data.modality).primaryMetric);
   revalidate(clientId);
   return { ok: true, prs };
 }

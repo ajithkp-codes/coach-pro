@@ -4,6 +4,7 @@ import { getClient } from "@/lib/data/clients";
 import { listSessions, getLastSetsByExercise } from "@/lib/data/training";
 import { listPlans } from "@/lib/data/plans";
 import { WorkoutLogger } from "@/components/training/workout-logger";
+import { getModality } from "@/lib/catalog/modalities";
 import {
   createSessionAction,
   updateSessionAction,
@@ -38,6 +39,17 @@ export default async function LogWorkoutPage({
   const prefillPlan = planId ? plans.find((p) => p.id === planId) : undefined;
   const prefillDay = prefillPlan && dayIndex != null ? prefillPlan.days[Number(dayIndex)] : undefined;
   const prefill = prefillDay?.items.length ? prefillDay.items : undefined;
+  const prefillPlanDay = prefillDay
+    ? prefillDay.day + (prefillDay.title ? ` · ${prefillDay.title}` : "")
+    : undefined;
+
+  // The session's modality drives which fields the logger shows and how PRs are
+  // measured: an edited session keeps its own; a plan-seeded one takes the day's
+  // (else the plan's); otherwise the client's active plan, else the default.
+  const activePlan = plans.find((p) => p.is_active) ?? plans[0];
+  const modality = getModality(
+    editing?.modality ?? prefillDay?.modality ?? prefillPlan?.modality ?? activePlan?.modality,
+  ).key;
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -51,10 +63,13 @@ export default async function LogWorkoutPage({
       <WorkoutLogger
         clientId={id}
         action={action}
+        modality={modality}
         session={editing}
         plans={plans}
         lastByExercise={lastByExercise}
         prefill={prefill}
+        prefillPlanId={prefill ? prefillPlan?.id : undefined}
+        prefillPlanDay={prefill ? prefillPlanDay : undefined}
       />
     </div>
   );

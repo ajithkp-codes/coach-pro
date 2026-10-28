@@ -6,6 +6,7 @@ import { signupAction, type AuthState } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
+import { useTheme } from "@/components/theme-provider";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -18,6 +19,13 @@ function SubmitButton() {
 
 export function SignupForm() {
   const [state, action] = useActionState<AuthState, FormData>(signupAction, {});
+  const { setTheme } = useTheme();
+
+  // A new account starts in the light-mode default.
+  function dispatch(formData: FormData) {
+    setTheme("light");
+    return action(formData);
+  }
 
   if (state.notice) {
     return (
@@ -28,7 +36,7 @@ export function SignupForm() {
   }
 
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <form action={dispatch} className="flex flex-col gap-4">
       <Field label="Your name" htmlFor="fullName" required>
         <Input id="fullName" name="fullName" autoComplete="name" required />
       </Field>

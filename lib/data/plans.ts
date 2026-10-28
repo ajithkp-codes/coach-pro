@@ -1,5 +1,6 @@
 import { authed } from "./session";
 import type { WorkoutPlan } from "@/lib/types";
+import type { Modality } from "@/lib/catalog/modalities";
 import type { WorkoutPlanInput } from "@/lib/validation";
 
 export async function listPlans(clientId: string): Promise<WorkoutPlan[]> {
@@ -27,13 +28,17 @@ export async function getActivePlan(clientId: string): Promise<WorkoutPlan | nul
   return (data as WorkoutPlan) ?? null;
 }
 
-/** Make a single plan the active one for a client (deactivates the rest). */
-async function clearActive(clientId: string, exceptId?: string) {
+/** Deactivate the client's other active plan OF THE SAME MODALITY, so a client can
+ *  run one active plan per modality at once (e.g. a running plan AND a strength
+ *  plan) — two trainings can then fall on the same day. Activating a plan only
+ *  displaces another of its own kind, never a different discipline. */
+async function clearActive(clientId: string, modality: Modality, exceptId?: string) {
   const { supabase } = await authed();
   let q = supabase
     .from("workout_plans")
     .update({ is_active: false })
     .eq("client_id", clientId)
+    .eq("modality", modality)
     .eq("is_active", true);
   if (exceptId) q = q.neq("id", exceptId);
   await q;
@@ -44,7 +49,7 @@ export async function createPlan(
   input: WorkoutPlanInput,
 ): Promise<WorkoutPlan> {
   const { supabase, trainerId } = await authed();
-  if (input.is_active) await clearActive(clientId);
+  if (input.is_active) await clearActive(clientId, input.modality);
   const { data, error } = await supabase
     .from("workout_plans")
     .insert({
@@ -53,7 +58,11 @@ export async function createPlan(
       name: input.name,
       notes: input.notes,
       is_active: input.is_active,
+      modality: input.modality,
       days: input.days,
+      cadence: input.cadence,
+      duration_weeks: input.duration_weeks,
+      starts_on: input.starts_on,
     })
     .select("*")
     .single();
@@ -67,14 +76,18 @@ export async function updatePlan(
   input: WorkoutPlanInput,
 ): Promise<WorkoutPlan> {
   const { supabase } = await authed();
-  if (input.is_active) await clearActive(clientId, id);
+  if (input.is_active) await clearActive(clientId, input.modality, id);
   const { data, error } = await supabase
     .from("workout_plans")
     .update({
       name: input.name,
       notes: input.notes,
       is_active: input.is_active,
+      modality: input.modality,
       days: input.days,
+      cadence: input.cadence,
+      duration_weeks: input.duration_weeks,
+      starts_on: input.starts_on,
     })
     .eq("id", id)
     .select("*")
@@ -85,7 +98,13 @@ export async function updatePlan(
 
 export async function setPlanActive(id: string, clientId: string): Promise<void> {
   const { supabase } = await authed();
-  await clearActive(clientId, id);
+  // Only displace another active plan of the same modality.
+  const { data: row } = await supabase
+    .from("workout_plans")
+    .select("modality")
+    .eq("id", id)
+    .single();
+  if (row?.modality) await clearActive(clientId, row.modality as Modality, id);
   const { error } = await supabase
     .from("workout_plans")
     .update({ is_active: true })

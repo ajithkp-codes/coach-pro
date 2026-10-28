@@ -7,9 +7,9 @@ export const metadata = { title: "Sign in · CoachPro" };
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; error?: string }>;
+  searchParams: Promise<{ next?: string; error?: string; verified?: string }>;
 }) {
-  const { next, error } = await searchParams;
+  const { next, error, verified } = await searchParams;
   return (
     <Card>
       <CardBody>
@@ -17,10 +17,16 @@ export default async function LoginPage({
         <p className="mt-1.5 text-sm text-muted-foreground">
           Sign in to your trainer workspace.
         </p>
+        {verified === "1" && (
+          <p className="mt-4 rounded-[var(--radius)] bg-success-bg px-3 py-2 text-sm text-success">
+            Your email&apos;s confirmed — you&apos;re all set. Sign in with your
+            email and password to start using CoachPro.
+          </p>
+        )}
         {error === "link-expired" && (
           <p className="mt-4 rounded-[var(--radius)] bg-warning-bg px-3 py-2 text-sm text-warning">
-            That link was invalid or expired. Please sign in or request a new
-            reset link.
+            That password reset link was invalid or has expired. Request a new
+            one below.
           </p>
         )}
         <div className="mt-5">

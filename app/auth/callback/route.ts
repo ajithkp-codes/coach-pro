@@ -26,5 +26,13 @@ export async function GET(request: Request) {
     if (!error) return NextResponse.redirect(`${origin}${next}`);
   }
 
-  return NextResponse.redirect(`${origin}/login?error=link-expired`);
+  // We only reach here when the final auto-sign-in step failed — typically the
+  // email was opened in a different browser/device than signup, so the PKCE
+  // verifier cookie is missing. For a password reset that's a dead link. But
+  // for an email confirmation, Supabase already verified the account before
+  // redirecting here, so the user just needs to sign in — tell them that
+  // instead of showing the scary "expired reset link" message.
+  const isRecovery = next.startsWith("/reset-password") || type === "recovery";
+  const failParam = isRecovery ? "error=link-expired" : "verified=1";
+  return NextResponse.redirect(`${origin}/login?${failParam}`);
 }

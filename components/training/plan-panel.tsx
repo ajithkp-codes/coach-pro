@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardBody } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PlanEditor } from "./plan-editor";
+import { daySummary } from "@/lib/training-analytics";
+import { describeCadence } from "@/lib/catalog/plan-cadence";
 import {
   createPlanAction,
   updatePlanAction,
@@ -32,6 +34,7 @@ function PlanView({ plan, clientId }: { plan: WorkoutPlan; clientId: string }) {
     <div className="grid gap-3 sm:grid-cols-2">
       {days.map((d) => {
         const realIdx = plan.days.indexOf(d);
+        const summary = daySummary(d);
         return (
           <div key={realIdx} className="rounded-lg border border-border p-3">
             <div className="flex items-center justify-between gap-2">
@@ -49,6 +52,22 @@ function PlanView({ plan, clientId }: { plan: WorkoutPlan; clientId: string }) {
                 </ButtonLink>
               )}
             </div>
+            {d.items.length > 0 && (
+              <div className="mt-1.5 flex flex-wrap gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
+                {[
+                  summary.focus.length ? summary.focus.join(" · ") : null,
+                  `${summary.exercises} exercise${summary.exercises === 1 ? "" : "s"}`,
+                  `~${summary.minutes} min`,
+                ]
+                  .filter(Boolean)
+                  .map((chip, i) => (
+                    <span key={i} className="flex items-center gap-1.5">
+                      {i > 0 && <span className="text-border">·</span>}
+                      {chip}
+                    </span>
+                  ))}
+              </div>
+            )}
             {d.items.length ? (
               <ul className="mt-2 flex flex-col gap-1.5 text-sm">
                 {d.items.map((it, j) => (
@@ -81,12 +100,12 @@ export function PlanPanel({
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          Build the client&apos;s weekly plan: days, exercises, target sets, reps and weight.
+          Build the client&apos;s training plan: days, exercises, target sets, reps and weight — set to run weekly, monthly or any length you choose.
         </p>
         <Modal
           wide
           title="New workout plan"
-          description="Set up a weekly plan the client follows."
+          description="Set up a training plan the client follows."
           trigger={(open) => (
             <Button onClick={open}>
               <Icon name="plus" size={16} /> New plan
@@ -109,7 +128,7 @@ export function PlanPanel({
       {plans.length === 0 ? (
         <EmptyState
           title="No plan yet"
-          description="Create a weekly workout plan with exercises, sets and reps."
+          description="Create a training plan with exercises, sets and reps."
         />
       ) : (
         <div className="flex flex-col gap-4">
@@ -121,7 +140,13 @@ export function PlanPanel({
                     <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-info-bg text-primary">
                       <Icon name="dumbbell" size={16} />
                     </span>
-                    <p className="font-medium">{plan.name}</p>
+                    <div>
+                      <p className="font-medium">{plan.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {describeCadence(plan.cadence ?? "weekly", plan.duration_weeks ?? 1)}
+                        {plan.starts_on ? ` · from ${plan.starts_on}` : ""}
+                      </p>
+                    </div>
                     {plan.is_active && <Badge tone="success">Active</Badge>}
                   </div>
                   <div className="flex items-center gap-1">

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 import { Icon } from "./icon";
@@ -31,19 +32,19 @@ export function Modal({
 
   const close = React.useCallback(() => setOpen(false), []);
 
-  return (
-    <>
-      {trigger(() => setOpen(true))}
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-6 animate-fade-in"
-          role="dialog"
-          aria-modal="true"
-          aria-label={title}
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) close();
-          }}
-        >
+  // Rendered through a portal to <body> so no ancestor's transform (e.g. a
+  // lingering `animate-slide-up` translate) can become the containing block for
+  // this fixed overlay and trap it off-screen.
+  const overlay = open ? (
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-6 animate-fade-in"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) close();
+      }}
+    >
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" aria-hidden />
           <div
             className={cn(
@@ -76,7 +77,12 @@ export function Modal({
             <div className="px-5 py-5">{children(close)}</div>
           </div>
         </div>
-      )}
+  ) : null;
+
+  return (
+    <>
+      {trigger(() => setOpen(true))}
+      {overlay && createPortal(overlay, document.body)}
     </>
   );
 }

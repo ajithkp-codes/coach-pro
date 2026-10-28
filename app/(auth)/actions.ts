@@ -40,8 +40,8 @@ export async function signupAction(
     password: parsed.data.password,
     options: {
       // The confirm link lands here: /auth/callback signs them in, then sends
-      // them to /dashboard (which routes to the awaiting-approval screen).
-      emailRedirectTo: `${origin}/auth/callback?next=/dashboard`,
+      // them to /welcome (a "you're verified" screen) → dashboard. No approval.
+      emailRedirectTo: `${origin}/auth/callback?next=/welcome`,
       data: {
         full_name: parsed.data.fullName,
         business_name: parsed.data.businessName ?? null,
@@ -71,7 +71,7 @@ export async function signupAction(
   if (!data.session) {
     return {
       notice:
-        "Account created. Check your email for a confirmation link. Once you confirm, you'll be signed in and your account will be reviewed before access.",
+        "Account created! Check your email for a confirmation link from ajith@coachpro.co.in. Click it to verify, and you'll be signed straight in — no approval needed.",
     };
   }
 

@@ -47,7 +47,7 @@ export default async function AdminTrainerDetailPage({
               </h2>
               <Badge tone={plan === "pro" ? "success" : "neutral"} className="capitalize">{plan}</Badge>
               {trainer.is_admin && <Badge tone="info">Admin</Badge>}
-              {!trainer.approved && <Badge tone="warning">Pending approval</Badge>}
+              {!trainer.approved && <Badge tone="danger">Suspended</Badge>}
             </div>
             <p className="mt-0.5 text-sm text-muted-foreground">
               {[trainer.business_name, trainer.email].filter(Boolean).join(" · ")}
