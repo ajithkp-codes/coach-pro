@@ -1,31 +1,21 @@
-import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
 import { ClientRoster } from "@/components/clients/client-roster";
 import { getClientBoard } from "@/lib/data/dashboard";
-import { cn } from "@/lib/utils";
-import type { ClientStatus } from "@/lib/types";
 
 export const metadata = { title: "Clients · CoachPro" };
-
-const TABS: { key: ClientStatus | "all"; label: string }[] = [
-  { key: "active", label: "Active" },
-  { key: "archived", label: "Archived" },
-  { key: "all", label: "All" },
-];
 
 export default async function ClientsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; filter?: string }>;
+  searchParams: Promise<{ filter?: string }>;
 }) {
-  const { status, filter } = await searchParams;
-  const current = (TABS.find((t) => t.key === status)?.key ?? "active") as
-    | ClientStatus
-    | "all";
-  const clients = await getClientBoard(current);
+  const { filter } = await searchParams;
+  // Load the whole roster (active + archived) once; the single filter bar in the
+  // roster slices it client-side, so every tab's count is always accurate.
+  const clients = await getClientBoard("all");
 
   return (
     <>
@@ -44,40 +34,17 @@ export default async function ClientsPage({
         }
       />
 
-      <div className="mb-4 flex gap-1">
-        {TABS.map((t) => (
-          <Link
-            key={t.key}
-            href={t.key === "active" ? "/clients" : `/clients?status=${t.key}`}
-            className={cn(
-              "rounded-[var(--radius)] px-3 py-1.5 text-sm font-medium transition-colors",
-              current === t.key
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
-          >
-            {t.label}
-          </Link>
-        ))}
-      </div>
-
       {clients.length === 0 ? (
         <EmptyState
-          title={current === "archived" ? "No archived clients" : "No clients yet"}
-          description={
-            current === "archived"
-              ? "Clients you archive will appear here."
-              : "Add your first client to start tracking their data."
-          }
+          title="No clients yet"
+          description="Add your first client to start tracking their data."
           action={
-            current !== "archived" && (
-              <div className="flex gap-2">
-                <ButtonLink href="/clients/new">Add client</ButtonLink>
-                <ButtonLink href="/clients/import" variant="outline">
-                  Import from Excel
-                </ButtonLink>
-              </div>
-            )
+            <div className="flex gap-2">
+              <ButtonLink href="/clients/new">Add client</ButtonLink>
+              <ButtonLink href="/clients/import" variant="outline">
+                Import from Excel
+              </ButtonLink>
+            </div>
           }
         />
       ) : (

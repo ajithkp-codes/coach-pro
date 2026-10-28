@@ -11,20 +11,28 @@ import { cn } from "@/lib/utils";
 import { autoMap } from "@/lib/import/column-match";
 import { FIELD_BY_KEY, FIELD_GROUPS, IMPORT_FIELDS } from "@/lib/import/fields";
 import { buildRecords, detectHeaderRow, readWorkbook } from "@/lib/import/parse";
-import type { SheetData, ImportSummary } from "@/lib/import/types";
+import type { SheetData, ImportSummary, ImportRecord } from "@/lib/import/types";
 import {
+  aiImportAction,
   bulkImportClientsAction,
   suggestImportMappingAction,
 } from "@/app/(dashboard)/clients/import/actions";
 
 type Step = "upload" | "sheet" | "map" | "review";
+type Mode = "ai" | "manual";
 
-const STEPS: { key: Step; label: string }[] = [
-  { key: "upload", label: "Upload" },
-  { key: "sheet", label: "Sheet" },
-  { key: "map", label: "Map columns" },
-  { key: "review", label: "Review" },
-];
+const STEPS: Record<Mode, { key: Step; label: string }[]> = {
+  ai: [
+    { key: "upload", label: "Upload" },
+    { key: "review", label: "Review" },
+  ],
+  manual: [
+    { key: "upload", label: "Upload" },
+    { key: "sheet", label: "Sheet" },
+    { key: "map", label: "Map columns" },
+    { key: "review", label: "Review" },
+  ],
+};
 
 export function ClientImporter({
   remaining,
@@ -37,6 +45,7 @@ export function ClientImporter({
   plan: string;
   aiEnabled?: boolean;
 }) {
+  const [mode, setMode] = useState<Mode>(aiEnabled ? "ai" : "manual");
   const [step, setStep] = useState<Step>("upload");
   const [fileName, setFileName] = useState("");
   const [parseError, setParseError] = useState<string | null>(null);
@@ -50,6 +59,13 @@ export function ClientImporter({
   const [consent, setConsent] = useState(false);
   const [importing, setImporting] = useState(false);
   const [summary, setSummary] = useState<ImportSummary | null>(null);
+
+  // AI-import path
+  const [aiConsent, setAiConsent] = useState(false);
+  const [aiRecords, setAiRecords] = useState<ImportRecord[]>([]);
+  const [aiTruncated, setAiTruncated] = useState(false);
+  const [aiInvalid, setAiInvalid] = useState(0);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const sheet = sheets[sheetIdx];
   const headers = sheet?.rows[headerRow] ?? [];
@@ -68,28 +84,57 @@ export function ClientImporter({
   );
 
   const hasName = Object.values(mapping).includes("full_name");
-  const willImport = Math.min(build.records.length, remaining);
+  const reviewRecords = mode === "ai" ? aiRecords : build.records;
+  const skippedCount = mode === "ai" ? 0 : build.skipped.length;
+  const willImport = Math.min(reviewRecords.length, remaining);
 
   async function handleFile(file: File) {
     setParseError(null);
+    setAiError(null);
     setFileName(file.name);
+    let nonEmpty: SheetData[];
     try {
       const parsed = await readWorkbook(file);
-      const nonEmpty = parsed.filter((s) => s.rows.length > 0);
-      if (nonEmpty.length === 0) {
-        setParseError("That workbook has no readable rows.");
-        return;
-      }
-      // Default to the sheet with the most rows (usually the master roster).
-      let best = 0;
-      nonEmpty.forEach((s, i) => {
-        if (s.rows.length > nonEmpty[best].rows.length) best = i;
-      });
-      setSheets(nonEmpty);
-      setSheetIdx(best);
-      setStep("sheet");
+      nonEmpty = parsed.filter((s) => s.rows.length > 0);
     } catch {
       setParseError("Couldn’t read that file. Supported: .xlsx, .xls, .csv");
+      return;
+    }
+    if (nonEmpty.length === 0) {
+      setParseError("That workbook has no readable rows.");
+      return;
+    }
+    setSheets(nonEmpty);
+
+    if (mode === "ai") {
+      await runAiImport(nonEmpty);
+      return;
+    }
+
+    // Manual: default to the sheet with the most rows (usually the master roster).
+    let best = 0;
+    nonEmpty.forEach((s, i) => {
+      if (s.rows.length > nonEmpty[best].rows.length) best = i;
+    });
+    setSheetIdx(best);
+    setStep("sheet");
+  }
+
+  async function runAiImport(sheetData: SheetData[]) {
+    setAiBusy(true);
+    setAiError(null);
+    try {
+      const res = await aiImportAction({ sheets: sheetData });
+      if (res.error && res.records.length === 0) {
+        setAiError(res.error);
+        return;
+      }
+      setAiRecords(res.records);
+      setAiTruncated(res.truncated);
+      setAiInvalid(res.invalid);
+      setStep("review");
+    } finally {
+      setAiBusy(false);
     }
   }
 
@@ -127,7 +172,10 @@ export function ClientImporter({
     try {
       // Send everything; the server caps to the plan limit and reports the
       // overflow as "plan limit" skips so the summary stays honest.
-      const result = await bulkImportClientsAction(build.records);
+      const result = await bulkImportClientsAction(
+        reviewRecords,
+        mode === "ai" ? "ai_import" : "excel",
+      );
       setSummary(result);
     } finally {
       setImporting(false);
@@ -142,6 +190,12 @@ export function ClientImporter({
     setSummary(null);
     setConsent(false);
     setAiMsg(null);
+    setAiRecords([]);
+    setAiTruncated(false);
+    setAiInvalid(0);
+    setAiError(null);
+    // Keep the chosen mode, API key, and AI consent so "import another file"
+    // doesn't make the trainer re-enter them.
   }
 
   // ---- Success summary ----
@@ -191,7 +245,7 @@ export function ClientImporter({
 
   return (
     <div className="flex flex-col gap-4">
-      <Stepper step={step} />
+      <Stepper step={step} mode={mode} />
 
       <p className="text-sm text-muted-foreground">
         {plan === "pro" ? "Pro plan" : "Free plan"}
@@ -208,6 +262,56 @@ export function ClientImporter({
       {step === "upload" && (
         <Card>
           <CardBody className="flex flex-col gap-4">
+            {aiEnabled && (
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-medium">How would you like to import?</span>
+                <div className="inline-flex w-fit rounded-[var(--radius)] border border-border p-1">
+                  {(
+                    [
+                      { key: "ai" as const, label: "AI import", icon: "sparkles" as const },
+                      { key: "manual" as const, label: "Map columns", icon: "file" as const },
+                    ]
+                  ).map((m) => (
+                    <button
+                      key={m.key}
+                      type="button"
+                      onClick={() => setMode(m.key)}
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-1.5 text-sm font-medium transition-colors",
+                        mode === m.key
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      <Icon name={m.icon} size={15} />
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {mode === "ai"
+                    ? "AI reads any layout — wide rosters, measurement logs, one tab per client — and figures out the columns for you. Best for messy or non-standard sheets."
+                    : "Pick the sheet and match each column yourself. Best when your sheet is a simple one-row-per-client roster."}
+                </p>
+              </div>
+            )}
+
+            {mode === "ai" && (
+              <label className="flex items-start gap-2 rounded-[var(--radius)] bg-muted/40 p-4 text-sm">
+                <input
+                  type="checkbox"
+                  checked={aiConsent}
+                  onChange={(e) => setAiConsent(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  I understand my spreadsheet — including client personal and health
+                  data — will be sent to our AI provider to read the columns.
+                  Nothing is saved to CoachPro until I review and confirm.
+                </span>
+              </label>
+            )}
+
             <Field
               label="Choose your Excel workbook"
               htmlFor="import-file"
@@ -217,15 +321,28 @@ export function ClientImporter({
                 id="import-file"
                 type="file"
                 accept=".xlsx,.xls,.csv"
+                disabled={aiBusy || (mode === "ai" && !aiConsent)}
                 onChange={(e) => {
                   const f = e.target.files?.[0];
                   if (f) void handleFile(f);
                 }}
-                className="block w-full text-sm file:mr-3 file:rounded-[var(--radius-sm)] file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground hover:file:bg-primary-hover"
+                className="block w-full text-sm file:mr-3 file:rounded-[var(--radius-sm)] file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground hover:file:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
               />
             </Field>
+            {mode === "ai" && !aiConsent && (
+              <p className="text-xs text-muted-foreground">
+                Tick the consent box above to enable the file picker.
+              </p>
+            )}
             {fileName && <p className="text-sm text-muted-foreground">Selected: {fileName}</p>}
+            {aiBusy && (
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Icon name="sparkles" size={15} className="text-primary" />
+                Reading your sheet with AI — this can take a few seconds…
+              </p>
+            )}
             {parseError && <p className="text-sm text-danger">{parseError}</p>}
+            {aiError && <p className="text-sm text-danger">{aiError}</p>}
           </CardBody>
         </Card>
       )}
@@ -368,13 +485,32 @@ export function ClientImporter({
             <div>
               <h2 className="font-display text-lg font-semibold">Review &amp; import</h2>
               <p className="text-sm text-muted-foreground">
-                {build.records.length} client{build.records.length === 1 ? "" : "s"} ready
-                {build.skipped.length > 0 && `, ${build.skipped.length} skipped (no name)`}.
-                {build.records.length > remaining && (
+                {reviewRecords.length} client{reviewRecords.length === 1 ? "" : "s"} ready
+                {skippedCount > 0 && `, ${skippedCount} skipped (no name)`}.
+                {reviewRecords.length > remaining && (
                   <> Only {remaining} will import — you’re at your plan limit.</>
                 )}
               </p>
             </div>
+
+            {mode === "ai" && aiTruncated && (
+              <p className="rounded-[var(--radius)] bg-warning-bg px-3 py-2 text-sm text-warning">
+                Your workbook was large, so only part of it was sent to the AI. Review
+                the records below, then import another file for the rest if needed.
+              </p>
+            )}
+            {mode === "ai" && aiInvalid > 0 && (
+              <p className="text-sm text-muted-foreground">
+                {aiInvalid} row{aiInvalid === 1 ? "" : "s"} the AI returned couldn’t be
+                validated and {aiInvalid === 1 ? "was" : "were"} dropped.
+              </p>
+            )}
+            {mode === "ai" && reviewRecords.length === 0 && (
+              <p className="text-sm text-danger">
+                The AI didn’t find any importable clients in this file. Try the
+                “Map columns” option instead.
+              </p>
+            )}
 
             <div className="overflow-x-auto">
               <table className="w-full min-w-[40rem] text-sm">
@@ -388,21 +524,29 @@ export function ClientImporter({
                   </tr>
                 </thead>
                 <tbody>
-                  {build.records.slice(0, 20).map((r) => {
-                    const flag = build.flags.find((f) => f.row === r.sourceRow);
-                    const metricCount = r.metrics ? Object.keys(r.metrics).length - 1 : 0;
+                  {reviewRecords.slice(0, 20).map((r, idx) => {
+                    const flag = mode === "ai" ? undefined : build.flags.find((f) => f.row === r.sourceRow);
+                    const snapCount = r.metrics.length;
+                    const planCount = r.plans?.length ?? 0;
+                    const exerciseCount = (r.plans ?? []).reduce(
+                      (sum, p) => sum + p.days.reduce((d, day) => d + day.items.length, 0),
+                      0,
+                    );
                     return (
-                      <tr key={r.sourceRow} className="border-b border-border/60 align-top">
-                        <td className="py-2 pr-3 text-muted-foreground">{r.sourceRow}</td>
+                      <tr key={`${r.sourceRow}-${idx}`} className="border-b border-border/60 align-top">
+                        <td className="py-2 pr-3 text-muted-foreground">{r.sourceRow || idx + 1}</td>
                         <td className="py-2 pr-3 font-medium">{r.client.full_name}</td>
                         <td className="py-2 pr-3 text-muted-foreground">
                           {[r.client.phone, r.client.email].filter(Boolean).join(" · ") || "—"}
                         </td>
                         <td className="py-2 pr-3 text-muted-foreground">
                           {[
-                            metricCount > 0 ? `${metricCount} metric${metricCount === 1 ? "" : "s"}` : null,
+                            snapCount > 0 ? `${snapCount} snapshot${snapCount === 1 ? "" : "s"}` : null,
                             r.markers.length > 0 ? `${r.markers.length} marker${r.markers.length === 1 ? "" : "s"}` : null,
                             r.goal ? "goal" : null,
+                            planCount > 0
+                              ? `${planCount} plan${planCount === 1 ? "" : "s"}${exerciseCount > 0 ? ` (${exerciseCount} exercise${exerciseCount === 1 ? "" : "s"})` : ""}`
+                              : null,
                           ]
                             .filter(Boolean)
                             .join(" · ") || "—"}
@@ -420,9 +564,9 @@ export function ClientImporter({
                 </tbody>
               </table>
             </div>
-            {build.records.length > 20 && (
+            {reviewRecords.length > 20 && (
               <p className="text-xs text-muted-foreground">
-                Showing first 20 of {build.records.length}.
+                Showing first 20 of {reviewRecords.length}.
               </p>
             )}
 
@@ -440,7 +584,11 @@ export function ClientImporter({
             </label>
 
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setStep("map")} disabled={importing}>
+              <Button
+                variant="outline"
+                onClick={() => setStep(mode === "ai" ? "upload" : "map")}
+                disabled={importing}
+              >
                 Back
               </Button>
               <Button onClick={doImport} disabled={!consent || importing || willImport === 0}>
@@ -454,11 +602,12 @@ export function ClientImporter({
   );
 }
 
-function Stepper({ step }: { step: Step }) {
-  const activeIdx = STEPS.findIndex((s) => s.key === step);
+function Stepper({ step, mode }: { step: Step; mode: Mode }) {
+  const steps = STEPS[mode];
+  const activeIdx = steps.findIndex((s) => s.key === step);
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
-      {STEPS.map((s, i) => (
+      {steps.map((s, i) => (
         <div key={s.key} className="flex items-center gap-2">
           <span
             className={cn(
@@ -473,7 +622,7 @@ function Stepper({ step }: { step: Step }) {
           <span className={cn(i === activeIdx ? "font-medium text-foreground" : "text-muted-foreground")}>
             {s.label}
           </span>
-          {i < STEPS.length - 1 && <Icon name="chevronRight" size={14} className="text-muted-foreground" />}
+          {i < steps.length - 1 && <Icon name="chevronRight" size={14} className="text-muted-foreground" />}
         </div>
       ))}
     </div>

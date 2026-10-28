@@ -5,8 +5,8 @@
  * modules.
  */
 import { authed } from "./session";
-import type { Client } from "@/lib/types";
-import type { BodyMetricInput, GoalInput, HealthMarkerInput } from "@/lib/validation";
+import type { Client, ClientSource } from "@/lib/types";
+import type { BodyMetricInput, GoalInput, HealthMarkerInput, WorkoutPlanInput } from "@/lib/validation";
 import { MARKER_BY_KEY } from "@/lib/catalog/markers";
 
 export interface ClientInsert {
@@ -24,7 +24,10 @@ export interface ClientInsert {
  * of the VALUES list for a single INSERT, so the returned array lines up with
  * `inputs` by index — callers depend on that to attach child rows.
  */
-export async function bulkCreateClients(inputs: ClientInsert[]): Promise<Client[]> {
+export async function bulkCreateClients(
+  inputs: ClientInsert[],
+  source: Extract<ClientSource, "excel" | "ai_import"> = "excel",
+): Promise<Client[]> {
   if (inputs.length === 0) return [];
   const { supabase, trainerId } = await authed();
   const now = new Date().toISOString();
@@ -38,6 +41,7 @@ export async function bulkCreateClients(inputs: ClientInsert[]): Promise<Client[
     notes: c.notes,
     consent_given: c.consent_given,
     consent_at: c.consent_given ? now : null,
+    source,
   }));
   const { data, error } = await supabase.from("clients").insert(rows).select("*");
   if (error) throw error;
@@ -81,5 +85,32 @@ export async function bulkCreateGoals(
     achieved_at: e.input.status === "achieved" ? new Date().toISOString() : null,
   }));
   const { error } = await supabase.from("goals").insert(rows);
+  if (error) throw error;
+}
+
+/**
+ * Insert migrated workout plans. Mirrors `createPlan` column-for-column so an
+ * imported plan is a first-class plan. Callers are expected to have already
+ * resolved the active flag (one active plan per modality) — these clients are
+ * brand-new, so there's no pre-existing plan to displace.
+ */
+export async function bulkCreateWorkoutPlans(
+  entries: { clientId: string; input: WorkoutPlanInput }[],
+): Promise<void> {
+  if (entries.length === 0) return;
+  const { supabase, trainerId } = await authed();
+  const rows = entries.map((e) => ({
+    trainer_id: trainerId,
+    client_id: e.clientId,
+    name: e.input.name,
+    notes: e.input.notes,
+    is_active: e.input.is_active,
+    modality: e.input.modality,
+    days: e.input.days,
+    cadence: e.input.cadence,
+    duration_weeks: e.input.duration_weeks,
+    starts_on: e.input.starts_on,
+  }));
+  const { error } = await supabase.from("workout_plans").insert(rows);
   if (error) throw error;
 }

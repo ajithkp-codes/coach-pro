@@ -181,7 +181,7 @@ export function buildRecords(
     const record: ImportRecord = {
       sourceRow,
       client,
-      metrics: hasMetric ? { measured_on: measuredOn, ...metrics } : null,
+      metrics: hasMetric ? [{ measured_on: measuredOn, ...metrics }] : [],
       markers: resolvedMarkers,
       goal:
         goalTitle || goalTarget != null

@@ -6,7 +6,7 @@ import {
   type ClientCompliance,
   type RiskResult,
 } from "./compliance";
-import type { ClientStatus } from "@/lib/types";
+import type { ClientSource, ClientStatus } from "@/lib/types";
 
 export interface ClientCardData {
   id: string;
@@ -17,6 +17,10 @@ export interface ClientCardData {
   phone: string | null;
   email: string | null;
   consent_given: boolean;
+  /** When the client was added to the roster (ISO timestamp). */
+  created_at: string;
+  /** How the client was added: manual / excel / ai_import. */
+  source: ClientSource;
   latestWeight: number | null;
   weightDelta: number | null;
   weightSpark: number[];
@@ -96,6 +100,7 @@ type ClientRow = {
   phone: string | null;
   email: string | null;
   consent_given: boolean;
+  source: ClientSource;
   created_at: string;
 };
 
@@ -157,7 +162,7 @@ async function loadBoardContext(): Promise<BoardContext> {
     dietPlansRes,
     missedApptsRes,
   ] = await Promise.all([
-    supabase.from("clients").select("id, full_name, sex, date_of_birth, status, phone, email, consent_given, created_at"),
+    supabase.from("clients").select("id, full_name, sex, date_of_birth, status, phone, email, consent_given, source, created_at"),
     supabase.from("body_metrics").select("client_id, measured_on, weight_kg").gte("measured_on", recentCutoff).order("measured_on", { ascending: true }),
     supabase.from("health_markers").select("client_id, marker_key, custom_name, value, measured_on, created_at").order("created_at", { ascending: false }).limit(200),
     supabase.from("goals").select("client_id, title, status, target_date"),
@@ -357,6 +362,8 @@ function buildBoardItem(c: ClientRow, ctx: BoardContext): ClientBoardItem {
     phone: c.phone,
     email: c.email,
     consent_given: c.consent_given,
+    created_at: c.created_at,
+    source: c.source,
     latestWeight,
     weightDelta,
     weightSpark: w.slice(-8),

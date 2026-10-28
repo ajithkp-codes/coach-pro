@@ -375,9 +375,17 @@ export type GoalInput = z.infer<typeof goalSchema>;
 export const importRecordSchema = z.object({
   sourceRow: z.number().int().nonnegative(),
   client: clientSchema,
-  metrics: bodyMetricSchema.nullable().optional().transform((v) => v ?? null),
-  markers: z.array(healthMarkerSchema).max(20).optional().transform((v) => v ?? []),
+  // History-native: a client can carry several dated body-metric snapshots (a
+  // measurement log over weeks), not just one. A single `null`/object from the
+  // legacy path is coerced to an array so both importers share one shape.
+  metrics: z.array(bodyMetricSchema).max(104).optional().transform((v) => v ?? []),
+  markers: z.array(healthMarkerSchema).max(200).optional().transform((v) => v ?? []),
   goal: goalSchema.nullable().optional().transform((v) => v ?? null),
+  // A migrating trainer often arrives with the client's existing training
+  // program(s) in the same workbook — one or more full weekly plans (days →
+  // exercises with sets/reps/weight). Reuse the exact plan schema the plan
+  // builder writes, so an imported plan is indistinguishable from a hand-built one.
+  plans: z.array(workoutPlanSchema).max(20).optional().transform((v) => v ?? []),
 });
 
 export const bulkImportSchema = z.array(importRecordSchema).min(1).max(1000);

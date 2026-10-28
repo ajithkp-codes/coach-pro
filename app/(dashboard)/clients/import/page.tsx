@@ -2,6 +2,7 @@ import { PageHeader } from "@/components/page-header";
 import { ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { canAddClient } from "@/lib/data/billing";
+import { isAiConfigured } from "@/lib/ai/provider";
 import { ClientImporter } from "@/components/clients/import/client-importer";
 
 export const metadata = { title: "Import clients · CoachPro" };
@@ -10,8 +11,8 @@ export default async function ImportClientsPage() {
   const billing = await canAddClient();
   const remaining =
     billing.limit == null ? Number.MAX_SAFE_INTEGER : Math.max(0, billing.limit - billing.count);
-  // AI mapping assist is optional: without a key, dictionary auto-mapping stands alone.
-  const aiEnabled = !!process.env.ANTHROPIC_API_KEY;
+  // AI import/assist is optional: without a key, manual column mapping stands alone.
+  const aiEnabled = isAiConfigured();
 
   return (
     <>

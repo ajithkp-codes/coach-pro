@@ -3,6 +3,9 @@
 import type { Modality } from "@/lib/catalog/modalities";
 
 export type ClientStatus = "active" | "archived";
+
+/** How a client entered the roster (see migration 0018). */
+export type ClientSource = "manual" | "excel" | "ai_import";
 export type Sex = "male" | "female" | "other" | "unspecified";
 export type GoalCategory = "health" | "workout";
 export type GoalStatus = "active" | "achieved" | "paused" | "dropped";
@@ -32,6 +35,7 @@ export interface Client {
   consent_at: string | null;
   log_token: string | null;
   log_token_created_at: string | null;
+  source: ClientSource;
   created_at: string;
   updated_at: string;
 }
