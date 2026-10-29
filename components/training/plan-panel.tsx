@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardBody } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PlanEditor } from "./plan-editor";
+import { PlanShare } from "./plan-share";
 import { daySummary } from "@/lib/training-analytics";
 import { describeCadence } from "@/lib/catalog/plan-cadence";
 import {
@@ -17,6 +18,7 @@ import {
   deletePlanAction,
 } from "@/app/(dashboard)/clients/[id]/training/plan-actions";
 import type { WorkoutPlan, PlanItem } from "@/lib/types";
+import type { ClientTrainingSnapshot } from "@/lib/data/training-snapshot";
 
 function itemLine(it: PlanItem): string {
   const setsReps = [it.sets, it.reps].filter(Boolean).join(" × ");
@@ -90,9 +92,11 @@ function PlanView({ plan, clientId }: { plan: WorkoutPlan; clientId: string }) {
 export function PlanPanel({
   clientId,
   plans,
+  snapshot,
 }: {
   clientId: string;
   plans: WorkoutPlan[];
+  snapshot?: ClientTrainingSnapshot | null;
 }) {
   const router = useRouter();
 
@@ -115,6 +119,8 @@ export function PlanPanel({
           {(close) => (
             <PlanEditor
               action={createPlanAction.bind(null, clientId)}
+              clientId={clientId}
+              snapshot={snapshot}
               onCancel={close}
               onSuccess={() => {
                 close();
@@ -155,6 +161,17 @@ export function PlanPanel({
                         <Button type="submit" variant="ghost" size="sm">Set active</Button>
                       </form>
                     )}
+                    <Modal
+                      title="Share plan"
+                      description="Send your client a read-only link to this plan."
+                      trigger={(open) => (
+                        <Button variant="ghost" size="sm" onClick={open}>
+                          <Icon name="link" size={14} /> Share
+                        </Button>
+                      )}
+                    >
+                      {() => <PlanShare clientId={clientId} plan={plan} />}
+                    </Modal>
                     <Modal
                       wide
                       title="Edit plan"

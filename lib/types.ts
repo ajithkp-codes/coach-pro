@@ -259,6 +259,10 @@ export interface WorkoutPlan {
   cadence: PlanCadence;
   duration_weeks: number;
   starts_on: string | null;
+  /** Public share link (null = never shared); toggled off with share_revoked. */
+  share_token: string | null;
+  share_revoked: boolean;
+  share_view_count: number;
   created_at: string;
   updated_at: string;
 }
