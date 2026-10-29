@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ThemeSegmented } from "@/components/theme-toggle";
 import { getTrainerProfile } from "@/lib/data/session";
 import { getSubscription, planOf } from "@/lib/data/billing";
+import { getTier } from "@/lib/catalog/plans";
 import { logoutAction } from "@/app/(auth)/actions";
 import { ProfileForm } from "./profile-form";
 
@@ -48,15 +49,15 @@ export default async function AccountPage() {
       <Card className="mt-5">
         <CardHeader>
           <CardTitle>Subscription</CardTitle>
-          <Badge tone={plan === "pro" ? "success" : "neutral"} className="capitalize">
+          <Badge tone={plan === "free" ? "neutral" : "success"} className="capitalize">
             {plan}
           </Badge>
         </CardHeader>
         <CardBody className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
-            {plan === "pro"
-              ? "You're on Pro."
-              : "You're on the Free plan."}
+            {plan === "free"
+              ? "You're on the Free plan."
+              : `You're on ${getTier(plan).label}.`}
           </p>
           <ButtonLink href="/account/billing" variant="outline" size="sm">
             Manage billing

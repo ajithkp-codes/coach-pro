@@ -12,7 +12,8 @@ import { DemoBooking } from "@/components/marketing/demo-booking";
 import { ProductScreenshot } from "@/components/marketing/product-screenshot";
 import { MockWebApp, MockClientReport } from "@/components/marketing/mocks";
 import { createClient } from "@/lib/supabase/server";
-import { FREE_CLIENT_LIMIT, PRO_CLIENT_LIMIT, PRO_PRICE_INR } from "@/lib/constants";
+import { FREE_CLIENT_LIMIT } from "@/lib/constants";
+import { getTier, effectiveMonthlyPriceInr, LAUNCH_PROMO } from "@/lib/catalog/plans";
 
 /* ------------------------------------------------------------------ */
 
@@ -279,19 +280,30 @@ export default async function Home() {
                 Priced per coach, <em>not per client.</em>
               </h2>
               <p className="mt-5 max-w-[38rem] text-lg text-[#57514a]">
-                Track as many clients as you like. Start free, upgrade when your
-                roster grows beyond {FREE_CLIENT_LIMIT}.
+                Track as many clients as you like. Start free, upgrade when you
+                want AI-assisted programming and a bigger roster.
+                {LAUNCH_PROMO.active && (
+                  <span className="font-medium text-[#1a1713]">
+                    {" "}Paid plans are {LAUNCH_PROMO.percentOff}% off during launch.
+                  </span>
+                )}
               </p>
             </Reveal>
 
-            <div className="mx-auto mt-12 grid max-w-3xl gap-5 sm:grid-cols-2">
+            <div className="mx-auto mt-12 grid max-w-5xl gap-5 md:grid-cols-3">
               <Reveal>
                 <PricingCard
-                  name="Starter"
+                  name="Free"
                   price="₹0"
                   suffix="/mo"
-                  tagline="For coaches getting started."
-                  features={[`Up to ${FREE_CLIENT_LIMIT} active clients`, "Full roster view", "Body metrics, markers & goals", "Export & delete anytime"]}
+                  tagline="Everything you need to coach your first clients."
+                  features={[
+                    `Up to ${getTier("free").clientLimit} active clients`,
+                    "Full roster, metrics, markers & goals",
+                    "Manual & AI-imported training plans",
+                    "Shareable read-only plan links",
+                    "Export & delete anytime",
+                  ]}
                   cta={primaryLabel}
                   href={primaryHref}
                 />
@@ -299,13 +311,39 @@ export default async function Home() {
               <Reveal delay={90}>
                 <PricingCard
                   name="Pro"
-                  price={`₹${PRO_PRICE_INR}`}
+                  strike={LAUNCH_PROMO.active ? `₹${getTier("pro").priceInr}` : undefined}
+                  price={`₹${effectiveMonthlyPriceInr("pro")}`}
                   suffix="/mo"
-                  tagline="For working coaches with a full roster."
-                  features={[`Up to ${PRO_CLIENT_LIMIT} active clients`, "Everything in Starter", "Trend charts & progress photos", "Branding & priority support"]}
-                  cta={user ? "Go Pro" : "Start 14-day trial"}
+                  note={LAUNCH_PROMO.active ? LAUNCH_PROMO.label : undefined}
+                  tagline="AI-assisted programming for a growing roster."
+                  features={[
+                    `Up to ${getTier("pro").clientLimit} active clients`,
+                    "Everything in Free",
+                    "AI workout plan generation",
+                    "Trend charts & progress photos",
+                    "Priority support",
+                  ]}
+                  cta={user ? "Go Pro" : "Start free"}
                   href={user ? "/account/billing" : "/signup"}
                   highlight
+                />
+              </Reveal>
+              <Reveal delay={180}>
+                <PricingCard
+                  name="Studio"
+                  strike={LAUNCH_PROMO.active ? `₹${getTier("studio").priceInr}` : undefined}
+                  price={`₹${effectiveMonthlyPriceInr("studio")}`}
+                  suffix="/mo"
+                  note={LAUNCH_PROMO.active ? LAUNCH_PROMO.label : undefined}
+                  tagline="For full-time coaches and studios at scale."
+                  features={[
+                    "Unlimited active clients",
+                    "Everything in Pro",
+                    "Higher AI generation limits",
+                    "First in line for new features",
+                  ]}
+                  cta={user ? "Go Studio" : "Start free"}
+                  href={user ? "/account/billing" : "/signup"}
                 />
               </Reveal>
             </div>
@@ -374,9 +412,9 @@ export default async function Home() {
 /* ------------------------------------------------------------------ */
 
 function PricingCard({
-  name, price, suffix, tagline, features, cta, href, highlight,
+  name, price, strike, note, suffix, tagline, features, cta, href, highlight,
 }: {
-  name: string; price: string; suffix?: string; tagline: string;
+  name: string; price: string; strike?: string; note?: string; suffix?: string; tagline: string;
   features: string[]; cta: string; href: string; highlight?: boolean;
 }) {
   return (
@@ -392,10 +430,16 @@ function PricingCard({
       )}
       <div className="font-serif text-[22px] font-semibold text-[#1a1713]">{name}</div>
       <p className="text-sm text-[#716a5e]">{tagline}</p>
-      <p className="mt-1">
+      <p className="mt-1 flex flex-wrap items-baseline gap-x-2">
+        {strike && (
+          <span className="font-sans text-[22px] font-semibold tracking-[-0.02em] text-[#a39b8d] line-through">{strike}</span>
+        )}
         <span className="font-sans text-[40px] font-bold tracking-[-0.02em] text-[#1a1713]">{price}</span>
         {suffix && <span className="text-sm font-medium text-[#716a5e]"> {suffix}</span>}
       </p>
+      {note && (
+        <p className="-mt-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#bc3420]">{note}</p>
+      )}
       <ul className="mt-1 flex flex-1 flex-col gap-2.5">
         {features.map((f) => (
           <li key={f} className="flex gap-2.5 text-sm text-[#57514a]">

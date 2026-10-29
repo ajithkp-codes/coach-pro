@@ -45,7 +45,7 @@ export default async function AdminTrainerDetailPage({
               <h2 className="text-xl font-semibold tracking-tight">
                 {trainer.full_name || "Unnamed trainer"}
               </h2>
-              <Badge tone={plan === "pro" ? "success" : "neutral"} className="capitalize">{plan}</Badge>
+              <Badge tone={plan === "free" ? "neutral" : "success"} className="capitalize">{plan}</Badge>
               {trainer.is_admin && <Badge tone="info">Admin</Badge>}
               {!trainer.approved && <Badge tone="danger">Suspended</Badge>}
             </div>

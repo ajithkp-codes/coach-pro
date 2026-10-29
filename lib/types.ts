@@ -164,7 +164,7 @@ export interface ProgressReport {
   created_at: string;
 }
 
-export type Plan = "free" | "pro";
+export type Plan = "free" | "pro" | "studio";
 export type SubStatus = "active" | "inactive" | "past_due" | "cancelled";
 
 export interface Subscription {

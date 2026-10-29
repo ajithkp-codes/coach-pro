@@ -31,8 +31,15 @@ export interface LimitResult {
 
 let warnedUnavailable = false;
 
-export async function enforceAiDailyLimit(supabase: SupabaseClient): Promise<LimitResult> {
-  const limit = aiDailyLimit();
+export async function enforceAiDailyLimit(
+  supabase: SupabaseClient,
+  limitOverride?: number,
+): Promise<LimitResult> {
+  // A plan-specific cap (e.g. a higher Studio limit) wins over the env default.
+  const limit =
+    limitOverride != null && Number.isFinite(limitOverride) && limitOverride > 0
+      ? Math.trunc(limitOverride)
+      : aiDailyLimit();
   const { data, error } = await supabase.rpc("bump_ai_usage", { p_limit: limit });
 
   if (error) {

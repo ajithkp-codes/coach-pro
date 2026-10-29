@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ export function PlanEditor({
   plan,
   clientId,
   snapshot,
+  canUseAi = false,
   onSuccess,
   onCancel,
 }: {
@@ -60,6 +62,8 @@ export function PlanEditor({
   clientId?: string;
   /** What the app already knows about the client, shown in the AI brief. */
   snapshot?: ClientTrainingSnapshot | null;
+  /** Whether the trainer's plan unlocks AI generation (else the card is an upsell). */
+  canUseAi?: boolean;
   onSuccess: () => void;
   onCancel: () => void;
 }) {
@@ -288,25 +292,46 @@ export function PlanEditor({
           <span className="h-px flex-1 bg-border" />
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setGenError(null);
-            setQsStep("brief");
-          }}
-          className="group w-full rounded-[var(--radius)] border border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary/5"
-        >
-          <p className="flex items-center gap-1.5 text-sm font-medium">
-            <Icon name="sparkles" size={15} className="text-primary" /> Generate with AI
-          </p>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            Answer a few quick questions about the client — goal, schedule, equipment, injuries — and AI drafts the days for you to refine.
-          </p>
-          <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
-            Continue with AI
-            <Icon name="chevronRight" size={15} className="transition-transform group-hover:translate-x-0.5" />
-          </span>
-        </button>
+        {canUseAi ? (
+          <button
+            type="button"
+            onClick={() => {
+              setGenError(null);
+              setQsStep("brief");
+            }}
+            className="group w-full rounded-[var(--radius)] border border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary/5"
+          >
+            <p className="flex items-center gap-1.5 text-sm font-medium">
+              <Icon name="sparkles" size={15} className="text-primary" /> Generate with AI
+            </p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Answer a few quick questions about the client — goal, schedule, equipment, injuries — and AI drafts the days for you to refine.
+            </p>
+            <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+              Continue with AI
+              <Icon name="chevronRight" size={15} className="transition-transform group-hover:translate-x-0.5" />
+            </span>
+          </button>
+        ) : (
+          <div className="w-full rounded-[var(--radius)] border border-border bg-muted/30 p-4">
+            <p className="flex items-center gap-1.5 text-sm font-medium">
+              <Icon name="sparkles" size={15} className="text-muted-foreground" /> Generate with AI
+              <span className="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                Pro
+              </span>
+            </p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Let AI draft a plan from the client&apos;s goal, schedule, equipment and injuries — then refine it. Available on Pro and Studio.
+            </p>
+            <Link
+              href="/account/billing"
+              className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-2 hover:underline"
+            >
+              Upgrade to unlock
+              <Icon name="chevronRight" size={15} />
+            </Link>
+          </div>
+        )}
 
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>

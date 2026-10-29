@@ -1,6 +1,6 @@
 import "server-only";
 import { requireAdmin } from "./admin";
-import { PRO_PRICE_INR } from "@/lib/constants";
+import { effectiveMonthlyPriceInr } from "@/lib/catalog/plans";
 import type { Plan, SubStatus } from "@/lib/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -274,8 +274,10 @@ export async function getRevenueSummary(): Promise<RevenueSummary> {
   }[];
   const trainerById = new Map(trainers.map((t) => [t.id, t]));
 
-  const proRows = subs.filter((s) => s.plan === "pro");
-  const proActive = proRows.filter((s) => s.status === "active").length;
+  // "Paid" = any paid tier (Pro or Studio); Free rows never carry revenue.
+  const proRows = subs.filter((s) => s.plan === "pro" || s.plan === "studio");
+  const activePaid = proRows.filter((s) => s.status === "active");
+  const proActive = activePaid.length;
   const pastDue = proRows.filter((s) => s.status === "past_due").length;
   const cancelled = proRows.filter((s) => s.status === "cancelled").length;
 
@@ -297,11 +299,12 @@ export async function getRevenueSummary(): Promise<RevenueSummary> {
     })
     .sort((a, b) => new Date(a.currentEnd).getTime() - new Date(b.currentEnd).getTime());
 
-  const mrr = proActive * PRO_PRICE_INR;
+  // Sum the actually-billed (promo-adjusted) monthly price of each paid tier.
+  const mrr = activePaid.reduce((sum, s) => sum + effectiveMonthlyPriceInr(s.plan), 0);
   return {
     mrr,
     arr: mrr * 12,
-    pricePerPro: PRO_PRICE_INR,
+    pricePerPro: effectiveMonthlyPriceInr("pro"),
     proActive,
     pastDue,
     cancelled,
@@ -350,7 +353,7 @@ export async function getFunnel(): Promise<FunnelStage[]> {
     for (const r of (res.data ?? []) as { trainer_id: string }[]) activated.add(r.trainer_id);
   }
   const paid = ((subsRes.data ?? []) as { plan: Plan; status: SubStatus }[]).filter(
-    (s) => s.plan === "pro" && s.status === "active",
+    (s) => (s.plan === "pro" || s.plan === "studio") && s.status === "active",
   ).length;
 
   const raw = [

@@ -16,11 +16,14 @@ export function TrainingArea({
   plans,
   sessions,
   snapshot,
+  canUseAi = false,
 }: {
   clientId: string;
   plans: WorkoutPlan[];
   sessions: WorkoutSessionWithSets[];
   snapshot?: ClientTrainingSnapshot | null;
+  /** Whether the trainer's plan unlocks AI generation. */
+  canUseAi?: boolean;
 }) {
   const [tab, setTab] = useState<TabKey>("progress");
 
@@ -52,7 +55,7 @@ export function TrainingArea({
       </div>
 
       {tab === "plan" ? (
-        <PlanPanel clientId={clientId} plans={plans} snapshot={snapshot} />
+        <PlanPanel clientId={clientId} plans={plans} snapshot={snapshot} canUseAi={canUseAi} />
       ) : tab === "log" ? (
         <TrainingPanel clientId={clientId} sessions={sessions} />
       ) : (

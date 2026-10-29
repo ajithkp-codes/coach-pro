@@ -93,10 +93,12 @@ export function PlanPanel({
   clientId,
   plans,
   snapshot,
+  canUseAi = false,
 }: {
   clientId: string;
   plans: WorkoutPlan[];
   snapshot?: ClientTrainingSnapshot | null;
+  canUseAi?: boolean;
 }) {
   const router = useRouter();
 
@@ -121,6 +123,7 @@ export function PlanPanel({
               action={createPlanAction.bind(null, clientId)}
               clientId={clientId}
               snapshot={snapshot}
+              canUseAi={canUseAi}
               onCancel={close}
               onSuccess={() => {
                 close();

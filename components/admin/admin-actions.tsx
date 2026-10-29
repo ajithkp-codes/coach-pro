@@ -20,7 +20,8 @@ export function AdminActions({
   isAdmin: boolean;
   approved: boolean;
 }) {
-  const nextPlan: Plan = plan === "pro" ? "free" : "pro";
+  const isPaid = plan !== "free";
+  const nextPlan: Plan = isPaid ? "free" : "pro";
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -47,15 +48,15 @@ export function AdminActions({
         </Modal>
       )}
       <Modal
-        title={plan === "pro" ? "Downgrade to Free?" : "Grant Pro?"}
+        title={isPaid ? "Downgrade to Free?" : "Grant Pro?"}
         description={
-          plan === "pro"
+          isPaid
             ? "This sets the trainer's plan to Free (cancelled). It does not refund any Razorpay charge."
             : "This comps the trainer a Pro plan without a payment. Use for trials or support."
         }
         trigger={(open) => (
           <Button variant="outline" size="sm" onClick={open}>
-            {plan === "pro" ? "Set to Free" : "Grant Pro"}
+            {isPaid ? "Set to Free" : "Grant Pro"}
           </Button>
         )}
       >

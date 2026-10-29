@@ -1,5 +1,6 @@
 import { authed } from "./session";
-import { DEMO_EMAIL, FREE_CLIENT_LIMIT, PRO_CLIENT_LIMIT } from "@/lib/constants";
+import { DEMO_EMAIL } from "@/lib/constants";
+import { clientLimitFor, effectivePlan } from "@/lib/catalog/plans";
 import type { Plan, Subscription } from "@/lib/types";
 
 /** The trainer's subscription row, or null (treated as free). */
@@ -10,7 +11,7 @@ export async function getSubscription(): Promise<Subscription | null> {
 }
 
 export function planOf(sub: Subscription | null): Plan {
-  return sub && sub.plan === "pro" && sub.status === "active" ? "pro" : "free";
+  return effectivePlan(sub?.plan, sub?.status);
 }
 
 /** Whether the trainer can add another client under their plan. */
@@ -32,6 +33,10 @@ export async function canAddClient(): Promise<{
   if (email === DEMO_EMAIL) {
     return { allowed: true, plan, count, limit: null };
   }
-  const limit = plan === "pro" ? PRO_CLIENT_LIMIT : FREE_CLIENT_LIMIT;
+  const limit = clientLimitFor(plan);
+  // A null limit means unlimited (e.g. Studio), same as the demo account.
+  if (limit === null) {
+    return { allowed: true, plan, count, limit: null };
+  }
   return { allowed: count < limit, plan, count, limit };
 }

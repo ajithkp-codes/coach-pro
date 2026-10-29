@@ -8,6 +8,8 @@ import { getModality, DEFAULT_MODALITY, type Modality } from "@/lib/catalog/moda
 import { movementsForModality } from "@/lib/catalog/movements";
 import { callAi, isAiConfigured } from "@/lib/ai/provider";
 import { enforceAiDailyLimit } from "@/lib/data/rate-limit";
+import { getSubscription, planOf } from "@/lib/data/billing";
+import { canGenerateAi, aiDailyLimitFor, getTier } from "@/lib/catalog/plans";
 import {
   getClientTrainingSnapshot,
   type ClientTrainingSnapshot,
@@ -172,6 +174,15 @@ export async function generatePlanAction(
 ): Promise<GeneratePlanState> {
   const { supabase } = await authed(); // only signed-in trainers may call the model
 
+  // Feature gate: AI plan generation is a paid-plan feature.
+  const plan = planOf(await getSubscription());
+  if (!canGenerateAi(plan)) {
+    return {
+      error:
+        "AI plan generation is a Pro feature. Upgrade in Account → Billing to generate plans, or build one from a template.",
+    };
+  }
+
   const usingOwnKey = Boolean(input.apiKey?.trim());
   if (!usingOwnKey && !isAiConfigured()) {
     return {
@@ -180,12 +191,12 @@ export async function generatePlanAction(
     };
   }
 
-  // Cost cap: only meter calls billed to the app's own key.
+  // Cost cap: only meter calls billed to the app's own key; the tier sets the cap.
   if (!usingOwnKey) {
-    const { allowed, limit } = await enforceAiDailyLimit(supabase);
+    const { allowed, limit } = await enforceAiDailyLimit(supabase, aiDailyLimitFor(plan));
     if (!allowed) {
       return {
-        error: `You’ve reached today’s AI limit (${limit}). It resets tomorrow, or add your own AI key to continue.`,
+        error: `You’ve reached today’s AI limit (${limit}) on the ${getTier(plan).label} plan. It resets tomorrow, or add your own AI key to continue.`,
       };
     }
   }
