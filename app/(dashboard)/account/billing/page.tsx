@@ -4,12 +4,13 @@ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { UpgradeButton, CancelButton } from "@/components/billing/billing-actions";
-import { getSubscription, planOf, canAddClient } from "@/lib/data/billing";
+import { getSubscription, planOf, canAddClient, getEntitlement } from "@/lib/data/billing";
 import { razorpayConfigured } from "@/lib/razorpay";
 import {
   PLAN_TIERS,
   getTier,
   effectiveMonthlyPriceInr,
+  usdFromInr,
   LAUNCH_PROMO,
   type PlanTier,
 } from "@/lib/catalog/plans";
@@ -23,11 +24,19 @@ function formatInr(n: number): string {
 }
 
 export default async function BillingPage() {
-  const [sub, usage] = await Promise.all([getSubscription(), canAddClient()]);
+  const [sub, usage, entitlement] = await Promise.all([
+    getSubscription(),
+    canAddClient(),
+    getEntitlement(),
+  ]);
+  // The actual paid plan (Free while on trial) drives the "Current" badge and
+  // which upgrade CTAs show — a trial user can still subscribe to Pro/Studio.
   const plan = planOf(sub);
   const current = getTier(plan);
   const configured = razorpayConfigured();
   const promo = LAUNCH_PROMO.active;
+  const onTrial = entitlement.isTrial;
+  const trialTier = getTier(entitlement.plan);
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -43,19 +52,49 @@ export default async function BillingPage() {
         </div>
       )}
 
+      {onTrial && (
+        <div className="mb-5 flex items-start gap-2 rounded-[var(--radius)] border border-primary/30 bg-primary/5 px-4 py-2.5 text-sm">
+          <Icon name="sparkles" size={15} className="mt-0.5 text-primary" />
+          <span>
+            <span className="font-semibold text-primary">
+              You&apos;re on a free {trialTier.label} trial
+            </span>{" "}
+            — {entitlement.trialDaysLeft}{" "}
+            {entitlement.trialDaysLeft === 1 ? "day" : "days"} left
+            {entitlement.trialEndsAt && <> (until {formatDate(entitlement.trialEndsAt)})</>}.
+            Subscribe anytime to keep {trialTier.label} features; otherwise you&apos;ll move to
+            Free when the trial ends.
+          </span>
+        </div>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Current plan</CardTitle>
-          <Badge tone={plan === "free" ? "neutral" : "success"} className="capitalize">
-            {current.label}
-          </Badge>
+          {onTrial ? (
+            <Badge tone="info" className="capitalize">{trialTier.label} trial</Badge>
+          ) : (
+            <Badge tone={plan === "free" ? "neutral" : "success"} className="capitalize">
+              {current.label}
+            </Badge>
+          )}
         </CardHeader>
         <CardBody className="flex flex-wrap items-center justify-between gap-3">
           <div className="text-sm text-muted-foreground">
-            {usage.count} of {usage.limit ?? "unlimited"} client slots used on the{" "}
-            <span className="font-medium text-foreground">{current.label}</span> plan.
-            {plan !== "free" && sub?.current_end && (
-              <> Renews {formatDate(sub.current_end)}.</>
+            {usage.count} of {usage.limit ?? "unlimited"} client slots used on{" "}
+            {onTrial ? (
+              <>
+                your <span className="font-medium text-foreground">{trialTier.label} trial</span>.
+                Reverts to Free in {entitlement.trialDaysLeft}{" "}
+                {entitlement.trialDaysLeft === 1 ? "day" : "days"}.
+              </>
+            ) : (
+              <>
+                the <span className="font-medium text-foreground">{current.label}</span> plan.
+                {plan !== "free" && sub?.current_end && (
+                  <> Renews {formatDate(sub.current_end)}.</>
+                )}
+              </>
             )}
           </div>
           {plan !== "free" && <CancelButton />}
@@ -129,6 +168,9 @@ function PlanCard({
             </span>
           )}
           <span className="text-2xl font-semibold tracking-tight">{formatInr(effective)}</span>
+          {isPaid && (
+            <span className="text-sm text-muted-foreground">(${usdFromInr(effective)})</span>
+          )}
           {isPaid && <span className="text-sm text-muted-foreground">/ month</span>}
         </p>
         {discounted && (

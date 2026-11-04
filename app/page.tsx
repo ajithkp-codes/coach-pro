@@ -13,7 +13,7 @@ import { ProductScreenshot } from "@/components/marketing/product-screenshot";
 import { MockWebApp, MockClientReport } from "@/components/marketing/mocks";
 import { createClient } from "@/lib/supabase/server";
 import { FREE_CLIENT_LIMIT } from "@/lib/constants";
-import { getTier, effectiveMonthlyPriceInr, LAUNCH_PROMO } from "@/lib/catalog/plans";
+import { getTier, effectiveMonthlyPriceInr, usdFromInr, LAUNCH_PROMO } from "@/lib/catalog/plans";
 
 /* ------------------------------------------------------------------ */
 
@@ -296,14 +296,8 @@ export default async function Home() {
                   name="Free"
                   price="₹0"
                   suffix="/mo"
-                  tagline="Everything you need to coach your first clients."
-                  features={[
-                    `Up to ${getTier("free").clientLimit} active clients`,
-                    "Full roster, metrics, markers & goals",
-                    "Manual & AI-imported training plans",
-                    "Shareable read-only plan links",
-                    "Export & delete anytime",
-                  ]}
+                  tagline={getTier("free").tagline}
+                  features={getTier("free").features}
                   cta={primaryLabel}
                   href={primaryHref}
                 />
@@ -313,16 +307,11 @@ export default async function Home() {
                   name="Pro"
                   strike={LAUNCH_PROMO.active ? `₹${getTier("pro").priceInr}` : undefined}
                   price={`₹${effectiveMonthlyPriceInr("pro")}`}
+                  usd={usdFromInr(effectiveMonthlyPriceInr("pro"))}
                   suffix="/mo"
                   note={LAUNCH_PROMO.active ? LAUNCH_PROMO.label : undefined}
-                  tagline="AI-assisted programming for a growing roster."
-                  features={[
-                    `Up to ${getTier("pro").clientLimit} active clients`,
-                    "Everything in Free",
-                    "AI workout plan generation",
-                    "Trend charts & progress photos",
-                    "Priority support",
-                  ]}
+                  tagline={getTier("pro").tagline}
+                  features={getTier("pro").features}
                   cta={user ? "Go Pro" : "Start free"}
                   href={user ? "/account/billing" : "/signup"}
                   highlight
@@ -333,15 +322,11 @@ export default async function Home() {
                   name="Studio"
                   strike={LAUNCH_PROMO.active ? `₹${getTier("studio").priceInr}` : undefined}
                   price={`₹${effectiveMonthlyPriceInr("studio")}`}
+                  usd={usdFromInr(effectiveMonthlyPriceInr("studio"))}
                   suffix="/mo"
                   note={LAUNCH_PROMO.active ? LAUNCH_PROMO.label : undefined}
-                  tagline="For full-time coaches and studios at scale."
-                  features={[
-                    "Unlimited active clients",
-                    "Everything in Pro",
-                    "Higher AI generation limits",
-                    "First in line for new features",
-                  ]}
+                  tagline={getTier("studio").tagline}
+                  features={getTier("studio").features}
                   cta={user ? "Go Studio" : "Start free"}
                   href={user ? "/account/billing" : "/signup"}
                 />
@@ -412,10 +397,10 @@ export default async function Home() {
 /* ------------------------------------------------------------------ */
 
 function PricingCard({
-  name, price, strike, note, suffix, tagline, features, cta, href, highlight,
+  name, price, usd, strike, note, suffix, tagline, features, cta, href, highlight,
 }: {
-  name: string; price: string; strike?: string; note?: string; suffix?: string; tagline: string;
-  features: string[]; cta: string; href: string; highlight?: boolean;
+  name: string; price: string; usd?: number; strike?: string; note?: string; suffix?: string;
+  tagline: string; features: string[]; cta: string; href: string; highlight?: boolean;
 }) {
   return (
     <div className={`relative flex h-full flex-col gap-3.5 rounded-2xl border p-7 ${
@@ -429,17 +414,22 @@ function PricingCard({
         </span>
       )}
       <div className="font-serif text-[22px] font-semibold text-[#1a1713]">{name}</div>
-      <p className="text-sm text-[#716a5e]">{tagline}</p>
+      {/* Reserve two lines so the price row aligns across cards regardless of tagline length. */}
+      <p className="min-h-[2.5rem] text-sm text-[#716a5e]">{tagline}</p>
       <p className="mt-1 flex flex-wrap items-baseline gap-x-2">
         {strike && (
           <span className="font-sans text-[22px] font-semibold tracking-[-0.02em] text-[#a39b8d] line-through">{strike}</span>
         )}
         <span className="font-sans text-[40px] font-bold tracking-[-0.02em] text-[#1a1713]">{price}</span>
+        {usd !== undefined && (
+          <span className="font-sans text-[15px] font-medium text-[#a39b8d]">(${usd})</span>
+        )}
         {suffix && <span className="text-sm font-medium text-[#716a5e]"> {suffix}</span>}
       </p>
-      {note && (
-        <p className="-mt-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#bc3420]">{note}</p>
-      )}
+      {/* Reserve the promo-note line so cards without it keep the same height. */}
+      <p className={`-mt-1.5 min-h-[1rem] font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-[#bc3420] ${note ? "" : "invisible"}`}>
+        {note ?? "placeholder"}
+      </p>
       <ul className="mt-1 flex flex-1 flex-col gap-2.5">
         {features.map((f) => (
           <li key={f} className="flex gap-2.5 text-sm text-[#57514a]">

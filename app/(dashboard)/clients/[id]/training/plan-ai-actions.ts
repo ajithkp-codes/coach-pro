@@ -8,7 +8,7 @@ import { getModality, DEFAULT_MODALITY, type Modality } from "@/lib/catalog/moda
 import { movementsForModality } from "@/lib/catalog/movements";
 import { callAi, isAiConfigured } from "@/lib/ai/provider";
 import { enforceAiDailyLimit } from "@/lib/data/rate-limit";
-import { getSubscription, planOf } from "@/lib/data/billing";
+import { getEntitlement } from "@/lib/data/billing";
 import { canGenerateAi, aiDailyLimitFor, getTier } from "@/lib/catalog/plans";
 import {
   getClientTrainingSnapshot,
@@ -175,7 +175,7 @@ export async function generatePlanAction(
   const { supabase } = await authed(); // only signed-in trainers may call the model
 
   // Feature gate: AI plan generation is a paid-plan feature.
-  const plan = planOf(await getSubscription());
+  const plan = (await getEntitlement()).plan;
   if (!canGenerateAi(plan)) {
     return {
       error:

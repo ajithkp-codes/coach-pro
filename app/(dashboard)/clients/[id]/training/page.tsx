@@ -1,7 +1,7 @@
 import { listSessions } from "@/lib/data/training";
 import { listPlans } from "@/lib/data/plans";
 import { getClientTrainingSnapshot } from "@/lib/data/training-snapshot";
-import { getSubscription, planOf } from "@/lib/data/billing";
+import { getEntitlement } from "@/lib/data/billing";
 import { canGenerateAi } from "@/lib/catalog/plans";
 import { TrainingArea } from "@/components/training/training-area";
 
@@ -11,13 +11,13 @@ export default async function TrainingPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [sessions, plans, snapshot, sub] = await Promise.all([
+  const [sessions, plans, snapshot, entitlement] = await Promise.all([
     listSessions(id),
     listPlans(id),
     getClientTrainingSnapshot(id),
-    getSubscription(),
+    getEntitlement(),
   ]);
-  const canUseAi = canGenerateAi(planOf(sub));
+  const canUseAi = canGenerateAi(entitlement.plan);
   return (
     <TrainingArea
       clientId={id}
