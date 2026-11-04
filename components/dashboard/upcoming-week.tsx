@@ -53,7 +53,7 @@ export function UpcomingWeek({ events }: { events: RosterEvent[] }) {
                         {e.clientName && <span className="text-muted-foreground"> · {e.clientName}</span>}
                       </span>
                       {e.location && (
-                        <span className="shrink-0 truncate text-xs text-muted-foreground">{e.location}</span>
+                        <span className="max-w-[40%] shrink-0 truncate text-xs text-muted-foreground">{e.location}</span>
                       )}
                     </li>
                   ))}
