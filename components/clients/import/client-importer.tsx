@@ -248,7 +248,7 @@ export function ClientImporter({
       <Stepper step={step} mode={mode} />
 
       <p className="text-sm text-muted-foreground">
-        {plan === "pro" ? "Pro plan" : "Free plan"}
+        <span className="capitalize">{plan}</span> plan
         {limit != null ? ` — up to ${limit} clients. ` : " — unlimited clients. "}
         {limit != null && (
           <>

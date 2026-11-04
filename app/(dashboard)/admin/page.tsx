@@ -87,7 +87,7 @@ export default async function AdminOverviewPage() {
                 <span className="hidden text-xs text-muted-foreground sm:block">
                   {t.clientCount} client{t.clientCount === 1 ? "" : "s"}
                 </span>
-                <Badge tone={t.plan === "pro" ? "success" : "neutral"} className="capitalize">
+                <Badge tone={t.plan === "free" ? "neutral" : "success"} className="capitalize">
                   {t.plan}
                 </Badge>
                 <span className="hidden text-xs text-muted-foreground sm:block">

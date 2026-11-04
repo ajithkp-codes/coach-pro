@@ -23,6 +23,8 @@ import { MARKER_CATALOG } from "@/lib/catalog/markers";
 import { MODALITIES } from "@/lib/catalog/modalities";
 import { CADENCE_PRESETS } from "@/lib/catalog/plan-cadence";
 import { callAi, isAiConfigured } from "@/lib/ai/provider";
+import { reportError } from "@/lib/observability";
+import { enforceAiDailyLimit } from "@/lib/data/rate-limit";
 
 function normPhone(v: string | null): string {
   return (v ?? "").replace(/\D/g, "");
@@ -122,7 +124,8 @@ export async function bulkImportClientsAction(
   let created;
   try {
     created = await bulkCreateClients(toInsert.map((t) => t.client), source);
-  } catch {
+  } catch (err) {
+    reportError(err, { source: "bulkImportClientsAction.bulkCreateClients", source_kind: source, count: toInsert.length });
     for (const t of toInsert) summary.errors.push({ row: t.row, msg: "Could not create client" });
     return summary;
   }
@@ -151,10 +154,22 @@ export async function bulkImportClientsAction(
 
   // Child inserts are best-effort: a failure is reported but the client stays.
   await Promise.allSettled([
-    bulkCreateBodyMetrics(metrics).catch(() => summary.errors.push({ row: -1, msg: "Some body metrics failed to import" })),
-    bulkCreateHealthMarkers(markers).catch(() => summary.errors.push({ row: -1, msg: "Some health markers failed to import" })),
-    bulkCreateGoals(goals).catch(() => summary.errors.push({ row: -1, msg: "Some goals failed to import" })),
-    bulkCreateWorkoutPlans(plans).catch(() => summary.errors.push({ row: -1, msg: "Some workout plans failed to import" })),
+    bulkCreateBodyMetrics(metrics).catch((err) => {
+      reportError(err, { source: "bulkImportClientsAction.bulkCreateBodyMetrics", count: metrics.length });
+      summary.errors.push({ row: -1, msg: "Some body metrics failed to import" });
+    }),
+    bulkCreateHealthMarkers(markers).catch((err) => {
+      reportError(err, { source: "bulkImportClientsAction.bulkCreateHealthMarkers", count: markers.length });
+      summary.errors.push({ row: -1, msg: "Some health markers failed to import" });
+    }),
+    bulkCreateGoals(goals).catch((err) => {
+      reportError(err, { source: "bulkImportClientsAction.bulkCreateGoals", count: goals.length });
+      summary.errors.push({ row: -1, msg: "Some goals failed to import" });
+    }),
+    bulkCreateWorkoutPlans(plans).catch((err) => {
+      reportError(err, { source: "bulkImportClientsAction.bulkCreateWorkoutPlans", count: plans.length });
+      summary.errors.push({ row: -1, msg: "Some workout plans failed to import" });
+    }),
   ]);
 
   revalidatePath("/clients");
@@ -315,15 +330,26 @@ export async function aiImportAction(input: {
   sheets: SheetData[];
   apiKey?: string;
 }): Promise<AiImportResult> {
-  await authed();
+  const { supabase } = await authed();
 
   const empty = (error?: string): AiImportResult => ({ records: [], invalid: 0, truncated: false, error });
 
-  if (!input.apiKey?.trim() && !isAiConfigured()) {
+  const usingOwnKey = Boolean(input.apiKey?.trim());
+  if (!usingOwnKey && !isAiConfigured()) {
     return empty("AI import isn’t configured — no API key is set.");
   }
   if (!Array.isArray(input.sheets) || input.sheets.length === 0) {
     return empty("No sheet data to import.");
+  }
+
+  // Cap paid AI usage per trainer per day — but only when the call is on the
+  // product's key. A trainer using their own key pays their own bill, so there's
+  // nothing for us to cap.
+  if (!usingOwnKey) {
+    const { allowed, limit } = await enforceAiDailyLimit(supabase);
+    if (!allowed) {
+      return empty(`You've reached today's AI import limit (${limit}). It resets tomorrow, or add your own API key to continue.`);
+    }
   }
 
   const todayISO = new Date().toISOString().slice(0, 10);

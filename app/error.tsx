@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
+import { reportError } from "@/lib/observability";
 
 export default function Error({
   error,
@@ -11,8 +12,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Surface for logging; wire to Sentry/host logs in production.
-    console.error(error);
+    reportError(error, { source: "app/error.tsx", digest: error.digest });
   }, [error]);
 
   return (

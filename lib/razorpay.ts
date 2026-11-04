@@ -7,7 +7,10 @@ export function razorpayConfigured(): boolean {
   return Boolean(
     process.env.RAZORPAY_KEY_ID &&
       process.env.RAZORPAY_KEY_SECRET &&
-      process.env.RAZORPAY_PLAN_ID,
+      // At least one plan id must exist: legacy single, or a per-tier id.
+      (process.env.RAZORPAY_PLAN_ID ||
+        process.env.RAZORPAY_PLAN_ID_PRO ||
+        process.env.RAZORPAY_PLAN_ID_STUDIO),
   );
 }
 
@@ -43,12 +46,15 @@ export interface RzpSubscription {
   customer_id?: string | null;
 }
 
-/** Create a recurring subscription for the Pro plan. */
-export async function createSubscription(notes: Record<string, string>): Promise<RzpSubscription> {
+/** Create a recurring subscription against a specific Razorpay plan id. */
+export async function createSubscription(
+  planId: string,
+  notes: Record<string, string>,
+): Promise<RzpSubscription> {
   return call("/subscriptions", {
     method: "POST",
     body: JSON.stringify({
-      plan_id: process.env.RAZORPAY_PLAN_ID,
+      plan_id: planId,
       total_count: 120, // up to ~10 years of monthly cycles
       customer_notify: 1,
       notes,

@@ -8,9 +8,16 @@ import {
   setPlanActive,
   deletePlan,
 } from "@/lib/data/plans";
+import { enablePlanShare, setPlanShareRevoked } from "@/lib/data/planShareLink";
 
 export interface PlanState {
   ok?: boolean;
+  error?: string;
+}
+
+export interface PlanShareState {
+  ok?: boolean;
+  token?: string;
   error?: string;
 }
 
@@ -77,5 +84,29 @@ export async function setPlanActiveAction(clientId: string, planId: string): Pro
 
 export async function deletePlanAction(clientId: string, planId: string): Promise<void> {
   await deletePlan(planId);
+  revalidate(clientId);
+}
+
+/** Turn the plan's public share link on (minting it on first use) and return the token. */
+export async function enablePlanShareAction(
+  clientId: string,
+  planId: string,
+): Promise<PlanShareState> {
+  try {
+    const token = await enablePlanShare(planId);
+    revalidate(clientId);
+    return { ok: true, token };
+  } catch {
+    return { error: "Couldn’t create the share link. Please try again." };
+  }
+}
+
+/** Turn a plan's share link off or back on. */
+export async function setPlanShareRevokedAction(
+  clientId: string,
+  planId: string,
+  revoked: boolean,
+): Promise<void> {
+  await setPlanShareRevoked(planId, revoked);
   revalidate(clientId);
 }

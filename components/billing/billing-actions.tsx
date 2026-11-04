@@ -29,7 +29,21 @@ function loadCheckout(): Promise<boolean> {
   });
 }
 
-export function UpgradeButton({ disabled }: { disabled?: boolean }) {
+export function UpgradeButton({
+  plan,
+  planLabel,
+  label,
+  variant,
+  disabled,
+}: {
+  /** Which paid tier this button purchases. */
+  plan: "pro" | "studio";
+  planLabel: string;
+  /** Button text; defaults to "Upgrade to {planLabel}". */
+  label?: string;
+  variant?: "primary" | "outline";
+  disabled?: boolean;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +51,7 @@ export function UpgradeButton({ disabled }: { disabled?: boolean }) {
   async function upgrade() {
     setBusy(true);
     setError(null);
-    const start = await startUpgradeAction();
+    const start = await startUpgradeAction(plan);
     if (start.error || !start.subscriptionId || !start.keyId) {
       setError(start.error ?? "Couldn't start checkout.");
       setBusy(false);
@@ -53,13 +67,14 @@ export function UpgradeButton({ disabled }: { disabled?: boolean }) {
       key: start.keyId,
       subscription_id: start.subscriptionId,
       name: "CoachPro",
-      description: "Pro subscription",
+      description: `${planLabel} subscription`,
       theme: { color: "#f04e28" },
       handler: async (resp: Record<string, string>) => {
         const v = await verifyPaymentAction({
           razorpay_payment_id: resp.razorpay_payment_id,
           razorpay_subscription_id: resp.razorpay_subscription_id,
           razorpay_signature: resp.razorpay_signature,
+          plan,
         });
         if (v.ok) router.refresh();
         else setError(v.error ?? "Activation failed.");
@@ -71,8 +86,8 @@ export function UpgradeButton({ disabled }: { disabled?: boolean }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <Button onClick={upgrade} disabled={busy || disabled}>
-        {busy ? "Opening checkout…" : "Upgrade to Pro"}
+      <Button onClick={upgrade} disabled={busy || disabled} variant={variant} className="w-full">
+        {busy ? "Opening checkout…" : label ?? `Upgrade to ${planLabel}`}
       </Button>
       {error && <p className="text-sm text-danger">{error}</p>}
     </div>

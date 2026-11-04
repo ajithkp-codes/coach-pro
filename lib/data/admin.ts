@@ -2,6 +2,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { authed } from "./session";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { effectivePlan, isPaidPlan } from "@/lib/catalog/plans";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Plan, SubStatus, Trainer } from "@/lib/types";
 
@@ -59,7 +60,7 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     suspended: trainers.filter((t) => !t.approved).length,
     clients,
     activeClients,
-    proActive: subsRows.filter((s) => s.plan === "pro" && s.status === "active").length,
+    proActive: subsRows.filter((s) => isPaidPlan(effectivePlan(s.plan, s.status))).length,
     reports,
   };
 }
@@ -88,7 +89,7 @@ export async function listTrainers(search?: string): Promise<TrainerRow[]> {
   }
   const planByTrainer = new Map<string, Plan>();
   for (const s of (subsRes.data ?? []) as { trainer_id: string; plan: Plan; status: SubStatus }[]) {
-    planByTrainer.set(s.trainer_id, s.plan === "pro" && s.status === "active" ? "pro" : "free");
+    planByTrainer.set(s.trainer_id, effectivePlan(s.plan, s.status));
   }
 
   return ((trainersRes.data ?? []) as Trainer[]).map((t) => ({
@@ -138,7 +139,7 @@ export async function getTrainerDetail(id: string): Promise<TrainerDetail | null
   const s = sub.data as { plan: Plan; status: SubStatus; current_end: string | null } | null;
   return {
     trainer: trainer as Trainer,
-    plan: s && s.plan === "pro" && s.status === "active" ? "pro" : "free",
+    plan: effectivePlan(s?.plan, s?.status),
     status: s?.status ?? null,
     currentEnd: s?.current_end ?? null,
     counts: {
@@ -163,7 +164,7 @@ export async function adminSetPlan(trainerId: string, plan: Plan): Promise<void>
   await admin
     .from("subscriptions")
     .upsert(
-      { trainer_id: trainerId, plan, status: plan === "pro" ? "active" : "cancelled" },
+      { trainer_id: trainerId, plan, status: isPaidPlan(plan) ? "active" : "cancelled" },
       { onConflict: "trainer_id" },
     );
 }

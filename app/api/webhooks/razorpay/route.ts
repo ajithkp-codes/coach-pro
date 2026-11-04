@@ -37,8 +37,9 @@ export async function POST(request: Request) {
   switch (event.event) {
     case "subscription.activated":
     case "subscription.charged":
+      // Keep the tier already recorded at checkout (Pro or Studio); only move
+      // the subscription to active and roll the renewal date forward.
       await upsertSubscription(trainerId, {
-        plan: "pro",
         status: "active",
         current_end: toISO(sub.current_end),
       });

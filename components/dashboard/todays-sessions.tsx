@@ -49,31 +49,34 @@ function SessionRow({
   };
 
   return (
-    <div className="flex items-center gap-3 py-2.5">
-      <Avatar name={entry.clientName} size="sm" />
-      <div className="min-w-0 flex-1">
-        <Link
-          href={`/clients/${entry.clientId}`}
-          className="block truncate text-sm font-medium hover:underline"
-        >
-          {entry.clientName}
-        </Link>
-        <p className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-          <Icon name={getModality(entry.modality).icon} size={12} />
-          {entry.dayTitle}
-          <span className="text-border">·</span>
-          {entry.exerciseCount} {getModality(entry.modality).itemNoun.toLowerCase()}
-          {entry.exerciseCount === 1 ? "" : "s"}
-        </p>
+    // On mobile, controls drop to a second line so the client name keeps its
+    // room; from sm up it's a single row.
+    <div className="flex flex-col gap-2 py-2.5 sm:flex-row sm:items-center sm:gap-3">
+      <div className="flex min-w-0 items-center gap-3 sm:flex-1">
+        <Avatar name={entry.clientName} size="sm" />
+        <div className="min-w-0 flex-1">
+          <Link
+            href={`/clients/${entry.clientId}`}
+            className="block truncate text-sm font-medium hover:underline"
+          >
+            {entry.clientName}
+          </Link>
+          <p className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+            <Icon name={getModality(entry.modality).icon} size={12} />
+            {entry.dayTitle}
+            <span className="text-border">·</span>
+            {entry.exerciseCount} {getModality(entry.modality).itemNoun.toLowerCase()}
+            {entry.exerciseCount === 1 ? "" : "s"}
+          </p>
+        </div>
+        <Badge tone={meta.tone} className="shrink-0">
+          {status === "done" && <Icon name="check" size={12} />}
+          {status === "missed" && <Icon name="x" size={12} />}
+          {meta.label}
+        </Badge>
       </div>
 
-      <Badge tone={meta.tone}>
-        {status === "done" && <Icon name="check" size={12} />}
-        {status === "missed" && <Icon name="x" size={12} />}
-        {meta.label}
-      </Badge>
-
-      <div className="flex shrink-0 items-center gap-1.5">
+      <div className="flex shrink-0 items-center justify-end gap-1.5 pl-11 sm:pl-0">
         {status === "done" ? (
           <ButtonLink href={logHref} variant="ghost" size="sm">
             View
@@ -205,7 +208,7 @@ export function TodaysSessions({
                     )}
                   </span>
                   {e.location && (
-                    <span className="shrink-0 truncate text-xs text-muted-foreground">
+                    <span className="max-w-[40%] shrink-0 truncate text-xs text-muted-foreground">
                       {e.location}
                     </span>
                   )}

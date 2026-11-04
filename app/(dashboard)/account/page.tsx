@@ -4,18 +4,22 @@ import { ButtonLink, Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThemeSegmented } from "@/components/theme-toggle";
 import { getTrainerProfile } from "@/lib/data/session";
-import { getSubscription, planOf } from "@/lib/data/billing";
+import { getSubscription, planOf, getEntitlement } from "@/lib/data/billing";
+import { getTier } from "@/lib/catalog/plans";
 import { logoutAction } from "@/app/(auth)/actions";
 import { ProfileForm } from "./profile-form";
 
 export const metadata = { title: "Account · CoachPro" };
 
 export default async function AccountPage() {
-  const [trainer, sub] = await Promise.all([
+  const [trainer, sub, entitlement] = await Promise.all([
     getTrainerProfile(),
     getSubscription(),
+    getEntitlement(),
   ]);
   const plan = planOf(sub);
+  const onTrial = entitlement.isTrial;
+  const trialTier = getTier(entitlement.plan);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -48,15 +52,23 @@ export default async function AccountPage() {
       <Card className="mt-5">
         <CardHeader>
           <CardTitle>Subscription</CardTitle>
-          <Badge tone={plan === "pro" ? "success" : "neutral"} className="capitalize">
-            {plan}
-          </Badge>
+          {onTrial ? (
+            <Badge tone="info" className="capitalize">{trialTier.label} trial</Badge>
+          ) : (
+            <Badge tone={plan === "free" ? "neutral" : "success"} className="capitalize">
+              {plan}
+            </Badge>
+          )}
         </CardHeader>
         <CardBody className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
-            {plan === "pro"
-              ? "You're on Pro."
-              : "You're on the Free plan."}
+            {onTrial
+              ? `You're on a free ${trialTier.label} trial — ${entitlement.trialDaysLeft} ${
+                  entitlement.trialDaysLeft === 1 ? "day" : "days"
+                } left, then Free.`
+              : plan === "free"
+                ? "You're on the Free plan."
+                : `You're on ${getTier(plan).label}.`}
           </p>
           <ButtonLink href="/account/billing" variant="outline" size="sm">
             Manage billing

@@ -7,6 +7,7 @@ import { TrainingPanel } from "./training-panel";
 import { ProgressPanel } from "./progress-panel";
 import { TodayCard } from "./today-card";
 import type { WorkoutPlan, WorkoutSessionWithSets } from "@/lib/types";
+import type { ClientTrainingSnapshot } from "@/lib/data/training-snapshot";
 
 type TabKey = "plan" | "log" | "progress";
 
@@ -14,10 +15,15 @@ export function TrainingArea({
   clientId,
   plans,
   sessions,
+  snapshot,
+  canUseAi = false,
 }: {
   clientId: string;
   plans: WorkoutPlan[];
   sessions: WorkoutSessionWithSets[];
+  snapshot?: ClientTrainingSnapshot | null;
+  /** Whether the trainer's plan unlocks AI generation. */
+  canUseAi?: boolean;
 }) {
   const [tab, setTab] = useState<TabKey>("progress");
 
@@ -49,7 +55,7 @@ export function TrainingArea({
       </div>
 
       {tab === "plan" ? (
-        <PlanPanel clientId={clientId} plans={plans} />
+        <PlanPanel clientId={clientId} plans={plans} snapshot={snapshot} canUseAi={canUseAi} />
       ) : tab === "log" ? (
         <TrainingPanel clientId={clientId} sessions={sessions} />
       ) : (

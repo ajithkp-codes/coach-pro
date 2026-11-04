@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,9 @@ import { Input, Textarea, Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import type { PlanState } from "@/app/(dashboard)/clients/[id]/training/plan-actions";
 import { generatePlanAction } from "@/app/(dashboard)/clients/[id]/training/plan-ai-actions";
+import { AiPlanBrief } from "./ai-plan-brief";
+import type { PlanBrief } from "@/lib/training/plan-brief";
+import type { ClientTrainingSnapshot } from "@/lib/data/training-snapshot";
 import {
   getModality,
   readyModalities,
@@ -46,11 +50,20 @@ function SubmitButton() {
 export function PlanEditor({
   action,
   plan,
+  clientId,
+  snapshot,
+  canUseAi = false,
   onSuccess,
   onCancel,
 }: {
   action: (prev: PlanState, formData: FormData) => Promise<PlanState>;
   plan?: WorkoutPlan;
+  /** Needed for AI generation (new plans only); the client the plan belongs to. */
+  clientId?: string;
+  /** What the app already knows about the client, shown in the AI brief. */
+  snapshot?: ClientTrainingSnapshot | null;
+  /** Whether the trainer's plan unlocks AI generation (else the card is an upsell). */
+  canUseAi?: boolean;
   onSuccess: () => void;
   onCancel: () => void;
 }) {
@@ -71,11 +84,8 @@ export function PlanEditor({
   // New plans open on a quick-start chooser: step 1 picks the training type, step 2
   // picks how to create (build / template / AI). Editing an existing plan skips both.
   const [started, setStarted] = useState<boolean>(!!plan);
-  const [qsStep, setQsStep] = useState<"type" | "method">("type");
-  const [goal, setGoal] = useState("");
-  const [dpw, setDpw] = useState("3");
+  const [qsStep, setQsStep] = useState<"type" | "method" | "brief">("type");
   const [customDays, setCustomDays] = useState("3");
-  const [exp, setExp] = useState("intermediate");
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
 
@@ -117,15 +127,14 @@ export function PlanEditor({
     setLibShowAll(false);
   }
 
-  async function generate() {
+  async function generate(brief: PlanBrief) {
+    if (!clientId) {
+      setGenError("Couldn’t identify the client. Please reopen and try again.");
+      return;
+    }
     setGenerating(true);
     setGenError(null);
-    const res = await generatePlanAction({
-      goal,
-      daysPerWeek: Number(dpw),
-      experience: exp,
-      modality: planModality,
-    });
+    const res = await generatePlanAction({ clientId, modality: planModality, brief });
     setGenerating(false);
     if (res.ok && res.days) seed(res.days, planModality);
     else setGenError(res.error ?? "Something went wrong generating the plan.");
@@ -214,6 +223,23 @@ export function PlanEditor({
     );
   }
 
+  // Step 3 of the quick-start: the guided AI brief (reached from the method step).
+  if (!started && qsStep === "brief") {
+    return (
+      <AiPlanBrief
+        modality={planModality}
+        snapshot={snapshot ?? null}
+        generating={generating}
+        error={genError}
+        onBack={() => {
+          setGenError(null);
+          setQsStep("method");
+        }}
+        onGenerate={generate}
+      />
+    );
+  }
+
   // Step 2 of the quick-start: having picked the type, choose how to create the plan.
   if (!started) {
     return (
@@ -266,44 +292,46 @@ export function PlanEditor({
           <span className="h-px flex-1 bg-border" />
         </div>
 
-        <div className="rounded-[var(--radius)] border border-border p-4">
-          <p className="flex items-center gap-1.5 text-sm font-medium">
-            <Icon name="sparkles" size={15} className="text-primary" /> Generate with AI
-          </p>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            Describe the client&apos;s goal — Claude drafts the days and you refine them.
-          </p>
-          <div className="mt-3 flex flex-col gap-3">
-            <Field label="Goal" htmlFor="ai-goal">
-              <Input
-                id="ai-goal"
-                value={goal}
-                onChange={(e) => setGoal(e.target.value)}
-                placeholder="e.g. build strength and add muscle, some lower-back caution"
-              />
-            </Field>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Days per week" htmlFor="ai-dpw">
-                <Select id="ai-dpw" value={dpw} onChange={(e) => setDpw(e.target.value)}>
-                  {["2", "3", "4", "5", "6"].map((n) => (
-                    <option key={n} value={n}>{n} days</option>
-                  ))}
-                </Select>
-              </Field>
-              <Field label="Experience" htmlFor="ai-exp">
-                <Select id="ai-exp" value={exp} onChange={(e) => setExp(e.target.value)}>
-                  {["beginner", "intermediate", "advanced"].map((v) => (
-                    <option key={v} value={v}>{v}</option>
-                  ))}
-                </Select>
-              </Field>
-            </div>
-            {genError && <p className="text-sm text-danger">{genError}</p>}
-            <Button type="button" onClick={generate} disabled={generating} className="self-start">
-              <Icon name="sparkles" size={15} /> {generating ? "Generating…" : "Generate draft"}
-            </Button>
+        {canUseAi ? (
+          <button
+            type="button"
+            onClick={() => {
+              setGenError(null);
+              setQsStep("brief");
+            }}
+            className="group w-full rounded-[var(--radius)] border border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary/5"
+          >
+            <p className="flex items-center gap-1.5 text-sm font-medium">
+              <Icon name="sparkles" size={15} className="text-primary" /> Generate with AI
+            </p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Answer a few quick questions about the client — goal, schedule, equipment, injuries — and AI drafts the days for you to refine.
+            </p>
+            <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+              Continue with AI
+              <Icon name="chevronRight" size={15} className="transition-transform group-hover:translate-x-0.5" />
+            </span>
+          </button>
+        ) : (
+          <div className="w-full rounded-[var(--radius)] border border-border bg-muted/30 p-4">
+            <p className="flex items-center gap-1.5 text-sm font-medium">
+              <Icon name="sparkles" size={15} className="text-muted-foreground" /> Generate with AI
+              <span className="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                Pro
+              </span>
+            </p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Let AI draft a plan from the client&apos;s goal, schedule, equipment and injuries — then refine it. Available on Pro and Studio.
+            </p>
+            <Link
+              href="/account/billing"
+              className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-2 hover:underline"
+            >
+              Upgrade to unlock
+              <Icon name="chevronRight" size={15} />
+            </Link>
           </div>
-        </div>
+        )}
 
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
