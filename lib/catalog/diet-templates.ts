@@ -2,7 +2,7 @@ import { findFood } from "@/lib/catalog/foods";
 import type { DietPlanDay, DietPlanMeal, DietPlanFoodItem, MealType } from "@/lib/types";
 
 /**
- * Starter diet plans — seed a plan instantly with no AI call. Food names are
+ * Starter diet plans: seed a plan instantly with no AI call. Food names are
  * drawn from the catalog so quantities, calories and protein prefill
  * automatically; the trainer tweaks portions and targets after seeding.
  */
@@ -35,7 +35,7 @@ export const DIET_TEMPLATES: DietTemplate[] = [
   {
     key: "fat-loss",
     label: "Fat loss · ~1600 kcal",
-    description: "Higher protein, lighter carbs — a steady deficit day.",
+    description: "Higher protein, lighter carbs: a steady deficit day.",
     target_calories: 1600,
     target_protein_g: 130,
     days: [

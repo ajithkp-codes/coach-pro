@@ -65,7 +65,7 @@ function MiniBar({ label, pct }: { label: string; pct: number | null }) {
         <div className={cn("h-full rounded-full", color)} style={{ width: `${pct ?? 0}%` }} />
       </div>
       <span className="w-7 text-[10px] tabular-nums text-muted-foreground">
-        {pct === null ? "—" : `${pct}%`}
+        {pct === null ? "–" : `${pct}%`}
       </span>
     </div>
   );
@@ -278,7 +278,7 @@ export function ClientRoster({
                           )}
                         >
                           {c.compliance.workoutPct === null && c.compliance.nutritionPct === null
-                            ? "—"
+                            ? "–"
                             : c.compliance.score}
                         </span>
                       </div>

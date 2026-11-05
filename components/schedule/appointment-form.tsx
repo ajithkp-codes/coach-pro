@@ -72,7 +72,7 @@ export function AppointmentForm({
       )}
 
       {!fixedClientId && (
-        <Field label="Client" htmlFor="client_id" hint="Optional — e.g. for a consultation or block">
+        <Field label="Client" htmlFor="client_id" hint="Optional, e.g. for a consultation or block">
           <Select
             id="client_id"
             name="client_id"

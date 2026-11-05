@@ -19,7 +19,7 @@ export default async function LoginPage({
         </p>
         {verified === "1" && (
           <p className="mt-4 rounded-[var(--radius)] bg-success-bg px-3 py-2 text-sm text-success">
-            Your email&apos;s confirmed — you&apos;re all set. Sign in with your
+            Your email&apos;s confirmed. You&apos;re all set. Sign in with your
             email and password to start using CoachPro.
           </p>
         )}

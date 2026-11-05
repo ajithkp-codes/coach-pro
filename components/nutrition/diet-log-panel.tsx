@@ -72,7 +72,7 @@ export function DietLogPanel({
       {logs.length === 0 ? (
         <EmptyState
           title="No food logged yet"
-          description="Record what the client ate on a day — foods, calories and protein — to track adherence."
+          description="Record what the client ate on a day (foods, calories and protein) to track adherence."
           action={
             <ButtonLink href={`/clients/${clientId}/nutrition/log`}>Log a day</ButtonLink>
           }

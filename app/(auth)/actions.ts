@@ -71,7 +71,7 @@ export async function signupAction(
   if (!data.session) {
     return {
       notice:
-        "Account created! Check your email for a confirmation link from ajith@coachpro.co.in. Click it to verify, and you'll be signed straight in — no approval needed.",
+        "Account created! Check your email for a confirmation link from ajith@coachpro.co.in. Click it to verify, and you'll be signed straight in. No approval needed.",
     };
   }
 

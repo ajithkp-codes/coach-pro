@@ -9,6 +9,7 @@ import { NutritionProgressPanel } from "./nutrition-progress-panel";
 import { TodayMealCard } from "./today-meal-card";
 import { LogLinkCard } from "./log-link-card";
 import type { DietPlanWithUrl, DietLogWithEntries, DietSubmission } from "@/lib/types";
+import type { ClientTrainingSnapshot } from "@/lib/data/training-snapshot";
 
 type TabKey = "plan" | "log" | "progress";
 
@@ -18,14 +19,18 @@ export function NutritionArea({
   logs,
   submissions,
   logToken,
+  snapshot,
+  canUseAi = false,
 }: {
   clientId: string;
   plans: DietPlanWithUrl[];
   logs: DietLogWithEntries[];
   submissions: DietSubmission[];
   logToken: string | null;
+  snapshot?: ClientTrainingSnapshot | null;
+  canUseAi?: boolean;
 }) {
-  const [tab, setTab] = useState<TabKey>(plans.length ? "log" : "plan");
+  const [tab, setTab] = useState<TabKey>("progress");
   const activePlan = plans.find((p) => p.is_active) ?? null;
 
   const tabs: { key: TabKey; label: string }[] = [
@@ -58,7 +63,7 @@ export function NutritionArea({
       </div>
 
       {tab === "plan" ? (
-        <DietPlanPanel clientId={clientId} plans={plans} />
+        <DietPlanPanel clientId={clientId} plans={plans} snapshot={snapshot} canUseAi={canUseAi} />
       ) : tab === "log" ? (
         <DietLogPanel clientId={clientId} logs={logs} activePlan={activePlan} />
       ) : (

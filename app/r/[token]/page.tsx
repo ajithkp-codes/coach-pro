@@ -300,7 +300,7 @@ function NutritionTile({
     <div className="rounded-xl border border-border p-3">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="mt-1 text-xl font-semibold tracking-tight">
-        {value != null ? formatNumber(value, unit) : "—"}
+        {value != null ? formatNumber(value, unit) : "–"}
       </p>
       {target != null && (
         <div className="mt-1">

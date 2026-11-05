@@ -106,7 +106,7 @@ export function PlanPanel({
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          Build the client&apos;s training plan: days, exercises, target sets, reps and weight — set to run weekly, monthly or any length you choose.
+          Build the client&apos;s training plan: days, exercises, target sets, reps and weight. Set it to run weekly, monthly, or any length you choose.
         </p>
         <Modal
           wide

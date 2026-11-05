@@ -111,10 +111,10 @@ type CallResult = { text: string } | { error: string };
 function mapHttpError(status: number): string {
   if (status === 401 || status === 403) return "The API key was rejected.";
   if (status === 429 || status === 503) {
-    return "The AI service is busy right now — please try again in a moment.";
+    return "The AI service is busy right now. Please try again in a moment.";
   }
-  if (status === 400) return "The AI request was rejected — check the model name and key.";
-  if (status === 404) return "That AI model wasn’t found — check AI_MODEL.";
+  if (status === 400) return "The AI request was rejected. Check the model name and key.";
+  if (status === 404) return "That AI model wasn’t found. Check AI_MODEL.";
   return `AI request failed (status ${status}).`;
 }
 
@@ -158,7 +158,7 @@ async function fetchWithRetry(
       }
       return {
         error: aborted
-          ? "The AI service took too long to respond — please try again."
+          ? "The AI service took too long to respond. Please try again."
           : "Couldn’t reach the AI service.",
       };
     } finally {
@@ -253,7 +253,7 @@ async function callGemini(
   if (!out.ok) {
     // Gemini reports a bad key as 400, not 401/403.
     if (out.status === 400) return { error: "The API key was rejected." };
-    if (out.status === 404) return { error: "That AI model wasn’t found — check AI_MODEL." };
+    if (out.status === 404) return { error: "That AI model wasn’t found. Check AI_MODEL." };
     return { error: mapHttpError(out.status) };
   }
   const data = parseJson<{ candidates?: { content?: { parts?: { text?: string }[] } }[] }>(out.text);
@@ -273,7 +273,7 @@ export async function callAi(
   overrideKey?: string,
 ): Promise<CallResult> {
   const cfg = resolveAiConfig(overrideKey);
-  if (!cfg) return { error: "AI isn’t configured — no API key is set." };
+  if (!cfg) return { error: "AI isn’t configured. No API key is set." };
   switch (cfg.provider) {
     case "anthropic":
       return callAnthropic(cfg, system, userText, maxTokens);

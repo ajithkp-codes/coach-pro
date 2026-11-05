@@ -19,7 +19,7 @@ export function ReviewInbox({ reviews, total }: { reviews: ReviewItem[]; total: 
             <span className="text-success">
               <Icon name="checkCircle" size={18} />
             </span>
-            Inbox zero — no client check-ins waiting.
+            Inbox zero. No check-ins waiting.
           </div>
         ) : (
           <ul className="flex flex-col gap-1">

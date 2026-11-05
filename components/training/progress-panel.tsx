@@ -49,7 +49,7 @@ export function ProgressPanel({
         <CardBody className="flex flex-col items-center gap-2 py-12 text-center">
           <p className="text-sm font-medium">No sessions logged yet</p>
           <p className="max-w-sm text-sm text-muted-foreground">
-            Progress — training volume, distance, pace, strength trends and balance — appears here
+            Training volume, distance, pace, strength trends and balance appear here
             once this client has logged a workout.
           </p>
         </CardBody>
@@ -75,7 +75,7 @@ export function ProgressPanel({
           label="Active time · 30d"
           value={hm(mins30)}
           accent="amber"
-          sub={stats.avgDuration != null ? `${stats.avgDuration} min / session` : "—"}
+          sub={stats.avgDuration != null ? `${stats.avgDuration} min / session` : "–"}
         />
         <StatTile
           icon="calendar"
@@ -87,7 +87,7 @@ export function ProgressPanel({
         <StatTile
           icon="target"
           label="Adherence · 4wk"
-          value={adh ? `${Math.min(100, adh.pct)}%` : "—"}
+          value={adh ? `${Math.min(100, adh.pct)}%` : "–"}
           accent={adh ? (adh.pct >= 80 ? "green" : adh.pct >= 50 ? "amber" : "red") : "indigo"}
           sub={adh ? `${adh.done} of ${adh.planned} planned` : "No active plan"}
         />

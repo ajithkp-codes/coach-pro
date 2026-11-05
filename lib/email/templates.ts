@@ -47,12 +47,12 @@ export function welcomeEmail(fullName: string | null): { subject: string; html: 
          with the email and password you just created.
        </p>
        <p style="margin:0;font-size:14px;line-height:1.6;color:#4a4540;">
-         Add your first client, build a training or nutrition plan, and start tracking progress —
-         everything lives in your dashboard.
+         Add your first client, build a training or nutrition plan, and start tracking progress.
+         Everything lives in your dashboard.
        </p>`,
       { label: "Go to my dashboard", href: dash },
     ),
-    text: `${greeting}\n\nYour email is verified and your CoachPro account is ready. You can sign in anytime with the email and password you just created.\n\nGo to your dashboard: ${dash}\n\n— CoachPro`,
+    text: `${greeting}\n\nYour email is verified and your CoachPro account is ready. You can sign in anytime with the email and password you just created.\n\nGo to your dashboard: ${dash}\n\n– CoachPro`,
   };
 }
 
@@ -64,8 +64,8 @@ export function adminSignupAlertEmail(trainer: {
   const name = trainer.fullName || "Unnamed trainer";
   const rows = [
     ["Name", name],
-    ["Email", trainer.email || "—"],
-    ["Business", trainer.businessName || "—"],
+    ["Email", trainer.email || "–"],
+    ["Business", trainer.businessName || "–"],
   ]
     .map(
       ([k, v]) =>
@@ -83,6 +83,6 @@ export function adminSignupAlertEmail(trainer: {
        <table style="border-collapse:collapse;">${rows}</table>`,
       { label: "Open admin · Trainers", href: admin },
     ),
-    text: `A new trainer just signed up and verified their email.\n\nName: ${name}\nEmail: ${trainer.email || "—"}\nBusiness: ${trainer.businessName || "—"}\n\nManage: ${admin}`,
+    text: `A new trainer just signed up and verified their email.\n\nName: ${name}\nEmail: ${trainer.email || "–"}\nBusiness: ${trainer.businessName || "–"}\n\nManage: ${admin}`,
   };
 }

@@ -185,7 +185,7 @@ export function PlanEditor({
         <div>
           <p className="text-sm font-medium">Type of training</p>
           <p className="text-sm text-muted-foreground">
-            Pick the stream — the plan uses its movements and tracks the right numbers.
+            Pick the stream. The plan uses its movements and tracks the right numbers.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {streams.map((m) => {
@@ -248,7 +248,7 @@ export function PlanEditor({
           <p className="flex items-center gap-2 text-sm">
             <Icon name={getModality(planModality).icon} size={16} className="text-primary" />
             <span className="font-medium">{getModality(planModality).short}</span>
-            <span className="text-muted-foreground">— choose how to create the plan</span>
+            <span className="text-muted-foreground">· choose how to create the plan</span>
           </p>
           <button
             type="button"
@@ -264,7 +264,7 @@ export function PlanEditor({
             <Icon name="plus" size={15} className="text-primary" /> Build your own
           </p>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Start from scratch — set the number of days, then pick {getModality(planModality).itemNoun.toLowerCase()}s
+            Start from scratch. Set the number of days, then pick {getModality(planModality).itemNoun.toLowerCase()}s
             from the {getModality(planModality).short.toLowerCase()} library and tailor every detail to this client.
           </p>
           <div className="mt-3 flex flex-wrap items-end gap-3">
@@ -305,7 +305,7 @@ export function PlanEditor({
               <Icon name="sparkles" size={15} className="text-primary" /> Generate with AI
             </p>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              Answer a few quick questions about the client — goal, schedule, equipment, injuries — and AI drafts the days for you to refine.
+              Answer a few quick questions about the client (goal, schedule, equipment, injuries) and AI drafts the days for you to refine.
             </p>
             <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
               Continue with AI
@@ -321,7 +321,7 @@ export function PlanEditor({
               </span>
             </p>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              Let AI draft a plan from the client&apos;s goal, schedule, equipment and injuries — then refine it. Available on Pro and Studio.
+              Let AI draft a plan from the client&apos;s goal, schedule, equipment and injuries, then refine it. Available on Pro and Studio.
             </p>
             <Link
               href="/account/billing"
@@ -453,7 +453,7 @@ export function PlanEditor({
                   list={`focus-${di}`}
                   value={d.title}
                   onChange={(e) => updateDay(di, { title: e.target.value })}
-                  placeholder="Focus — pick or type (e.g. Push, Legs)"
+                  placeholder="Focus: pick or type (e.g. Push, Legs)"
                   aria-label="Focus"
                 />
                 <datalist id={`focus-${di}`}>
@@ -574,7 +574,7 @@ export function PlanEditor({
                   )}
                   <div className="mt-3 max-h-64 overflow-y-auto pr-1">
                     {isRestFocus(d.title) ? (
-                      <p className="text-sm text-muted-foreground">Rest day — no movements to prescribe.</p>
+                      <p className="text-sm text-muted-foreground">Rest day. No movements to prescribe.</p>
                     ) : libGroups.length === 0 ? (
                       <p className="text-sm text-muted-foreground">
                         {q ? `No movements match “${libQuery}”.` : "Type the movement name directly above to add it."}

@@ -19,11 +19,11 @@ export interface CadencePreset {
 }
 
 export const CADENCE_PRESETS: CadencePreset[] = [
-  { key: "weekly", label: "Weekly — 1 week", weeks: 1 },
-  { key: "biweekly", label: "Bi-weekly — 2 weeks", weeks: 2 },
-  { key: "monthly", label: "Monthly — 4 weeks", weeks: 4 },
-  { key: "2-months", label: "2 months — 8 weeks", weeks: 8 },
-  { key: "3-months", label: "3 months — 12 weeks", weeks: 12 },
+  { key: "weekly", label: "Weekly · 1 week", weeks: 1 },
+  { key: "biweekly", label: "Bi-weekly · 2 weeks", weeks: 2 },
+  { key: "monthly", label: "Monthly · 4 weeks", weeks: 4 },
+  { key: "2-months", label: "2 months · 8 weeks", weeks: 8 },
+  { key: "3-months", label: "3 months · 12 weeks", weeks: 12 },
   { key: "custom", label: "Custom length…", weeks: 0 },
 ];
 
@@ -40,7 +40,7 @@ export function cadenceWeeks(cadence: PlanCadence, customWeeks = 1): number {
 /** A short human label, e.g. "Monthly · 4 weeks" or "Custom · 6 weeks". */
 export function describeCadence(cadence: PlanCadence, durationWeeks: number): string {
   const preset = BY_KEY.get(cadence);
-  const base = preset && cadence !== "custom" ? preset.label.split(" — ")[0] : "Custom";
+  const base = preset && cadence !== "custom" ? preset.label.split(" · ")[0] : "Custom";
   const w = `${durationWeeks} week${durationWeeks === 1 ? "" : "s"}`;
   return `${base} · ${w}`;
 }

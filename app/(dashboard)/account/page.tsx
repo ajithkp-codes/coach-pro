@@ -63,7 +63,7 @@ export default async function AccountPage() {
         <CardBody className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
             {onTrial
-              ? `You're on a free ${trialTier.label} trial — ${entitlement.trialDaysLeft} ${
+              ? `You're on a free ${trialTier.label} trial, ${entitlement.trialDaysLeft} ${
                   entitlement.trialDaysLeft === 1 ? "day" : "days"
                 } left, then Free.`
               : plan === "free"

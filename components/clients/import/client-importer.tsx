@@ -161,7 +161,7 @@ export function ClientImporter({
         if (key && FIELD_BY_KEY[key]) next[i] = key;
       });
       setMapping(next);
-      setAiMsg(res.error ?? "Applied AI suggestions — review them below.");
+      setAiMsg(res.error ?? "Applied AI suggestions. Review them below.");
     } finally {
       setAiBusy(false);
     }
@@ -220,7 +220,7 @@ export function ClientImporter({
             <ul className="text-sm text-muted-foreground">
               {Object.entries(skipReasons).map(([reason, n]) => (
                 <li key={reason}>
-                  {n} skipped — {reason}
+                  {n} skipped: {reason}
                 </li>
               ))}
             </ul>
@@ -249,7 +249,7 @@ export function ClientImporter({
 
       <p className="text-sm text-muted-foreground">
         <span className="capitalize">{plan}</span> plan
-        {limit != null ? ` — up to ${limit} clients. ` : " — unlimited clients. "}
+        {limit != null ? `, up to ${limit} clients. ` : ", unlimited clients. "}
         {limit != null && (
           <>
             <span className="font-medium text-foreground">{remaining}</span> slot
@@ -290,7 +290,7 @@ export function ClientImporter({
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {mode === "ai"
-                    ? "AI reads any layout — wide rosters, measurement logs, one tab per client — and figures out the columns for you. Best for messy or non-standard sheets."
+                    ? "AI reads any layout: wide rosters, measurement logs, one tab per client. It figures out the columns for you. Best for messy or non-standard sheets."
                     : "Pick the sheet and match each column yourself. Best when your sheet is a simple one-row-per-client roster."}
                 </p>
               </div>
@@ -305,8 +305,8 @@ export function ClientImporter({
                   className="mt-0.5"
                 />
                 <span>
-                  I understand my spreadsheet — including client personal and health
-                  data — will be sent to our AI provider to read the columns.
+                  I understand my spreadsheet, including client personal and health
+                  data, will be sent to our AI provider to read the columns.
                   Nothing is saved to CoachPro until I review and confirm.
                 </span>
               </label>
@@ -338,7 +338,7 @@ export function ClientImporter({
             {aiBusy && (
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Icon name="sparkles" size={15} className="text-primary" />
-                Reading your sheet with AI — this can take a few seconds…
+                Reading your sheet with AI. This can take a few seconds…
               </p>
             )}
             {parseError && <p className="text-sm text-danger">{parseError}</p>}
@@ -428,7 +428,7 @@ export function ClientImporter({
                               });
                             }}
                           >
-                            <option value="">— Ignore —</option>
+                            <option value="">Ignore this column</option>
                             {FIELD_GROUPS.map((group) => (
                               <optgroup key={group} label={group}>
                                 {IMPORT_FIELDS.filter((f) => f.group === group).map((f) => (
@@ -488,7 +488,7 @@ export function ClientImporter({
                 {reviewRecords.length} client{reviewRecords.length === 1 ? "" : "s"} ready
                 {skippedCount > 0 && `, ${skippedCount} skipped (no name)`}.
                 {reviewRecords.length > remaining && (
-                  <> Only {remaining} will import — you’re at your plan limit.</>
+                  <> Only {remaining} will import. You’re at your plan limit.</>
                 )}
               </p>
             </div>
@@ -537,7 +537,7 @@ export function ClientImporter({
                         <td className="py-2 pr-3 text-muted-foreground">{r.sourceRow || idx + 1}</td>
                         <td className="py-2 pr-3 font-medium">{r.client.full_name}</td>
                         <td className="py-2 pr-3 text-muted-foreground">
-                          {[r.client.phone, r.client.email].filter(Boolean).join(" · ") || "—"}
+                          {[r.client.phone, r.client.email].filter(Boolean).join(" · ") || "–"}
                         </td>
                         <td className="py-2 pr-3 text-muted-foreground">
                           {[
@@ -549,13 +549,13 @@ export function ClientImporter({
                               : null,
                           ]
                             .filter(Boolean)
-                            .join(" · ") || "—"}
+                            .join(" · ") || "–"}
                         </td>
                         <td className="py-2 text-xs">
                           {flag ? (
                             <span className="text-warning">{flag.messages.join("; ")}</span>
                           ) : (
-                            <span className="text-muted-foreground">—</span>
+                            <span className="text-muted-foreground">–</span>
                           )}
                         </td>
                       </tr>

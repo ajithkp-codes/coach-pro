@@ -715,7 +715,7 @@ function PlanStart({ plans, onPick }: { plans: WorkoutPlan[]; onPick: (plan: Wor
         <Icon name="dumbbell" size={15} className="text-primary" /> Log against the plan
       </p>
       <p className="mt-0.5 text-sm text-muted-foreground">
-        Pick the day your client is doing — its prescribed work loads in, ready to tick off.
+        Pick the day your client is doing. Its prescribed work loads in, ready to tick off.
       </p>
       <div className="mt-3 flex flex-col gap-4">
         {ordered.map((p) => {

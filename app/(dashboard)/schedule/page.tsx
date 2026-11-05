@@ -28,7 +28,7 @@ export default async function SchedulePage() {
           <p className="overline">Next 7 days</p>
           <h1 className="hdisp mt-1 text-[2rem] sm:text-[2.5rem]">Schedule</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Derived from each client&rsquo;s active workout plan — no double entry. Add one-off
+            Derived from each client&rsquo;s active workout plan, so no double entry. Add one-off
             events for consults and calls.
           </p>
         </div>
@@ -67,7 +67,7 @@ export default async function SchedulePage() {
             <p className="mt-1 text-sm text-muted-foreground">
               Your weekly roster builds itself from clients&rsquo; active workout plans. Open a
               client&rsquo;s training tab, build a plan, and tag its days by weekday (Mon, Wed,
-              Fri&hellip;) — those sessions then appear here automatically. For anything that
+              Fri&hellip;) and those sessions then appear here automatically. For anything that
               isn&rsquo;t part of a plan (a consult, a call), add a one-off event above.
             </p>
           </CardBody>

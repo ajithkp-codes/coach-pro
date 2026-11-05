@@ -33,7 +33,7 @@ export function NeedsAttention({ board }: { board: ClientBoardItem[] }) {
             <span className="text-success">
               <Icon name="checkCircle" size={18} />
             </span>
-            Everyone&rsquo;s on track — no one is drifting right now.
+            Everyone&rsquo;s on track. No one&rsquo;s drifting right now.
           </div>
         ) : (
           <ul className="flex flex-col divide-y divide-border">

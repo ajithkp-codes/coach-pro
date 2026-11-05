@@ -47,7 +47,7 @@ export default async function BillingPage() {
           <Icon name="sparkles" size={15} className="text-primary" />
           <span>
             <span className="font-semibold text-primary">{LAUNCH_PROMO.label}</span>{" "}
-            on all paid plans — for a limited time.
+            on all paid plans, for a limited time.
           </span>
         </div>
       )}
@@ -59,7 +59,7 @@ export default async function BillingPage() {
             <span className="font-semibold text-primary">
               You&apos;re on a free {trialTier.label} trial
             </span>{" "}
-            — {entitlement.trialDaysLeft}{" "}
+            with {entitlement.trialDaysLeft}{" "}
             {entitlement.trialDaysLeft === 1 ? "day" : "days"} left
             {entitlement.trialEndsAt && <> (until {formatDate(entitlement.trialEndsAt)})</>}.
             Subscribe anytime to keep {trialTier.label} features; otherwise you&apos;ll move to

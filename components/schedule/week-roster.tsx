@@ -116,7 +116,7 @@ export function WeekRoster({ week, todayISO }: { week: DayRoster[]; todayISO: st
             </CardHeader>
             <CardBody>
               {empty ? (
-                <p className="text-sm text-muted-foreground">Rest day — nothing scheduled.</p>
+                <p className="text-sm text-muted-foreground">Rest day. Nothing scheduled.</p>
               ) : (
                 <>
                   <div className="divide-y divide-border">
