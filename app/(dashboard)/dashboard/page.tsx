@@ -71,7 +71,7 @@ export default async function DashboardPage() {
       {!hasClients ? (
         <EmptyState
           title="Let's get your practice set up"
-          description="Add your first client — or import your whole roster from Excel — to start tracking compliance, check-ins, and appointments."
+          description="Add your first client, or import your whole roster from Excel, to start tracking compliance, check-ins, and appointments."
           action={
             <div className="flex gap-2">
               <ButtonLink href="/clients/new">Add client</ButtonLink>

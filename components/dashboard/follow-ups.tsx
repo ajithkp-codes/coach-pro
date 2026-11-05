@@ -91,7 +91,7 @@ export function FollowUps({ board }: { board: ClientBoardItem[] }) {
             <span className="text-success">
               <Icon name="checkCircle" size={18} />
             </span>
-            Nothing to chase — goals and markers all look current.
+            Nothing to chase. Goals and markers are all current.
           </div>
         ) : (
           <>

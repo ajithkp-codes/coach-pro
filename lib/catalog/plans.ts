@@ -12,7 +12,7 @@ export const LAUNCH_PROMO = {
   active: true,
   percentOff: 50,
   /** Shown on the billing page while the promo runs. */
-  label: "Launch offer — 50% off",
+  label: "Launch offer: 50% off",
 } as const;
 
 export interface PlanTier {

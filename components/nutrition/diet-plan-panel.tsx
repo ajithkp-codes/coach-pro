@@ -17,6 +17,7 @@ import {
   deleteDietPlanAction,
 } from "@/app/(dashboard)/clients/[id]/nutrition/plan-actions";
 import type { DietPlanWithUrl, DietPlanFoodItem } from "@/lib/types";
+import type { ClientTrainingSnapshot } from "@/lib/data/training-snapshot";
 
 function itemLine(it: DietPlanFoodItem): string {
   const nums = [
@@ -94,9 +95,13 @@ function PlanView({ plan, clientId }: { plan: DietPlanWithUrl; clientId: string 
 export function DietPlanPanel({
   clientId,
   plans,
+  snapshot,
+  canUseAi = false,
 }: {
   clientId: string;
   plans: DietPlanWithUrl[];
+  snapshot?: ClientTrainingSnapshot | null;
+  canUseAi?: boolean;
 }) {
   const router = useRouter();
 
@@ -104,12 +109,12 @@ export function DietPlanPanel({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          Build the client&apos;s meals and daily targets, or attach a plan you already wrote.
+          Build the client&apos;s meals and daily targets, or let AI draft them for you.
         </p>
         <Modal
           wide
           title="New diet plan"
-          description="Set daily targets and meals, or attach an existing plan file."
+          description="Start from a template, generate with AI, or build the meals yourself."
           trigger={(open) => (
             <Button onClick={open}>
               <Icon name="plus" size={16} /> New plan
@@ -120,6 +125,8 @@ export function DietPlanPanel({
             <DietPlanEditor
               clientId={clientId}
               action={createDietPlanAction.bind(null, clientId)}
+              snapshot={snapshot}
+              canUseAi={canUseAi}
               onCancel={close}
               onSuccess={() => {
                 close();
@@ -133,7 +140,7 @@ export function DietPlanPanel({
       {plans.length === 0 ? (
         <EmptyState
           title="No diet plan yet"
-          description="Create a meal plan with calorie and protein targets, or upload the plan you've already made."
+          description="Create a meal plan with calorie and protein targets, from a template or with AI."
         />
       ) : (
         <div className="flex flex-col gap-4">
@@ -166,6 +173,8 @@ export function DietPlanPanel({
                           clientId={clientId}
                           action={updateDietPlanAction.bind(null, clientId, plan.id)}
                           plan={plan}
+                          snapshot={snapshot}
+                          canUseAi={canUseAi}
                           onCancel={close}
                           onSuccess={() => {
                             close();

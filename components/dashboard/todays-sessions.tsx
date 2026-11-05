@@ -154,7 +154,7 @@ export function TodaysSessions({
           <div className="flex flex-col items-start gap-2 text-sm text-muted-foreground">
             <p>No plan sessions scheduled for today.</p>
             <p className="text-xs">
-              Sessions appear automatically from each client&rsquo;s active workout plan — tag
+              Sessions appear automatically from each client&rsquo;s active workout plan. Tag
               the plan days by weekday (Mon, Wed, Fri&hellip;) and they&rsquo;ll show up here.
             </p>
             <ButtonLink href="/schedule" variant="ghost" size="sm">

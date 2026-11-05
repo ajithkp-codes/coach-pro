@@ -47,7 +47,7 @@ function systemFor(modality: Modality): string {
 
   return [
     `You are an experienced, safety-first ${def.label} coach drafting a weekly ${def.label.toLowerCase()} plan for one specific client.`,
-    "Respond with ONLY a single JSON object — no prose, no markdown code fences.",
+    "Respond with ONLY a single JSON object. No prose, no markdown code fences.",
     `Shape: {"days":[{"day":"Mon","title":"${def.itemNoun} focus","items":[${JSON.stringify(example)}]}]}`,
     "Rules: `day` is a short weekday label (Mon, Tue, …). `title` is the session focus.",
     `Each item has \`exercise_name\` plus these string fields: ${fieldList}. Leave a field "" when it doesn't apply.`,
@@ -55,7 +55,7 @@ function systemFor(modality: Modality): string {
       ? `Prefer these ${def.label} movements where they fit: ${library}. You may add other real, common ones.`
       : "Use common, real movement names.",
     `Produce exactly the requested number of training days (rest days omitted). Each day should have 4–7 ${def.itemNoun.toLowerCase()}s suited to the client below.`,
-    "Honour every constraint in the client brief. Safety comes before everything: never prescribe a movement that would aggravate a stated injury or condition — regress, substitute, or omit it.",
+    "Honour every constraint in the client brief. Safety comes before everything: never prescribe a movement that would aggravate a stated injury or condition. Regress, substitute, or omit it.",
   ].join(" ");
 }
 
@@ -127,7 +127,7 @@ function buildUserPrompt(
   }
 
   // The trainer's brief.
-  const focus = [brief.goalFocus.join(", "), brief.goal.trim()].filter(Boolean).join(" — ");
+  const focus = [brief.goalFocus.join(", "), brief.goal.trim()].filter(Boolean).join(": ");
   lines.push(`Goal: ${focus || "general fitness"}.`);
   if (brief.deadline) lines.push(`Target date: ${brief.deadline}.`);
   lines.push(

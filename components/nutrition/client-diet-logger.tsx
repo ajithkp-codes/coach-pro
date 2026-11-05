@@ -138,7 +138,7 @@ export function ClientDietLogger({
         <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success/10 text-success">
           <Icon name="check" size={24} />
         </span>
-        <h1 className="mt-4 text-base font-semibold">Sent — thank you!</h1>
+        <h1 className="mt-4 text-base font-semibold">Sent. Thank you!</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {businessName ? `${businessName} will` : "Your trainer will"} review what you logged for {loggedOn}.
           You can update today&apos;s log any time from this link.
@@ -165,7 +165,7 @@ export function ClientDietLogger({
           <p className="font-medium">{plan.name}</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             Daily target:{" "}
-            {plan.target_calories != null ? `${formatNumber(plan.target_calories)} kcal` : "—"}
+            {plan.target_calories != null ? `${formatNumber(plan.target_calories)} kcal` : "–"}
             {plan.target_protein_g != null ? ` · ${formatNumber(plan.target_protein_g)} g protein` : ""}
           </p>
         </div>
@@ -189,7 +189,7 @@ export function ClientDietLogger({
               ))}
             </Select>
             <Input className="h-10 w-20" value={r.eaten_at} onChange={(e) => updateRow(i, { eaten_at: e.target.value })} placeholder="08:00" aria-label="Time" />
-            <Input className="h-10 min-w-0 flex-1" list="client-food-catalog" value={r.food} onChange={(e) => setFood(i, e.target.value)} placeholder="What did you eat?" aria-label="Food" />
+            <Input className="h-10 w-full min-w-0 basis-full sm:flex-1 sm:basis-0" list="client-food-catalog" value={r.food} onChange={(e) => setFood(i, e.target.value)} placeholder="What did you eat?" aria-label="Food" />
             <Input className="h-10 w-24" value={r.quantity} onChange={(e) => updateRow(i, { quantity: e.target.value })} placeholder="1 cup" aria-label="Quantity" />
             <Input className="h-10 w-16" inputMode="numeric" value={r.calories} onChange={(e) => updateRow(i, { calories: e.target.value })} placeholder="kcal" aria-label="Calories" />
             <Input className="h-10 w-16" inputMode="decimal" value={r.protein} onChange={(e) => updateRow(i, { protein: e.target.value })} placeholder="g" aria-label="Protein grams" />

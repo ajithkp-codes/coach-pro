@@ -18,7 +18,7 @@ export default async function ImportClientsPage() {
     <>
       <PageHeader
         title="Import from Excel"
-        description="Upload your existing client workbook and bring everyone — with a current snapshot of their metrics, markers, and goal — into CoachPro."
+        description="Upload your existing client workbook and bring everyone into CoachPro, with a current snapshot of their metrics, markers, and goal."
         action={
           <ButtonLink href="/clients" variant="outline">
             <Icon name="chevronRight" size={16} /> Back to clients

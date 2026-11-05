@@ -230,7 +230,7 @@ export function AiPlanBrief({
               ))}
             {snapshot.age == null && snapshot.weightKg == null && (
               <span className="text-muted-foreground">
-                No health data on file yet — fill the brief below.
+                No health data on file yet. Fill in the brief below.
               </span>
             )}
           </div>
@@ -278,7 +278,7 @@ export function AiPlanBrief({
           <Input
             value={brief.goal}
             onChange={(e) => set("goal", e.target.value)}
-            placeholder="In your words — e.g. drop body fat while keeping strength"
+            placeholder="In your words, e.g. drop body fat while keeping strength"
           />
           <Field label="Target date" htmlFor="ai-deadline">
             <Input
@@ -349,7 +349,7 @@ export function AiPlanBrief({
       </Section>
 
       {/* ④ Health & injuries */}
-      <Section step={4} title="Health & injuries" hint="The AI programs around these — safety first.">
+      <Section step={4} title="Health & injuries" hint="The AI programs around these. Safety first.">
         <p className="mb-1.5 text-xs text-muted-foreground">Injuries or movement limits</p>
         <div className="flex flex-wrap gap-1.5">
           {INJURY_OPTIONS.map((inj) => (
@@ -376,7 +376,7 @@ export function AiPlanBrief({
       </Section>
 
       {/* ⑤ Preferences (optional) */}
-      <Collapsible title="Preferences" hint="Likes, dislikes, lifestyle — optional">
+      <Collapsible title="Preferences" hint="Likes, dislikes, lifestyle (optional)">
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Enjoys / responds well to" htmlFor="ai-loves">
             <Input id="ai-loves" value={brief.loves} onChange={(e) => set("loves", e.target.value)} placeholder="e.g. kettlebells, outdoor cardio" />
@@ -399,7 +399,7 @@ export function AiPlanBrief({
       </Collapsible>
 
       {/* ⑥ Coach controls (optional) */}
-      <Collapsible title="Coach controls" hint="Split & structure — smart defaults applied">
+      <Collapsible title="Coach controls" hint="Split and structure, smart defaults applied">
         <Field label="Training split" htmlFor="ai-split">
           <Select id="ai-split" value={brief.split} onChange={(e) => set("split", e.target.value)}>
             {SPLIT_OPTIONS.map((s) => (
@@ -421,7 +421,7 @@ export function AiPlanBrief({
           id="ai-notes"
           value={brief.notes}
           onChange={(e) => set("notes", e.target.value)}
-          placeholder={`Optional — anything else that should shape the ${noun}s or the week.`}
+          placeholder={`Optional. Anything else that should shape the ${noun}s or the week.`}
         />
       </Field>
 

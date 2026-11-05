@@ -184,7 +184,7 @@ const mappingSchema = z.record(z.string(), z.string());
 
 const SYSTEM = [
   "You map spreadsheet column headers from a personal trainer's client workbook to a fixed set of target field keys.",
-  "Respond with ONLY a single JSON object — no prose, no markdown code fences.",
+  "Respond with ONLY a single JSON object. No prose, no markdown code fences.",
   'Shape: {"<exact source header>":"<target field key>"}. Omit a header entirely if none fits.',
   `Valid target field keys: ${FIELD_KEYS.join(", ")}.`,
   "Use each scalar key at most once (notes may repeat). Prefer the most specific key.",
@@ -280,16 +280,16 @@ const PLAN_CADENCE_LIST = CADENCE_PRESETS.map((p) => p.key).join(", ");
 
 const AI_IMPORT_SYSTEM = (todayISO: string) =>
   [
-    "You migrate a personal trainer's existing data out of a messy spreadsheet workbook into our app. The workbook may hold client details, measurement/lab logs, AND the trainers' existing workout PROGRAMS — all of it must come across.",
+    "You migrate a personal trainer's existing data out of a messy spreadsheet workbook into our app. The workbook may hold client details, measurement/lab logs, AND the trainers' existing workout PROGRAMS. All of it must come across.",
     "",
     "FIRST, ANALYZE THE WHOLE WORKBOOK before emitting anything:",
     "- Look at EVERY worksheet (tab), every row and every column. Figure out what each sheet is: a client roster, one person's measurement log over time, a vertical intake form, or a workout program (days of exercises with sets/reps/weight).",
     "- Work out how the sheets relate. A workout program may live on its own tab and name the person it belongs to (a title cell, a 'Client:' label, or the tab name). Attach each program to the right person. If a program names no person but the workbook clearly concerns ONE client, attach it to that client.",
     "- Only after you understand the whole structure, decide how to shape the records below.",
     "",
-    "Return ONLY a JSON array of client records — no prose, no markdown fences.",
+    "Return ONLY a JSON array of client records. No prose, no markdown fences.",
     "One record per PERSON (not per row). If a sheet is one person's measurement log over time, emit ONE record with MANY dated entries in `metrics`. If each worksheet (tab) is a different person, emit one record per sheet.",
-    "Capture EVERY dated row for a person: when body measurements OR a lab/blood panel repeat on several dates, emit a SEPARATE dated entry for each date — many entries in `metrics` and many in `markers`. Never collapse repeat panels to one date or keep only the latest.",
+    "Capture EVERY dated row for a person: when body measurements OR a lab/blood panel repeat on several dates, emit a SEPARATE dated entry for each date, with many entries in `metrics` and many in `markers`. Never collapse repeat panels to one date or keep only the latest.",
     "Record shape:",
     '{"sourceRow": <number>, "client": {"full_name": <string>, "sex": "male"|"female"|"other"|"unspecified", "date_of_birth": <"YYYY-MM-DD"|null>, "phone": <string|null>, "email": <string|null>, "notes": <string|null>}, "metrics": [{"measured_on": "YYYY-MM-DD", <metric_key>: <number>, ...}], "markers": [{"measured_on": "YYYY-MM-DD", "marker_key": <key>, "value": <number>, "unit": <string|null>}], "goal": {"title": <string>, "category": "health"|"workout", "target_value": <number|null>, "target_unit": <string|null>, "status": "active"}|null, "plans": [<plan>]}',
     "A `plan` (an existing workout program being migrated) has shape:",
@@ -308,7 +308,7 @@ const AI_IMPORT_SYSTEM = (todayISO: string) =>
     "- SKIP total/average/subtotal/header/blank rows. A record must have a non-empty full_name; drop anyone without a real name.",
     "WORKOUT PROGRAMS (migrate them fully):",
     "- Turn each program into one entry in that person's `plans`. Group exercises under the day they belong to (a 'Day 1'/'Monday'/'Push'/'Upper' heading, a column per day, or a repeating block). Give the plan a sensible `name` (use the program's own title, else e.g. \"Imported strength plan\").",
-    "- Every exercise is one item under its day. sets/reps/weight and the rest are FREE TEXT — keep ranges exactly as written (\"8-12\", \"3x10\", \"bodyweight\", \"RPE 8\", \"60kg\", \"30s\"). Put sets in `sets`, reps in `reps`, load in `weight`; time-based → `duration`, distance → `distance`, rounds/circuits → `rounds`, tempo → `tempo`, %1RM or RPE → `intensity`. Coaching cues/rest go in the item `notes`.",
+    "- Every exercise is one item under its day. sets/reps/weight and the rest are FREE TEXT. Keep ranges exactly as written (\"8-12\", \"3x10\", \"bodyweight\", \"RPE 8\", \"60kg\", \"30s\"). Put sets in `sets`, reps in `reps`, load in `weight`; time-based → `duration`, distance → `distance`, rounds/circuits → `rounds`, tempo → `tempo`, %1RM or RPE → `intensity`. Coaching cues/rest go in the item `notes`.",
     "- If the workbook is ONLY a workout program with no identifiable person, emit a single record whose client full_name is the program/person name if findable, otherwise skip it (return [] only if there is truly no person anywhere).",
     "- Omit the `plans` key (or use []) for anyone with no program. Never invent exercises that aren't in the sheet.",
   ].join("\n");
@@ -336,7 +336,7 @@ export async function aiImportAction(input: {
 
   const usingOwnKey = Boolean(input.apiKey?.trim());
   if (!usingOwnKey && !isAiConfigured()) {
-    return empty("AI import isn’t configured — no API key is set.");
+    return empty("AI import isn’t configured. No API key is set.");
   }
   if (!Array.isArray(input.sheets) || input.sheets.length === 0) {
     return empty("No sheet data to import.");

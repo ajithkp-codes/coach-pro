@@ -1,14 +1,14 @@
 /**
- * Modality registry — the single source of truth for how each kind of personal
+ * Modality registry: the single source of truth for how each kind of personal
  * training is planned, logged and measured. The plan editor and workout logger
  * render GENERICALLY from these definitions instead of hard-coding strength's
  * sets × reps × weight, so a new stream is one entry here, not a forked UI.
  *
  * Fields map onto the training schema (0002 + 0015):
- *   - plan items are free-text (lib/types.ts PlanItem) — `planColumns` pick which
+ *   - plan items are free-text (lib/types.ts PlanItem): `planColumns` pick which
  *     of its fields a modality shows and how they're labelled.
  *   - logged sets persist to real columns where one exists (weight_kg, reps, rpe,
- *     duration_sec, distance_m) and to the `metrics` jsonb otherwise — `logFields`
+ *     duration_sec, distance_m) and to the `metrics` jsonb otherwise: `logFields`
  *     declares each field's label, unit, input type and storage target.
  *
  * Adding a modality: append to MODALITIES and extend the Modality union. Nothing
@@ -78,7 +78,7 @@ export interface LogField {
 /** 1–10 effort scale used by the RPE / Effort field. */
 const RPE_SCALE = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 const RPE_HINT =
-  "Rate of Perceived Exertion — how hard the set felt, from 1 (very easy) to 10 (maximal effort, no reps left in the tank).";
+  "Rate of Perceived Exertion: how hard the set felt, from 1 (very easy) to 10 (maximal effort, no reps left in the tank).";
 
 /** What progress/PR tracking is keyed on for this modality. */
 export type PrimaryMetric = "weight" | "reps" | "duration" | "distance";
@@ -130,7 +130,7 @@ export const MODALITIES: ModalityDef[] = [
     key: "strength",
     label: "Strength & resistance",
     short: "Strength",
-    description: "Barbell, dumbbell and machine work — sets, reps and load.",
+    description: "Barbell, dumbbell and machine work: sets, reps and load.",
     icon: "dumbbell",
     itemNoun: "Exercise",
     planColumns: [C.sets(), C.reps(), C.weight()],
@@ -142,19 +142,19 @@ export const MODALITIES: ModalityDef[] = [
     key: "calisthenics",
     label: "Calisthenics & bodyweight",
     short: "Calisthenics",
-    description: "Bodyweight skill progressions — reps, holds, added or assisted load, tempo.",
+    description: "Bodyweight skill progressions: reps, holds, added or assisted load, tempo.",
     icon: "target",
     itemNoun: "Skill",
     planColumns: [C.sets(), C.reps("5-8"), C.duration("Hold"), C.weight("Added / assist", "+10kg / band"), C.tempo()],
     logFields: [F.reps(), F.duration("Hold", "s"), F.weight("Added / assist", "kg"), F.rpe(), F.tempo(), F.level()],
     primaryMetric: "reps",
-    ready: true, // Phase 1 — first stream built on the engine
+    ready: true, // Phase 1: first stream built on the engine
   },
   {
     key: "mobility",
     label: "Yoga, Pilates & mobility",
     short: "Mind-body",
-    description: "Poses, flows and mobility drills — hold duration, reps, side and breath.",
+    description: "Poses, flows and mobility drills: hold duration, reps, side and breath.",
     icon: "sparkles",
     itemNoun: "Pose",
     planColumns: [C.duration("Hold / breaths", "5 breaths"), C.reps("per side"), C.intensity("Focus", "depth / breath")],
@@ -166,7 +166,7 @@ export const MODALITIES: ModalityDef[] = [
     key: "conditioning",
     label: "Functional, HIIT & conditioning",
     short: "Conditioning",
-    description: "Circuits and intervals — rounds, work time, distance, calories and heart rate.",
+    description: "Circuits and intervals: rounds, work time, distance, calories and heart rate.",
     icon: "flame",
     itemNoun: "Movement",
     planColumns: [C.rounds(), C.reps("12"), C.duration("Work", "40s"), C.distance(), C.intensity("Rest", "20s")],
@@ -178,7 +178,7 @@ export const MODALITIES: ModalityDef[] = [
     key: "longevity",
     label: "Longevity & healthy-aging",
     short: "Longevity",
-    description: "Adapted training for older adults and corrective work — gentle load, holds, balance, side.",
+    description: "Adapted training for older adults and corrective work: gentle load, holds, balance, side.",
     icon: "pulse",
     itemNoun: "Exercise",
     planColumns: [C.sets(), C.reps("10-12"), C.duration("Hold", "20s"), C.weight("Load", "light / band"), C.intensity("Effort", "easy")],
@@ -190,7 +190,7 @@ export const MODALITIES: ModalityDef[] = [
     key: "lifestyle",
     label: "Lifestyle, activity & habits",
     short: "Lifestyle",
-    description: "Weight-management coaching — daily movement targets, steps and habit checks. Pairs with the nutrition tab.",
+    description: "Weight-management coaching: daily movement targets, steps and habit checks. Pairs with the nutrition tab.",
     icon: "scale",
     itemNoun: "Activity",
     planColumns: [C.duration("Minutes", "30 min"), C.distance("Steps / distance", "8,000 steps"), C.intensity("Target", "daily")],
@@ -202,12 +202,12 @@ export const MODALITIES: ModalityDef[] = [
     key: "running",
     label: "Running & endurance",
     short: "Running",
-    description: "Road, track and trail running — easy, long, tempo, interval and hill sessions, programmed by distance, time, pace and recovery.",
+    description: "Road, track and trail running: easy, long, tempo, interval and hill sessions, programmed by distance, time, pace and recovery.",
     icon: "running",
     itemNoun: "Segment",
     // A running day is a sequence of steps (warm-up → main set → cool-down). Every
     // field is optional free text so the trainer prescribes by their own strategy:
-    // volume is EITHER distance OR time (one field — never both, they're redundant),
+    // volume is EITHER distance OR time (one field: never both, they're redundant),
     // and intensity is ONE target (pace, effort or HR zone). Reps + recovery cover
     // interval sets. See lib/catalog/movements/running.ts and lib/catalog/focus.ts.
     planColumns: [
@@ -217,7 +217,7 @@ export const MODALITIES: ModalityDef[] = [
       { field: "tempo", label: "Recovery", placeholder: "90s jog", width: "w-24" },
     ],
     // Distance is logged in KM and time in MINUTES (not the columns' canonical
-    // m/s) — self-consistent within a running session and surfaced with the right
+    // m/s): self-consistent within a running session and surfaced with the right
     // unit via each field's `unit`. No cross-modality feature reads these raw.
     logFields: [
       F.distance("Distance", "km"),

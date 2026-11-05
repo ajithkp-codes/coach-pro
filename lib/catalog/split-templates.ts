@@ -2,7 +2,7 @@ import type { PlanDay, PlanItem } from "@/lib/types";
 import type { Modality } from "@/lib/catalog/modalities";
 
 /**
- * Starter training splits — seed a plan instantly with no AI call. Movement
+ * Starter training splits: seed a plan instantly with no AI call. Movement
  * names are drawn from the per-modality catalog so group chips and progress
  * tagging light up immediately. Each template declares the modality it's for;
  * the editor offers only the templates matching the plan's chosen modality.
@@ -38,7 +38,7 @@ export const SPLIT_TEMPLATES: SplitTemplate[] = [
     key: "full-body-3",
     modality: "strength",
     label: "Full body · 3 days",
-    description: "Mon / Wed / Fri — balanced compound work, great for beginners.",
+    description: "Mon / Wed / Fri: balanced compound work, great for beginners.",
     days: [
       day("Mon", "Full body A", [
         item("Back squat", "3", "8"),
@@ -67,7 +67,7 @@ export const SPLIT_TEMPLATES: SplitTemplate[] = [
     key: "upper-lower",
     modality: "strength",
     label: "Upper / Lower · 4 days",
-    description: "Mon / Tue / Thu / Fri — more volume per muscle, two of each.",
+    description: "Mon / Tue / Thu / Fri: more volume per muscle, two of each.",
     days: [
       day("Mon", "Upper A", [
         item("Bench press", "4", "6-8"),
@@ -105,7 +105,7 @@ export const SPLIT_TEMPLATES: SplitTemplate[] = [
     key: "ppl",
     modality: "strength",
     label: "Push / Pull / Legs · 3 days",
-    description: "Mon / Wed / Fri — classic split by movement pattern.",
+    description: "Mon / Wed / Fri: classic split by movement pattern.",
     days: [
       day("Mon", "Push", [
         item("Bench press", "4", "8"),
@@ -136,7 +136,7 @@ export const SPLIT_TEMPLATES: SplitTemplate[] = [
     key: "calisthenics-foundations-3",
     modality: "calisthenics",
     label: "Foundations · 3 days",
-    description: "Mon / Wed / Fri — full-body bodyweight basics for a new client.",
+    description: "Mon / Wed / Fri: full-body bodyweight basics for a new client.",
     days: [
       day("Mon", "Full body A", [
         cItem("Incline push-up", "3", "8"),
@@ -165,7 +165,7 @@ export const SPLIT_TEMPLATES: SplitTemplate[] = [
     key: "calisthenics-ppl-3",
     modality: "calisthenics",
     label: "Push / Pull / Legs · 3 days",
-    description: "Mon / Wed / Fri — bodyweight split by movement pattern.",
+    description: "Mon / Wed / Fri: bodyweight split by movement pattern.",
     days: [
       day("Mon", "Push", [
         cItem("Push-up", "4", "10"),
@@ -194,7 +194,7 @@ export const SPLIT_TEMPLATES: SplitTemplate[] = [
     key: "calisthenics-skills-4",
     modality: "calisthenics",
     label: "Skills + strength · 4 days",
-    description: "Mon / Tue / Thu / Fri — pair skill practice with strength work.",
+    description: "Mon / Tue / Thu / Fri: pair skill practice with strength work.",
     days: [
       day("Mon", "Push + handstand", [
         cItem("Wall handstand hold", "4", "", "30s"),
@@ -228,7 +228,7 @@ export const SPLIT_TEMPLATES: SplitTemplate[] = [
     key: "mobility-vinyasa-3",
     modality: "mobility",
     label: "Vinyasa flow · 3 days",
-    description: "Mon / Wed / Fri — a balanced mind-body week of flow, strength and restore.",
+    description: "Mon / Wed / Fri: a balanced mind-body week of flow, strength and restore.",
     days: [
       day("Mon", "Grounding flow", [
         gItem("Cat-cow", { duration: "8 breaths", intensity: "warm spine" }),
@@ -265,7 +265,7 @@ export const SPLIT_TEMPLATES: SplitTemplate[] = [
     key: "conditioning-hiit-3",
     modality: "conditioning",
     label: "HIIT & circuits · 3 days",
-    description: "Mon / Wed / Fri — intervals, a conditioning circuit and a benchmark piece.",
+    description: "Mon / Wed / Fri: intervals, a conditioning circuit and a benchmark piece.",
     days: [
       day("Mon", "Intervals", [
         gItem("Rowing erg", { rounds: "6", duration: "250m", intensity: "90s rest" }),
@@ -293,7 +293,7 @@ export const SPLIT_TEMPLATES: SplitTemplate[] = [
     key: "longevity-foundations-3",
     modality: "longevity",
     label: "Healthy-aging foundations · 3 days",
-    description: "Mon / Wed / Fri — strength, balance and mobility for older adults.",
+    description: "Mon / Wed / Fri: strength, balance and mobility for older adults.",
     days: [
       day("Mon", "Strength & balance", [
         gItem("Sit-to-stand", { sets: "3", reps: "10", intensity: "controlled" }),

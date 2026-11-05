@@ -133,7 +133,7 @@ export function generateProgressSummary(
   });
   const lines: string[] = [];
 
-  lines.push(`Progress Summary — ${clientName}`);
+  lines.push(`Progress Summary: ${clientName}`);
   lines.push(`Generated: ${today}`);
   lines.push("");
 
@@ -207,6 +207,6 @@ export function generateProgressSummary(
     lines.push("");
   }
 
-  lines.push("— CoachPro");
+  lines.push("– CoachPro");
   return lines.join("\n");
 }

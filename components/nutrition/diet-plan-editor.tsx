@@ -1,22 +1,23 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input, Textarea, Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
-import { createClient } from "@/lib/supabase/client";
-import { SHARE_BUCKET } from "@/lib/constants";
 import { FOOD_NAMES, findFood } from "@/lib/catalog/foods";
 import { DIET_TEMPLATES } from "@/lib/catalog/diet-templates";
 import { generateDietPlanAction } from "@/app/(dashboard)/clients/[id]/nutrition/plan-ai-actions";
+import { AiDietBrief } from "./ai-diet-brief";
 import { MEALS, planDayTotals } from "@/lib/nutrition";
-import { formatBytes, formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/format";
 import type { DietPlanState } from "@/app/(dashboard)/clients/[id]/nutrition/plan-actions";
+import type { ClientTrainingSnapshot } from "@/lib/data/training-snapshot";
+import type { DietBrief } from "@/lib/nutrition/diet-brief";
 import type { DietPlan, DietPlanDay, DietPlanMeal, DietPlanFoodItem, MealType } from "@/lib/types";
 
 const DAY_OPTIONS = ["Every day", "Training day", "Rest day", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 
 const emptyItem = (): DietPlanFoodItem => ({ food: "", qty: "", calories: "", protein: "", notes: "" });
 const emptyMeal = (meal: MealType, time = ""): DietPlanMeal => ({ meal, time, items: [emptyItem()] });
@@ -39,21 +40,22 @@ const cloneDays = (ds: DietPlanDay[]): DietPlanDay[] =>
     meals: d.meals.map((m) => ({ meal: m.meal, time: m.time, items: m.items.map((it) => ({ ...it })) })),
   }));
 
-function extOf(name: string): string {
-  const e = name.includes(".") ? name.split(".").pop() : "";
-  return (e || "bin").toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
-}
-
 export function DietPlanEditor({
   clientId,
   action,
   plan,
+  snapshot,
+  canUseAi = false,
   onSuccess,
   onCancel,
 }: {
   clientId: string;
   action: (prev: DietPlanState, formData: FormData) => Promise<DietPlanState>;
   plan?: DietPlan;
+  /** What the app already knows about the client, shown in the AI brief. */
+  snapshot?: ClientTrainingSnapshot | null;
+  /** Whether the trainer's plan unlocks AI generation (else the card is an upsell). */
+  canUseAi?: boolean;
   onSuccess: () => void;
   onCancel: () => void;
 }) {
@@ -63,18 +65,13 @@ export function DietPlanEditor({
   const [name, setName] = useState(plan?.name ?? "");
   const [calTarget, setCalTarget] = useState(plan?.target_calories != null ? String(plan.target_calories) : "");
   const [proTarget, setProTarget] = useState(plan?.target_protein_g != null ? String(plan.target_protein_g) : "");
-  const [file, setFile] = useState<File | null>(null);
-  const [removeAttachment, setRemoveAttachment] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // New plans open on a quick-start chooser (template / AI / blank); editing an
   // existing plan skips straight to the builder.
   const [started, setStarted] = useState<boolean>(!!plan);
-  const [goal, setGoal] = useState("");
-  const [aiCals, setAiCals] = useState("");
-  const [aiProtein, setAiProtein] = useState("");
-  const [prefs, setPrefs] = useState("");
+  const [qsStep, setQsStep] = useState<"method" | "brief">("method");
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
 
@@ -86,15 +83,10 @@ export function DietPlanEditor({
     setStarted(true);
   }
 
-  async function generate() {
+  async function generate(brief: DietBrief) {
     setGenerating(true);
     setGenError(null);
-    const res = await generateDietPlanAction({
-      goal,
-      calories: aiCals,
-      protein: aiProtein,
-      preferences: prefs,
-    });
+    const res = await generateDietPlanAction({ clientId, brief });
     setGenerating(false);
     if (res.ok && res.days) {
       seed({ days: res.days, calories: res.targetCalories, protein: res.targetProtein });
@@ -154,59 +146,43 @@ export function DietPlanEditor({
     }))
     .filter((d) => d.meals.length || d.title.trim());
 
-  const hasExisting = !!plan?.storage_path && !removeAttachment;
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (busy) return;
-    if (file && file.size > MAX_BYTES) return setError("File must be 25 MB or smaller.");
 
     const fd = new FormData(e.currentTarget);
     fd.set("days", JSON.stringify(cleanDays));
-    fd.set("remove_attachment", removeAttachment ? "true" : "false");
 
     setBusy(true);
     setError(null);
-    const supabase = createClient();
-    let uploaded: string | null = null;
     try {
-      if (file) {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) {
-          setError("Your session expired. Please sign in again.");
-          setBusy(false);
-          return;
-        }
-        const path = `${user.id}/${clientId}/${crypto.randomUUID()}.${extOf(file.name)}`;
-        const up = await supabase.storage
-          .from(SHARE_BUCKET)
-          .upload(path, file, { contentType: file.type || undefined, upsert: false });
-        if (up.error) {
-          setError(`Upload failed: ${up.error.message}`);
-          setBusy(false);
-          return;
-        }
-        uploaded = path;
-        fd.set("storage_path", path);
-        fd.set("original_name", file.name);
-        fd.set("content_type", file.type || "");
-        fd.set("size_bytes", String(file.size));
-      }
       const res = await action({}, fd);
       if (res.error) {
-        if (uploaded) await supabase.storage.from(SHARE_BUCKET).remove([uploaded]);
         setError(res.error);
         setBusy(false);
         return;
       }
       onSuccess();
     } catch (err) {
-      if (uploaded) await supabase.storage.from(SHARE_BUCKET).remove([uploaded]);
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setBusy(false);
     }
+  }
+
+  // Quick-start: the guided AI brief (reached from the method step).
+  if (!started && qsStep === "brief") {
+    return (
+      <AiDietBrief
+        snapshot={snapshot ?? null}
+        generating={generating}
+        error={genError}
+        onBack={() => {
+          setGenError(null);
+          setQsStep("method");
+        }}
+        onGenerate={generate}
+      />
+    );
   }
 
   if (!started) {
@@ -230,44 +206,52 @@ export function DietPlanEditor({
           </div>
         </div>
 
-        <div className="rounded-[var(--radius)] border border-border p-4">
-          <p className="flex items-center gap-1.5 text-sm font-medium">
-            <Icon name="sparkles" size={15} className="text-primary" /> Generate with AI
-          </p>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            Describe the client&apos;s goal — Claude drafts a day of meals and targets, and you refine them.
-          </p>
-          <div className="mt-3 flex flex-col gap-3">
-            <Field label="Goal" htmlFor="ai-goal">
-              <Input
-                id="ai-goal"
-                value={goal}
-                onChange={(e) => setGoal(e.target.value)}
-                placeholder="e.g. lose fat while keeping muscle, vegetarian"
-              />
-            </Field>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Calorie target" htmlFor="ai-cals" hint="optional">
-                <Input id="ai-cals" inputMode="numeric" value={aiCals} onChange={(e) => setAiCals(e.target.value)} placeholder="e.g. 1800" />
-              </Field>
-              <Field label="Protein target" htmlFor="ai-protein" hint="optional, grams">
-                <Input id="ai-protein" inputMode="numeric" value={aiProtein} onChange={(e) => setAiProtein(e.target.value)} placeholder="e.g. 140" />
-              </Field>
-            </div>
-            <Field label="Preferences / restrictions" htmlFor="ai-prefs">
-              <Input
-                id="ai-prefs"
-                value={prefs}
-                onChange={(e) => setPrefs(e.target.value)}
-                placeholder="e.g. vegetarian, no dairy, South Indian breakfasts"
-              />
-            </Field>
-            {genError && <p className="text-sm text-danger">{genError}</p>}
-            <Button type="button" onClick={generate} disabled={generating} className="self-start">
-              <Icon name="sparkles" size={15} /> {generating ? "Generating…" : "Generate draft"}
-            </Button>
-          </div>
+        <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <span className="h-px flex-1 bg-border" />
+          OR
+          <span className="h-px flex-1 bg-border" />
         </div>
+
+        {canUseAi ? (
+          <button
+            type="button"
+            onClick={() => {
+              setGenError(null);
+              setQsStep("brief");
+            }}
+            className="group w-full rounded-[var(--radius)] border border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary/5"
+          >
+            <p className="flex items-center gap-1.5 text-sm font-medium">
+              <Icon name="sparkles" size={15} className="text-primary" /> Generate with AI
+            </p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Answer a few quick questions about the client (goal, targets, diet style, allergies, conditions) and AI drafts the meals for you to refine.
+            </p>
+            <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+              Continue with AI
+              <Icon name="chevronRight" size={15} className="transition-transform group-hover:translate-x-0.5" />
+            </span>
+          </button>
+        ) : (
+          <div className="w-full rounded-[var(--radius)] border border-border bg-muted/30 p-4">
+            <p className="flex items-center gap-1.5 text-sm font-medium">
+              <Icon name="sparkles" size={15} className="text-muted-foreground" /> Generate with AI
+              <span className="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                Pro
+              </span>
+            </p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Let AI draft a meal plan from the client&apos;s goal, targets, diet style, allergies and conditions, then refine it. Available on Pro and Studio.
+            </p>
+            <Link
+              href="/account/billing"
+              className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-2 hover:underline"
+            >
+              Upgrade to unlock
+              <Icon name="chevronRight" size={15} />
+            </Link>
+          </div>
+        )}
 
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
@@ -328,44 +312,6 @@ export function DietPlanEditor({
             placeholder="e.g. 140"
           />
         </Field>
-      </div>
-
-      {/* Upload an existing plan */}
-      <div className="rounded-[var(--radius)] border border-dashed border-border p-3">
-        <p className="text-sm font-medium">Attach a plan file</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Already have the plan as a PDF, image or doc? Attach it. You can use the meal builder below too, or skip it.
-        </p>
-        {hasExisting && !file && (
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-            <Icon name="file" size={15} className="text-muted-foreground" />
-            <span className="font-medium">{plan?.original_name ?? "Attached file"}</span>
-            {plan?.size_bytes != null && (
-              <span className="text-xs text-muted-foreground">{formatBytes(plan.size_bytes)}</span>
-            )}
-            <Button type="button" variant="ghost" size="sm" onClick={() => setRemoveAttachment(true)}>
-              Remove
-            </Button>
-          </div>
-        )}
-        {removeAttachment && !file && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            The attached file will be removed when you save.{" "}
-            <button type="button" className="underline" onClick={() => setRemoveAttachment(false)}>
-              Undo
-            </button>
-          </p>
-        )}
-        <input
-          type="file"
-          aria-label="Plan file"
-          accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,image/*"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          className="mt-2 block w-full text-sm file:mr-3 file:rounded-[var(--radius)] file:border file:border-input file:bg-muted file:px-3 file:py-1.5 file:text-sm file:font-medium"
-        />
-        {file && hasExisting && (
-          <p className="mt-1 text-xs text-muted-foreground">This replaces the current attachment.</p>
-        )}
       </div>
 
       {/* Meal builder */}
@@ -508,7 +454,7 @@ export function DietPlanEditor({
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel} disabled={busy}>Cancel</Button>
         <Button type="submit" disabled={busy}>
-          {busy ? (file ? "Uploading…" : "Saving…") : "Save plan"}
+          {busy ? "Saving…" : "Save plan"}
         </Button>
       </div>
     </form>

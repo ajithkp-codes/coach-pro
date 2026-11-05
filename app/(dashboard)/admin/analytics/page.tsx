@@ -135,7 +135,7 @@ export default async function AdminAnalyticsPage() {
       </Card>
 
       <p className="text-xs text-muted-foreground">
-        Aggregate platform metrics only — derived from signup/record timestamps and sign-in
+        Aggregate platform metrics only, derived from signup/record timestamps and sign-in
         activity. No client health data is shown here.
       </p>
     </div>

@@ -55,7 +55,7 @@ export async function createDietPlanAction(
   const parsed = parse(formData);
   if (!parsed.success) return { error: parsed.error };
   if (!parsed.data.days.length && !parsed.data.storage_path) {
-    return { error: "Add at least one meal or attach a plan file." };
+    return { error: "Add at least one meal to the plan." };
   }
   try {
     await createDietPlan(clientId, parsed.data);

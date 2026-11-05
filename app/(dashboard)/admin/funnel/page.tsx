@@ -45,7 +45,7 @@ export default async function AdminFunnelPage() {
 
       <p className="text-xs text-muted-foreground">
         Percentages show conversion from the previous stage. Stages are independent trainer counts,
-        so a trainer who skipped a step can still appear later — the shape shows where trainers stall.
+        so a trainer who skipped a step can still appear later. The shape shows where trainers stall.
       </p>
     </div>
   );

@@ -55,7 +55,7 @@ export function PlanShare({ clientId, plan }: { clientId: string; plan: WorkoutP
       {active ? (
         <>
           <p className="text-sm text-muted-foreground">
-            Anyone with this link can view <span className="font-medium text-foreground">{plan.name}</span> — the days,
+            Anyone with this link can view <span className="font-medium text-foreground">{plan.name}</span>: the days,
             exercises, sets and reps. It&apos;s read-only and needs no login.
           </p>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">

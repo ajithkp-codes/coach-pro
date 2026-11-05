@@ -91,7 +91,7 @@ function googleCalendarUrl(f: {
     .join("\n");
   const params = new URLSearchParams({
     action: "TEMPLATE",
-    text: `CoachPro demo — ${f.name}`,
+    text: `CoachPro demo: ${f.name}`,
     dates: `${fmt(start)}/${fmt(end)}`,
     details,
     add: HOST_EMAIL,
@@ -145,12 +145,12 @@ function DemoForm({ onDone }: { onDone: () => void }) {
     setError(null);
 
     if (dayOfWeek(form.date) === 0) {
-      setError("We're open Monday to Saturday — please pick another day.");
+      setError("We're open Monday to Saturday. Please pick another day.");
       return;
     }
     const start = instantFor(form.date, form.slot);
     if (start.getTime() < Date.now()) {
-      setError("That time has already passed — please pick a later slot.");
+      setError("That time has already passed. Please pick a later slot.");
       return;
     }
 
@@ -191,7 +191,7 @@ function DemoForm({ onDone }: { onDone: () => void }) {
             {slotSummary(form.date, form.slot)}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            One last step — add the call to Google Calendar. It invites us both and
+            One last step: add the call to Google Calendar. It invites us both and
             lands in your inbox.
           </p>
         </div>

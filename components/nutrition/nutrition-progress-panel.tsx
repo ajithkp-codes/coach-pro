@@ -59,21 +59,21 @@ export function NutritionProgressPanel({
         <StatTile
           icon="flame"
           label="Avg calories"
-          value={stats.avgCalories != null ? `${stats.avgCalories.toLocaleString("en-IN")}` : "—"}
+          value={stats.avgCalories != null ? `${stats.avgCalories.toLocaleString("en-IN")}` : "–"}
           accent="amber"
           sub={calTarget ? `target ${calTarget.toLocaleString("en-IN")} kcal` : "per logged day"}
         />
         <StatTile
           icon="target"
           label="Avg protein"
-          value={stats.avgProtein != null ? `${stats.avgProtein} g` : "—"}
+          value={stats.avgProtein != null ? `${stats.avgProtein} g` : "–"}
           accent="sky"
           sub={proTarget ? `target ${proTarget} g` : "per logged day"}
         />
         <StatTile
           icon="checkCircle"
           label="On target · 30d"
-          value={adherence ? `${adherence.pct}%` : "—"}
+          value={adherence ? `${adherence.pct}%` : "–"}
           accent={adherence ? (adherence.pct >= 70 ? "green" : adherence.pct >= 40 ? "amber" : "red") : "indigo"}
           sub={adherence ? `${adherence.onTargetDays} of ${adherence.loggedDays} days` : "No calorie target"}
         />
@@ -135,7 +135,7 @@ export function NutritionProgressPanel({
 
       <p className="text-xs text-muted-foreground">
         Averages count only days with calories logged. “On target” is the share of logged days whose
-        calories land within ±10% of the plan target. Numbers are as logged — approximate where the
+        calories land within ±10% of the plan target. Numbers are as logged, approximate where the
         client estimated portions.
       </p>
     </div>

@@ -89,7 +89,7 @@ export function LogLinkCard({
         ) : (
           <div className="flex flex-col gap-3">
             <p className="text-sm text-muted-foreground">
-              Let this client log their own meals from a private link — no account needed. You review
+              Let this client log their own meals from a private link, no account needed. You review
               each day before it&apos;s added to their log.
             </p>
             <Button
